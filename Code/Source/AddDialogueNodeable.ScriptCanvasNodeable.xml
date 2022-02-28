@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Source/AddDialogueNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Class Name="DialogueNodeable"
+           Namespace="Conversation"
+           QualifiedName="Conversation::DialogueNodeable"
+           PreferredClassName="Dialogue"
+           Base="ScriptCanvas::Nodeable"
+           Icon="Icons/ScriptCanvas/Bus.png"
+           EditAttributes="AZ::Edit::Attributes::Category@Conversation"
+           GraphEntryPoint="True"
+           GeneratePropertyFriend="True"
+           Description="Add a new dialogue to the dialogue component.">
+
+		<Input Name="Add Dialogue" Description="Add a new dialogue to the dialogue component.">
+			<Parameter Name="ParentDialogueId" Type="AZ::Uuid" />
+			<Parameter Name="Speaker" Type="AZStd::string" Description="The speaker id of the actor saying the text."/>
+			<Parameter Name="Text" Type="AZStd::string" Description="The text the actor will say."/>
+			<Return Name="DialogueId" Type="AZ::Uuid" />
+		</Input>/>
+		
+		<Property Name="m_comments" Type="AZStd::string" DefaultValue="&quot;&quot;" Serialize="true">
+			<PropertyData Name="Comments"
+						  Description=""
+						  Serialize="true"
+						  UIHandler="AZ::Edit::UIHandlers::MultiLineEdit"/>
+		</Property>
+	</Class>
+</ScriptCanvas>

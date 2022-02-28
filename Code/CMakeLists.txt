@@ -20,16 +20,23 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         conversation_files.cmake
+        conversation_autogen_files.cmake
         ${pal_dir}/conversation_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
         PRIVATE
             Source
+            .
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            Gem::ScriptCanvas
+        PRIVATE
+    AUTOGEN_RULES
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
 )
 
 # Here add Conversation target, it depends on the Conversation.Static
