@@ -7,6 +7,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Conversation/AvailabilityBus.h>
 #include <Conversation/ConversationBus.h>
+#include <Conversation/DialogueComponent.h>
 #include <DialogueLibrary.h>
 
 namespace Conversation
@@ -60,15 +61,17 @@ namespace Conversation
 
     void ConversationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        DialogueData::Reflect(context);
         DialogueLibrary::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<ConversationSystemComponent, AZ::Component>()->Version(0);
 
-            if (AZ::EditContext* ec = serialize->GetEditContext())
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                ec->Class<ConversationSystemComponent>("Conversation", "[Description of functionality provided by this System Component]")
+                editContext
+                    ->Class<ConversationSystemComponent>("Conversation", "[Description of functionality provided by this System Component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
@@ -80,6 +83,24 @@ namespace Conversation
             behaviorContext->EBus<AvailabilityNotificationBus>("AvailabilityNotificationBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Dialogue System")
                 ->Handler<BehaviorAvailabilityNotificationBusHandler>();
+
+            const AZ::BehaviorParameterOverrides startConversationEntityIdParam = {
+                "EntityId", "The Id of an entity that contains a conversation component that will be used to start the conversation."
+            };
+
+            // startConversationParams.
+
+            behaviorContext->EBus<ConversationRequestBus>("ConversationRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Dialogue System")
+                ->Event("StartConversation", &ConversationRequestBus::Events::StartConversation, { startConversationEntityIdParam })
+                ->Event("EndConversation", &ConversationRequestBus::Events::EndConversation)
+                ->Event("AbortConversation", &ConversationRequestBus::Events::AbortConversation)
+                ->Event("SelectResponseById", &ConversationRequestBus::Events::SelectResponseById)
+                ->Event("SelectResponseByNumber", &ConversationRequestBus::Events::SelectResponseByNumber);
+
+            behaviorContext->EBus<ConversationNotificationBus>("ConversationNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Dialogue System")
+                ->Handler<BehaviorConversationNotificationBusHandler>();
         }
     }
 
@@ -115,6 +136,73 @@ namespace Conversation
         {
             ConversationInterface::Unregister(this);
         }
+    }
+
+    void ConversationSystemComponent::AbortConversation()
+    {
+    }
+
+    void ConversationSystemComponent::EndConversation()
+    {
+    }
+
+    void ConversationSystemComponent::StartConversation(const AZ::EntityId entityId)
+    {
+        // Refuse to start a conversation if the system is not currently inactive.
+        if (m_currentConversationStatus != ConversationStatus::Inactive)
+        {
+            return;
+        }
+
+        // We set the status to starting so external code can know we're in the middle
+        // of setting up the conversation. It lets them know not to trust any information
+        // while in this state.
+        m_currentConversationStatus = ConversationStatus::Starting;
+
+        // ConversationData resultConversationData = {};
+        m_activeConversationData = AZStd::make_shared<ConversationData>();
+        DialogueComponentRequestBus::EventResult(
+            *m_activeConversationData, entityId, &DialogueComponentRequestBus::Events::GetConversationData);
+
+        AZStd::unordered_set<DialogueId> availableIds;
+
+        // Check each starting id and store the available ones.
+        for (DialogueId startingId : m_activeConversationData->GetStartingIds())
+        {
+            // Dialogues are available by default. The only time one will not be available is if an
+            // availability check was setup somewhere, which does some logic that returns true or false.
+            // Remember, the following variable is only modified if the EBus call is successful.
+            bool resultDialogueIsAvailable = true;
+            AvailabilityNotificationBus::EventResult(
+                resultDialogueIsAvailable, startingId, &AvailabilityNotificationBus::Events::OnAvailabilityCheck);
+
+            availableIds.insert(startingId);
+        }
+
+        AZ_Warning("ConversationSystemComponent", !availableIds.empty(), "No starting IDs were available. Cannot start conversation.");
+
+        if (availableIds.empty())
+        {
+            m_currentConversationStatus = ConversationStatus::Inactive;
+            return;
+        }
+
+        // For now, we're going to choose the first one.
+        // Later, we may use some logic to decide which to use when multiple are available.
+        const DialogueId chosenDialogueId = *availableIds.begin();
+        // Try to retrieve the dialogue using the id. Should never fail, but potentially could.
+        if (auto outcome = m_activeConversationData->GetDialogueById(chosenDialogueId))
+        {
+            m_activeDialogue = outcome.IsSuccess() ? AZStd::make_shared<DialogueData>(outcome.GetValue()) : nullptr;
+            m_currentConversationStatus = ConversationStatus::Active;
+            return;
+        }
+
+        // If we've made it this far, then we failed to get everything we needed to
+        // start a conversation. Reset everything.
+        m_activeConversationData = nullptr;
+        m_activeDialogue = nullptr;
+        m_currentConversationStatus = ConversationStatus::Inactive;
     }
 
     void ConversationSystemComponent::Init()

@@ -13,9 +13,18 @@ namespace Conversation
         ~DialogueComponentRequests() override = default;
 
     public: // Requests
-        virtual DialogueId AddDialogue(const DialogueData& /*dialogueData*/, const DialogueId& /*parentDialogue*/)
+        virtual DialogueId AddDialogue(const DialogueData /*dialogueData*/, const DialogueId& /*parentDialogue*/)
         {
             return DialogueId::CreateNull();
+        }
+
+        virtual void ClearData()
+        {
+        }
+
+        virtual ConversationData GetConversationData() const
+        {
+            return {};
         }
     };
 

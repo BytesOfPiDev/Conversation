@@ -12,22 +12,17 @@ namespace Conversation
 {
     DialogueComponent::~DialogueComponent()
     {
-
     }
 
     void DialogueComponent::Reflect(AZ::ReflectContext* context)
     {
-        DialogueData::Reflect(context);
-
         constexpr static const char* DIALOGUE_SYSTEM_CATEGORY = "Dialogue System";
         constexpr static const char* DIALOGUE_COMPONENT_CATEGORY = "Dialogue System/DialogueComponent";
 
         auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<DialogueComponent, AZ::Component>()
-                ->Version(0)
-                ->Field("Owner", &DialogueComponent::m_owner);
+            serializeContext->Class<DialogueComponent, AZ::Component>()->Version(0)->Field("Owner", &DialogueComponent::m_owner);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -42,17 +37,15 @@ namespace Conversation
         auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
         if (behaviorContext)
         {
-            //behaviorContext->Class<DialogueComponent>()->RequestBus("DialogueComponentRequestBus");
-
             behaviorContext->EBus<DialogueComponentRequestBus>("DialogueComponentRequests")
                 ->Attribute(AZ::Script::Attributes::Category, DIALOGUE_COMPONENT_CATEGORY)
-                ->Event("Add Dialogue", &DialogueComponentRequestBus::Events::AddDialogue, { { { "Dialogue Data", "" } } });
+                ->Event("Add Dialogue", &DialogueComponentRequestBus::Events::AddDialogue, { { { "Dialogue Data", "" } } })
+                ->Event("ClearData", &DialogueComponentRequestBus::Events::ClearData);
         }
     }
 
     void DialogueComponent::Init()
     {
-
     }
 
     void DialogueComponent::Activate()
@@ -87,12 +80,32 @@ namespace Conversation
         AZ_UNUSED(dependent);
     }
 
-    DialogueId DialogueComponent::AddDialogue(
-        const DialogueData& dialogueData, const DialogueId&)
+    DialogueId DialogueComponent::AddDialogue(const DialogueData dialogueData, const DialogueId& parentDialogueId)
     {
-        AZ_UNUSED(dialogueData);
+        const DialogueId dialogueIdToAdd = dialogueData.GetId();
 
-        return DialogueId::CreateNull();
+        if (dialogueIdToAdd.IsNull())
+        {
+            return {};
+        }
+
+        // Null parent ID is considered a starting ID.
+        if (parentDialogueId.IsNull())
+        {
+            // Add the ID to the container for starter IDs
+            m_conversationData.AddStartingId(dialogueIdToAdd);
+        }
+        else
+        {
+            // A valid parent ID means this dialogue is a response to that dialogue, so
+            // we add this ID as a response to the parent ID.
+            //m_dialogues[parentDialogueId].AddResponseId(dialogueIdToAdd);
+        }
+
+        // Add the dialogue to the container of dialogues.
+        m_conversationData.AddDialogue(dialogueData);
+
+        return dialogueIdToAdd;
     }
 
 } // namespace Conversation

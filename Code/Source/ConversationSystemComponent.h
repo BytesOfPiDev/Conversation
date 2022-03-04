@@ -7,6 +7,15 @@
 
 namespace Conversation
 {
+    enum class ConversationStatus
+    {
+        Inactive,
+        Starting,
+        Active,
+        Aborting,
+        Ending
+    };
+
     class ConversationSystemComponent
         : public AZ::Component
         , protected ConversationRequestBus::Handler
@@ -29,6 +38,10 @@ namespace Conversation
         ////////////////////////////////////////////////////////////////////////
         // ConversationRequestBus interface implementation
 
+        void AbortConversation() override;
+        void EndConversation() override;
+        void StartConversation(const AZ::EntityId entityId) override;
+
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -42,6 +55,11 @@ namespace Conversation
         // AZTickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
+
+    private:
+        ConversationStatus m_currentConversationStatus;
+        AZStd::shared_ptr<ConversationData> m_activeConversationData;
+        AZStd::shared_ptr<DialogueData> m_activeDialogue;
     };
 
 } // namespace Conversation

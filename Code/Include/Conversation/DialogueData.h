@@ -2,12 +2,12 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
-
-#include <AzCore/std/smart_ptr/make_shared.h>
 
 namespace AZ
 {
@@ -24,8 +24,6 @@ namespace Conversation
         Npc,
         Player
     };
-
-    class SystemComponent;
 
     /**
      * @brief Represents a line of dialogue in a conversation.
@@ -160,4 +158,68 @@ namespace Conversation
     };
 
     using DialogueDataPtr = AZStd::shared_ptr<DialogueData>;
-} // namespace Dialogue
+
+    class ConversationData
+    {
+    public:
+        AZ_TYPE_INFO(ConversationData, "{C2B4E407-B74E-4E48-8B8A-ADD5BCC894D1}");
+        AZ_CLASS_ALLOCATOR(ConversationData, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        size_t CountStartingIds() const
+        {
+            return m_startingIds.size();
+        }
+
+        size_t CountDialogues() const
+        {
+            return m_dialogues.size();
+        }
+
+        DialogueId GetStartingIdAtIndex(size_t startingIdIndex)
+        {
+            AZ_Assert(startingIdIndex < m_startingIds.size(), "The provided index of the starting id to retrieve is out of range.");
+            return startingIdIndex < m_startingIds.size() ? m_startingIds[startingIdIndex] : DialogueId::CreateNull();
+        }
+
+        const AZStd::vector<DialogueId>& GetStartingIds() const
+        {
+            return m_startingIds;
+        }
+
+        void AddStartingId(const DialogueId& newStartingId);
+        void AddDialogue(const DialogueData& newDialogueData);
+        void AddResponseId(const DialogueId& parentDialogueId, const DialogueId& responseDialogueId);
+        AZ::Outcome<DialogueData> GetDialogueById(const DialogueId& dialogueId);
+        bool CheckDialogueExists(const DialogueId& dialogueId)
+        {
+            return m_dialogues.contains(dialogueId);
+        }
+
+    private:
+        /**
+         * The IDs of any dialogues that can be used to begin a conversation.
+         *
+         * I use an AZStd::vector instead of AZStd::set because I anticipate needing
+         * to potentially change their order. Perhaps a priority. I may also want to
+         * access them by index. Though, a set would prevent having to check for
+         * duplicates in code that adds elements to this container.
+         *
+         * I also want to try and hide the implementation details, so making it so
+         * clients can access by index would be helpful in achieving that. Especially
+         * if I want to expose some functionality to the behavior context.
+         */
+        AZStd::vector<DialogueId> m_startingIds;
+        /**
+         * A map that associates each dialogue with their IDs.
+         *
+         * I am using a map for now, but I feel there's a better option.
+         * The DialogueId is already stored inside the map - maybe I can
+         * use operator overloading so dialogues can be compared for
+         * equality solely based on their IDs, then I could use a set.
+         */
+        AZStd::unordered_map<DialogueId, DialogueData> m_dialogues;
+    };
+
+} // namespace Conversation

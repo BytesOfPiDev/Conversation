@@ -9,7 +9,7 @@
 namespace Conversation
 {
     /**
-     * Represents a dialogue/conversation asset.
+     * Represents a conversation.
      *
      * Currently, an entity can only use one instance of this component. However,
      * it would be useful to allow multiple instances in the future in order to allow
@@ -45,9 +45,20 @@ namespace Conversation
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        DialogueId AddDialogue(const DialogueData&, const DialogueId& = DialogueId::CreateNull()) override;
+        DialogueId AddDialogue(const DialogueData, const DialogueId& = DialogueId::CreateNull()) override;
+        
+        void ClearData() override
+        {
+            m_conversationData = ConversationData();
+        }
+
+        ConversationData GetConversationData() const override
+        {
+            return m_conversationData;
+        }
 
     private:
         AZ::EntityId m_owner;
+        ConversationData m_conversationData;
     };
 } // namespace Conversation

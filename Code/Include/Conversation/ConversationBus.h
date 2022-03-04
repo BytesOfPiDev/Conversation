@@ -25,7 +25,7 @@ namespace Conversation
          *
          * @param entityId The entity that contains the DialogueComponent to use.
          */
-        virtual void StartConversation([[maybe_unused]] const AZ::EntityId& entityId)
+        virtual void StartConversation(const AZ::EntityId /*entityId*/)
         {
         }
         virtual void EndConversation()
