@@ -19,6 +19,8 @@
 			<Return Name="DialogueId" Type="AZ::Uuid" />
 		</Input>/>
 		
+		<Output Name="On Dialogue" Description="Signal for when a dialogue has been selected (sent out, spoken)."/>
+		
 		<Property Name="m_comments" Type="AZStd::string" DefaultValue="&quot;&quot;" Serialize="true">
 			<PropertyData Name="Comments"
 						  Description=""

@@ -8,6 +8,7 @@
 #include <Conversation/AvailabilityBus.h>
 #include <Conversation/ConversationBus.h>
 #include <Conversation/DialogueComponent.h>
+#include <Conversation/DialogueScript.h>
 #include <DialogueLibrary.h>
 
 namespace Conversation
@@ -59,9 +60,24 @@ namespace Conversation
         }
     };
 
+    class BehaviorDialogueScriptRequestBusHandler
+        : public DialogueScriptRequestBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            BehaviorDialogueScriptRequestBusHandler, "{168DA145-68E2-4D49-BCE7-3BAE5589C3D1}", AZ::SystemAllocator, RunDialogueScript);
+
+        void RunDialogueScript() override
+        {
+            Call(FN_RunDialogueScript);
+        }
+    };
+
     void ConversationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         DialogueData::Reflect(context);
+        ConversationAsset::Reflect(context);
         DialogueLibrary::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -140,6 +156,19 @@ namespace Conversation
 
     void ConversationSystemComponent::AbortConversation()
     {
+        if (m_currentConversationStatus != ConversationStatus::Active)
+        {
+            return;
+        }
+
+        AZ_Assert(m_currentConversationData, "Current conversation data pointer is null! It should be valid in the current state.");
+        ConversationNotificationBus::Broadcast(
+            &ConversationNotificationBus::Events::OnConversationAborted, m_currentConversationData->OwningEntity);
+
+        m_currentConversationStatus = ConversationStatus::Aborting;
+        m_currentConversationAsset.Reset();
+        m_currentConversationData = nullptr;
+        m_currentConversationStatus = ConversationStatus::Inactive;
     }
 
     void ConversationSystemComponent::EndConversation()
@@ -158,16 +187,16 @@ namespace Conversation
         // of setting up the conversation. It lets them know not to trust any information
         // while in this state.
         m_currentConversationStatus = ConversationStatus::Starting;
+        m_currentConversationData = AZStd::make_unique<ActiveConversationData>();
+        m_currentConversationData->OwningEntity = entityId;
 
-        // ConversationData resultConversationData = {};
-        m_activeConversationData = AZStd::make_shared<ConversationData>();
         DialogueComponentRequestBus::EventResult(
-            *m_activeConversationData, entityId, &DialogueComponentRequestBus::Events::GetConversationData);
+            m_currentConversationAsset, entityId, &DialogueComponentRequestBus::Events::GetConversationData);
 
         AZStd::unordered_set<DialogueId> availableIds;
 
         // Check each starting id and store the available ones.
-        for (DialogueId startingId : m_activeConversationData->GetStartingIds())
+        for (DialogueId startingId : m_currentConversationAsset->GetStartingIds())
         {
             // Dialogues are available by default. The only time one will not be available is if an
             // availability check was setup somewhere, which does some logic that returns true or false.
@@ -190,19 +219,39 @@ namespace Conversation
         // For now, we're going to choose the first one.
         // Later, we may use some logic to decide which to use when multiple are available.
         const DialogueId chosenDialogueId = *availableIds.begin();
+
         // Try to retrieve the dialogue using the id. Should never fail, but potentially could.
-        if (auto outcome = m_activeConversationData->GetDialogueById(chosenDialogueId))
+        const auto outcome = m_currentConversationAsset->GetDialogueById(chosenDialogueId);
+
+        if (!outcome.IsSuccess())
         {
-            m_activeDialogue = outcome.IsSuccess() ? AZStd::make_shared<DialogueData>(outcome.GetValue()) : nullptr;
-            m_currentConversationStatus = ConversationStatus::Active;
+            // We failed to get everything we needed to start a conversation. Reset everything.
+            m_currentConversationAsset.Reset();
+            m_currentConversationData = nullptr;
+            m_currentConversationStatus = ConversationStatus::Inactive;
             return;
         }
 
-        // If we've made it this far, then we failed to get everything we needed to
-        // start a conversation. Reset everything.
-        m_activeConversationData = nullptr;
-        m_activeDialogue = nullptr;
-        m_currentConversationStatus = ConversationStatus::Inactive;
+        m_currentConversationData->CurrentlyActiveDialogue = outcome.GetValue();
+        m_currentConversationStatus = ConversationStatus::Active;
+
+        ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnConversationStarted, entityId);
+        ConversationNotificationBus::Broadcast(
+            &ConversationNotificationBus::Events::OnDialogue, m_currentConversationData->CurrentlyActiveDialogue);
+    }
+
+    void ConversationSystemComponent::SelectResponseById(const DialogueId& dialogueId)
+    {
+        AZ_Assert(!dialogueId.IsNull(), "The dialogue id to select must not be null.");
+        auto selectedDialogueOutcome = m_currentConversationAsset->GetDialogueById(dialogueId);
+
+        AZ_Assert(selectedDialogueOutcome.IsSuccess(), "Unable to find a dialogue that matches the given ID.");
+        if (!selectedDialogueOutcome.IsSuccess())
+        {
+            return;
+        }
+
+        ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnDialogue, selectedDialogueOutcome.GetValue());
     }
 
     void ConversationSystemComponent::Init()
@@ -214,16 +263,39 @@ namespace Conversation
             ScriptCanvas::NodeRegistry& nodeRegistry = nodeRegistryVariable.Get();
             Conversation::DialogueLibrary::InitNodeRegistry(nodeRegistry);
         }
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        m_conversationAssetHandler = AZStd::make_unique<ConversationAssetHandler>(
+            "Conversation Asset", "Conversation System", ".conversation", AZ::AzTypeInfo<ConversationAsset>::Uuid(), serializeContext);
+        AZ_Assert(m_conversationAssetHandler, "Unable to create conversation asset handler.");
     }
 
     void ConversationSystemComponent::Activate()
     {
+        const AZ::Data::AssetType conversationAssetTypeId = azrtti_typeid<ConversationAsset>();
+        if (!AZ::Data::AssetManager::Instance().GetHandler(conversationAssetTypeId))
+        {
+            AZ_Assert(
+                m_conversationAssetHandler,
+                "Conversation asset handler is null! It should have been created in the Init function already.");
+            m_conversationAssetHandler->Register();
+        }
+
         ConversationRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
     }
 
     void ConversationSystemComponent::Deactivate()
     {
+        AbortConversation();
+
+        const AZ::Data::AssetType conversationAssetTypeId = ConversationAsset::TYPEINFO_Uuid();
+        if (!AZ::Data::AssetManager::Instance().IsReady() && m_conversationAssetHandler)
+        {
+            m_conversationAssetHandler->Unregister();
+        }
+
         AZ::TickBus::Handler::BusDisconnect();
         ConversationRequestBus::Handler::BusDisconnect();
     }

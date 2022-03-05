@@ -5,6 +5,7 @@ set(FILES
     Include/Conversation/DialogueComponent.h
     Include/Conversation/DialogueComponentBus.h
     Include/Conversation/DialogueData.h
+    Include/Conversation/DialogueScript.h
     Source/AddDialogueNodeable.h
     Source/AddDialogueNodeable.cpp
     Source/AddDialogueNodeable.ScriptCanvasNodeable.xml

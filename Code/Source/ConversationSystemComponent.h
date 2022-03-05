@@ -16,6 +16,13 @@ namespace Conversation
         Ending
     };
 
+    struct ActiveConversationData
+    {
+        AZ::EntityId OwningEntity;
+        DialogueData CurrentlyActiveDialogue;
+        AZStd::vector<DialogueData> AvailableResponses;
+    };
+
     class ConversationSystemComponent
         : public AZ::Component
         , protected ConversationRequestBus::Handler
@@ -41,6 +48,7 @@ namespace Conversation
         void AbortConversation() override;
         void EndConversation() override;
         void StartConversation(const AZ::EntityId entityId) override;
+        void SelectResponseById(const DialogueId&) override;
 
         ////////////////////////////////////////////////////////////////////////
 
@@ -57,9 +65,10 @@ namespace Conversation
         ////////////////////////////////////////////////////////////////////////
 
     private:
+        AZStd::unique_ptr<ConversationAssetHandler> m_conversationAssetHandler;
         ConversationStatus m_currentConversationStatus;
-        AZStd::shared_ptr<ConversationData> m_activeConversationData;
-        AZStd::shared_ptr<DialogueData> m_activeDialogue;
+        AZ::Data::Asset<ConversationAsset> m_currentConversationAsset;
+        AZStd::unique_ptr<ActiveConversationData> m_currentConversationData;
     };
 
 } // namespace Conversation

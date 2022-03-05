@@ -51,6 +51,7 @@ namespace Conversation
                 ->Attribute(AZ::Script::Attributes::Category, AZ_CRC("Dialogue System", 0xa63dad5a))
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "dialogue_system")
+                ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
                 ->Constructor()
                 ->Constructor<
                     const DialogueActorType, const DialogueId, const AZStd::string, const AZStd::string, const AZStd::string,
@@ -100,26 +101,28 @@ namespace Conversation
         }
     }
 
-    void ConversationData::Reflect(AZ::ReflectContext* context)
+#pragma region ConversationAsset
+
+    void ConversationAsset::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ConversationData>()
+            serializeContext->Class<ConversationAsset, AZ::Data::AssetData>()
                 ->Version(0)
-                ->Field("StartingIds", &ConversationData::m_startingIds)
-                ->Field("Dialogues", &ConversationData::m_dialogues);
+                ->Field("StartingIds", &ConversationAsset::m_startingIds)
+                ->Field("Dialogues", &ConversationAsset::m_dialogues);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext
-                    ->Class<ConversationData>(
+                    ->Class<ConversationAsset>(
                         "Conversation Data", "Stores all the dialogue and other information needed to start a conversation.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "");
             }
         }
     }
 
-    void ConversationData::AddStartingId(const DialogueId& newStartingId)
+    void ConversationAsset::AddStartingId(const DialogueId& newStartingId)
     {
         // No null Ids are allowed.
         if (newStartingId.IsNull())
@@ -135,7 +138,7 @@ namespace Conversation
                 return existingId.GetHash() == newStartingId.GetHash();
             });
 
-        if (iterFoundStartingId == m_startingIds.end())
+        if (iterFoundStartingId != m_startingIds.end())
         {
             return;
         }
@@ -143,7 +146,7 @@ namespace Conversation
         m_startingIds.push_back(newStartingId);
     }
 
-    void ConversationData::AddDialogue(const DialogueData& newDialogueData)
+    void ConversationAsset::AddDialogue(const DialogueData& newDialogueData)
     {
         if (!newDialogueData.IsValid() || m_dialogues.contains(newDialogueData.GetId()))
         {
@@ -153,7 +156,7 @@ namespace Conversation
         m_dialogues[newDialogueData.GetId()] = newDialogueData;
     }
 
-    void ConversationData::AddResponseId(const DialogueId& parentDialogueId, const DialogueId& responseDialogueId)
+    void ConversationAsset::AddResponseId(const DialogueId& parentDialogueId, const DialogueId& responseDialogueId)
     {
         if (!m_dialogues.contains(parentDialogueId))
         {
@@ -163,9 +166,10 @@ namespace Conversation
         m_dialogues[parentDialogueId].AddResponseId(responseDialogueId);
     }
 
-    AZ::Outcome<DialogueData> ConversationData::GetDialogueById(const DialogueId& dialogueId)
+    AZ::Outcome<DialogueData> ConversationAsset::GetDialogueById(const DialogueId& dialogueId)
     {
         return m_dialogues.contains(dialogueId) ? AZ::Success(m_dialogues[dialogueId]) : AZ::Outcome<DialogueData>(AZ::Failure());
     }
 
+#pragma endregion
 } // namespace Conversation

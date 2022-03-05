@@ -8,6 +8,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzFramework/Asset/GenericAssetHandler.h>
 
 namespace AZ
 {
@@ -159,13 +160,16 @@ namespace Conversation
 
     using DialogueDataPtr = AZStd::shared_ptr<DialogueData>;
 
-    class ConversationData
+    class ConversationAsset : public AZ::Data::AssetData
     {
     public:
-        AZ_TYPE_INFO(ConversationData, "{C2B4E407-B74E-4E48-8B8A-ADD5BCC894D1}");
-        AZ_CLASS_ALLOCATOR(ConversationData, AZ::SystemAllocator, 0);
+        AZ_RTTI(ConversationAsset, "{C2B4E407-B74E-4E48-8B8A-ADD5BCC894D1}", AZ::Data::AssetData);
+        AZ_CLASS_ALLOCATOR(ConversationAsset, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* context);
+
+        ConversationAsset() = default;
+        ~ConversationAsset() override = default;
 
         size_t CountStartingIds() const
         {
@@ -221,5 +225,7 @@ namespace Conversation
          */
         AZStd::unordered_map<DialogueId, DialogueData> m_dialogues;
     };
+
+    using ConversationAssetHandler = AzFramework::GenericAssetHandler<ConversationAsset>;
 
 } // namespace Conversation

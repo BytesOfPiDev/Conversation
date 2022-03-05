@@ -31,6 +31,7 @@ namespace Conversation
     public:
         AZ_COMPONENT(DialogueComponent, "{C7AFDF51-ECCC-4BD3-8A56-0763ED87CB5B}");
 
+        DialogueComponent() = default;
         ~DialogueComponent() override;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -45,20 +46,20 @@ namespace Conversation
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        DialogueId AddDialogue(const DialogueData, const DialogueId& = DialogueId::CreateNull()) override;
+        void AddDialogue(const DialogueData /*dialogueDataToAdd*/, const DialogueId& = DialogueId::CreateNull()) override;
         
         void ClearData() override
         {
-            m_conversationData = ConversationData();
+            m_conversationAsset.Reset();
         }
 
-        ConversationData GetConversationData() const override
+        AZ::Data::Asset<ConversationAsset> GetConversationData() const override
         {
-            return m_conversationData;
+            return m_conversationAsset;
         }
 
     private:
         AZ::EntityId m_owner;
-        ConversationData m_conversationData;
+        AZ::Data::Asset<ConversationAsset> m_conversationAsset;
     };
 } // namespace Conversation

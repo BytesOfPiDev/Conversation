@@ -46,6 +46,7 @@ namespace Conversation
 
     void DialogueComponent::Init()
     {
+        m_conversationAsset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
     }
 
     void DialogueComponent::Activate()
@@ -80,32 +81,30 @@ namespace Conversation
         AZ_UNUSED(dependent);
     }
 
-    DialogueId DialogueComponent::AddDialogue(const DialogueData dialogueData, const DialogueId& parentDialogueId)
+    void DialogueComponent::AddDialogue(const DialogueData dialogueDataToAdd, const DialogueId& parentDialogueId)
     {
-        const DialogueId dialogueIdToAdd = dialogueData.GetId();
-
-        if (dialogueIdToAdd.IsNull())
+        // A null id should not be added to the list.
+        if (dialogueDataToAdd.GetId().IsNull())
         {
-            return {};
+            return;
         }
 
         // Null parent ID is considered a starting ID.
         if (parentDialogueId.IsNull())
         {
             // Add the ID to the container for starter IDs
-            m_conversationData.AddStartingId(dialogueIdToAdd);
+            m_conversationAsset->AddStartingId(dialogueDataToAdd.GetId());
         }
         else
         {
             // A valid parent ID means this dialogue is a response to that dialogue, so
             // we add this ID as a response to the parent ID.
+            m_conversationAsset->AddResponseId(parentDialogueId, dialogueDataToAdd.GetId());
             //m_dialogues[parentDialogueId].AddResponseId(dialogueIdToAdd);
         }
 
         // Add the dialogue to the container of dialogues.
-        m_conversationData.AddDialogue(dialogueData);
-
-        return dialogueIdToAdd;
+        m_conversationAsset->AddDialogue(dialogueDataToAdd);
     }
 
 } // namespace Conversation
