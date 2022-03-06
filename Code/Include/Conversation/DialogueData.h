@@ -44,11 +44,8 @@ namespace Conversation
 
         DialogueData(bool generateRandomId = false);
         DialogueData(
-            const DialogueActorType actorType,
             const DialogueId id,
             const AZStd::string actorText,
-            const AZStd::string availabilityscript,
-            const AZStd::string dialogueScript,
             const AZStd::string speaker,
             const AZStd::set<DialogueId>& responses);
         ~DialogueData() = default;
@@ -66,14 +63,7 @@ namespace Conversation
         {
             return m_actorText;
         }
-        AZStd::string GetAvailabilityScript() const
-        {
-            return m_availabilityScript;
-        }
-        AZStd::string GetScript() const
-        {
-            return m_script;
-        }
+
         AZStd::string GetSpeaker() const
         {
             return m_speaker;
@@ -95,14 +85,7 @@ namespace Conversation
         {
             m_actorText = actorText;
         }
-        void SetAvailabilityScript(const AZStd::string& availabilityScript)
-        {
-            m_availabilityScript = availabilityScript;
-        }
-        void SetScript(const AZStd::string& script)
-        {
-            m_script = script;
-        }
+
         void SetSpeaker(const AZStd::string& speaker)
         {
             m_speaker = speaker;
@@ -146,11 +129,8 @@ namespace Conversation
         }
 
     private:
-        DialogueActorType m_actorType = DialogueActorType::Invalid;
         DialogueId m_id;
         AZStd::string m_actorText = "";
-        AvailabilityId m_availabilityScript;
-        AZStd::string m_script;
         AZStd::string m_speaker;
         AZStd::set<DialogueId> m_responseIds;
         AZStd::string m_audioTrigger;

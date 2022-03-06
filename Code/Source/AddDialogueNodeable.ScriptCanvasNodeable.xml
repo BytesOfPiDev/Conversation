@@ -21,11 +21,18 @@
 		
 		<Output Name="On Dialogue" Description="Signal for when a dialogue has been selected (sent out, spoken)."/>
 		
-		<Property Name="m_comments" Type="AZStd::string" DefaultValue="&quot;&quot;" Serialize="true">
+		<Property Name="m_comments" Type="AZStd::string" DefaultValue="AZStd::string()" Serialize="true">
 			<PropertyData Name="Comments"
 						  Description=""
 						  Serialize="true"
 						  UIHandler="AZ::Edit::UIHandlers::MultiLineEdit"/>
+		</Property>
+		<Property Name="m_audioTrigger" Type="AZStd::string" DefaultValue="AZStd::string()">
+			<PropertyData Name="AudioTrigger" 
+						  Description=""
+						  Serialize="true"
+						  UIHandler="AZ::Edit::UIHandlers::Default"/>
+
 		</Property>
 	</Class>
 </ScriptCanvas>

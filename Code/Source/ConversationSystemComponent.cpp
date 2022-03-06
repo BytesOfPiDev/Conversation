@@ -192,13 +192,13 @@ namespace Conversation
 
         DialogueComponentRequestBus::EventResult(
             m_currentConversationAsset, entityId, &DialogueComponentRequestBus::Events::GetConversationData);
-        
+
         // Check each starting id and store the ones available for selection.
         AZStd::vector<DialogueData> availableDialogues = GetAvailableDialogues(m_currentConversationAsset->GetStartingIds());
 
         AZ_Warning(
             "ConversationSystemComponent", !availableDialogues.empty(), "No starting dialogues are available. Cannot start conversation.");
-            if (availableDialogues.empty())
+        if (availableDialogues.empty())
         {
             m_currentConversationStatus = ConversationStatus::Inactive;
             return;
@@ -227,6 +227,8 @@ namespace Conversation
         ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnConversationStarted, entityId);
         ConversationNotificationBus::Broadcast(
             &ConversationNotificationBus::Events::OnDialogue, m_currentConversationData->CurrentlyActiveDialogue);
+        ConversationNotificationBus::Broadcast(
+            &ConversationNotificationBus::Events::OnChoiceAvailable, m_currentConversationData->AvailableResponses);
     }
 
     void ConversationSystemComponent::SelectResponseById(const DialogueId& dialogueId)

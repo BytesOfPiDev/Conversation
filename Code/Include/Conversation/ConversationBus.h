@@ -72,6 +72,8 @@ namespace Conversation
         AZ_RTTI(ConversationNotifications, "{E8160C73-598B-4F36-A39E-13F13A8033ED}");
         virtual ~ConversationNotifications() = default;
 
+        // Notifies a conversation has started, allowing listeners to set up any conversation related systems, such
+        // as the UI that displays the dialogue or system that plays associated audio.
         virtual void OnConversationStarted(const AZ::EntityId& /*entity*/)
         {
         }
@@ -81,12 +83,19 @@ namespace Conversation
         virtual void OnConversationAborted(const AZ::EntityId& /*entity*/)
         {
         }
-        virtual void OnChoiceAvailable(const AZStd::vector<DialogueData>&)
+        /**
+         * Notifies of potential responses to the last OnDialogue notification.
+         * 
+         * \param availableResponses A container of choices that are available for selection. Can be empty.
+         */
+        virtual void OnChoiceAvailable([[maybe_unused]] const AZStd::vector<DialogueData>& availableResponses)
         {
         }
         virtual void OnChoiceSelected()
         {
         }
+        // Notifies that a dialogue was sent (e.g. spoken). This is usually the time to display the associated
+        // text on screen, play the associated audio, etc.
         virtual void OnDialogue(const DialogueData&)
         {
         }

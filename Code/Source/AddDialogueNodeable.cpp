@@ -13,6 +13,7 @@ namespace Conversation
 
         newDialogueData.SetSpeaker(speaker);
         newDialogueData.SetActorText(text);
+        newDialogueData.SetAudioTrigger(m_audioTrigger);
 
         DialogueComponentRequestBus::Event(
             GetEntityId(), &DialogueComponentRequestBus::Events::AddDialogue, newDialogueData, parentDialogueId);
