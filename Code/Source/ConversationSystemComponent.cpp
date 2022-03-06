@@ -198,7 +198,7 @@ namespace Conversation
 
         AZ_Warning(
             "ConversationSystemComponent", !availableDialogues.empty(), "No starting dialogues are available. Cannot start conversation.");
-        if (availableDialogues.empty())
+            if (availableDialogues.empty())
         {
             m_currentConversationStatus = ConversationStatus::Inactive;
             return;
@@ -221,6 +221,7 @@ namespace Conversation
         }
 
         m_currentConversationData->CurrentlyActiveDialogue = outcome.GetValue();
+        m_currentConversationData->AvailableResponses = GetAvailableDialogues(outcome.GetValue().GetResponseIds());
         m_currentConversationStatus = ConversationStatus::Active;
 
         ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnConversationStarted, entityId);
@@ -292,7 +293,7 @@ namespace Conversation
     {
     }
 
-    AZStd::vector<DialogueData> ConversationSystemComponent::GetAvailableDialogues(const AZStd::vector<DialogueId>& responseIds)
+    AZStd::vector<DialogueData> ConversationSystemComponent::GetAvailableDialogues(const AZStd::set<DialogueId>& responseIds)
     {
         AZStd::vector<DialogueData> availableDialogues;
 
@@ -305,7 +306,18 @@ namespace Conversation
             bool isAvailableResult = true;
             AvailabilityNotificationBus::EventResult(
                 isAvailableResult, responseId, &AvailabilityNotificationBus::Events::OnAvailabilityCheck);
+            // The AZ::Outcome lets us know if a dialogue was found with the id we give.
+            AZ::Outcome<DialogueData> dialogueDataOutcome =
+                isAvailableResult ? m_currentConversationAsset->GetDialogueById(responseId) : AZ::Failure();
+
+            if (!dialogueDataOutcome.IsSuccess())
+            {
+                continue;
+            }
+
+            availableDialogues.push_back(dialogueDataOutcome.GetValue());
         }
+
         return AZStd::move(availableDialogues);
     }
 

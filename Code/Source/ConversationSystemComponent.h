@@ -64,8 +64,8 @@ namespace Conversation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
 
-        private:
-        AZStd::vector<DialogueData> GetAvailableDialogues(const AZStd::vector<DialogueId>& responseIds);
+    private:
+        AZStd::vector<DialogueData> GetAvailableDialogues(const AZStd::set<DialogueId>& responseIds);
 
     private:
         AZStd::unique_ptr<ConversationAssetHandler> m_conversationAssetHandler;

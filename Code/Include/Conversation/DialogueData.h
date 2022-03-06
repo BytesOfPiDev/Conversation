@@ -181,13 +181,7 @@ namespace Conversation
             return m_dialogues.size();
         }
 
-        DialogueId GetStartingIdAtIndex(size_t startingIdIndex)
-        {
-            AZ_Assert(startingIdIndex < m_startingIds.size(), "The provided index of the starting id to retrieve is out of range.");
-            return startingIdIndex < m_startingIds.size() ? m_startingIds[startingIdIndex] : DialogueId::CreateNull();
-        }
-
-        const AZStd::vector<DialogueId>& GetStartingIds() const
+        const AZStd::set<DialogueId>& GetStartingIds() const
         {
             return m_startingIds;
         }
@@ -204,17 +198,8 @@ namespace Conversation
     private:
         /**
          * The IDs of any dialogues that can be used to begin a conversation.
-         *
-         * I use an AZStd::vector instead of AZStd::set because I anticipate needing
-         * to potentially change their order. Perhaps a priority. I may also want to
-         * access them by index. Though, a set would prevent having to check for
-         * duplicates in code that adds elements to this container.
-         *
-         * I also want to try and hide the implementation details, so making it so
-         * clients can access by index would be helpful in achieving that. Especially
-         * if I want to expose some functionality to the behavior context.
          */
-        AZStd::vector<DialogueId> m_startingIds;
+        AZStd::set<DialogueId> m_startingIds;
         /**
          * A map that associates each dialogue with their IDs.
          *

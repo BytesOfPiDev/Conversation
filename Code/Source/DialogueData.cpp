@@ -143,7 +143,7 @@ namespace Conversation
             return;
         }
 
-        m_startingIds.push_back(newStartingId);
+        m_startingIds.insert(newStartingId);
     }
 
     void ConversationAsset::AddDialogue(const DialogueData& newDialogueData)
