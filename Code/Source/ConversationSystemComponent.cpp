@@ -192,25 +192,13 @@ namespace Conversation
 
         DialogueComponentRequestBus::EventResult(
             m_currentConversationAsset, entityId, &DialogueComponentRequestBus::Events::GetConversationData);
+        
+        // Check each starting id and store the ones available for selection.
+        AZStd::vector<DialogueData> availableDialogues = GetAvailableDialogues(m_currentConversationAsset->GetStartingIds());
 
-        AZStd::unordered_set<DialogueId> availableIds;
-
-        // Check each starting id and store the available ones.
-        for (DialogueId startingId : m_currentConversationAsset->GetStartingIds())
-        {
-            // Dialogues are available by default. The only time one will not be available is if an
-            // availability check was setup somewhere, which does some logic that returns true or false.
-            // Remember, the following variable is only modified if the EBus call is successful.
-            bool resultDialogueIsAvailable = true;
-            AvailabilityNotificationBus::EventResult(
-                resultDialogueIsAvailable, startingId, &AvailabilityNotificationBus::Events::OnAvailabilityCheck);
-
-            availableIds.insert(startingId);
-        }
-
-        AZ_Warning("ConversationSystemComponent", !availableIds.empty(), "No starting IDs were available. Cannot start conversation.");
-
-        if (availableIds.empty())
+        AZ_Warning(
+            "ConversationSystemComponent", !availableDialogues.empty(), "No starting dialogues are available. Cannot start conversation.");
+        if (availableDialogues.empty())
         {
             m_currentConversationStatus = ConversationStatus::Inactive;
             return;
@@ -218,7 +206,7 @@ namespace Conversation
 
         // For now, we're going to choose the first one.
         // Later, we may use some logic to decide which to use when multiple are available.
-        const DialogueId chosenDialogueId = *availableIds.begin();
+        const DialogueId chosenDialogueId = availableDialogues[0].GetId();
 
         // Try to retrieve the dialogue using the id. Should never fail, but potentially could.
         const auto outcome = m_currentConversationAsset->GetDialogueById(chosenDialogueId);
@@ -302,6 +290,23 @@ namespace Conversation
 
     void ConversationSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+    }
+
+    AZStd::vector<DialogueData> ConversationSystemComponent::GetAvailableDialogues(const AZStd::vector<DialogueId>& responseIds)
+    {
+        AZStd::vector<DialogueData> availableDialogues;
+
+        for (const DialogueId& responseId : responseIds)
+        {
+            // Dialogues are available by default. The only time one will not be available is if an
+            // availability check was setup somewhere, which does some logic that returns true or false.
+            // Remember, the following variable is only modified if the EBus call is successful, so it
+            // stays true unless something listening to the signal modifies it.
+            bool isAvailableResult = true;
+            AvailabilityNotificationBus::EventResult(
+                isAvailableResult, responseId, &AvailabilityNotificationBus::Events::OnAvailabilityCheck);
+        }
+        return AZStd::move(availableDialogues);
     }
 
 } // namespace Conversation
