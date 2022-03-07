@@ -48,7 +48,12 @@ namespace Conversation
         void AbortConversation() override;
         void EndConversation() override;
         void StartConversation(const AZ::EntityId entityId) override;
+        void SelectResponseByNumber(const size_t choiceNumber) override;
         void SelectResponseById(const DialogueId&) override;
+        AZ::EntityId GetConversationOwner() const override
+        {
+            return m_currentConversationData ? m_currentConversationData->OwningEntity : AZ::EntityId();
+        }
 
         ////////////////////////////////////////////////////////////////////////
 
@@ -63,6 +68,9 @@ namespace Conversation
         // AZTickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
+
+        protected:
+        void SelectResponse(const DialogueData& responseDialogueData);
 
     private:
         AZStd::vector<DialogueData> GetAvailableDialogues(const AZStd::set<DialogueId>& responseIds);

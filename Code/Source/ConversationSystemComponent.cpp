@@ -227,8 +227,37 @@ namespace Conversation
         ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnConversationStarted, entityId);
         ConversationNotificationBus::Broadcast(
             &ConversationNotificationBus::Events::OnDialogue, m_currentConversationData->CurrentlyActiveDialogue);
+        DialogueScriptRequestBus::Event(
+            m_currentConversationData->CurrentlyActiveDialogue.GetId(), &DialogueScriptRequestBus::Events::RunDialogueScript);
         ConversationNotificationBus::Broadcast(
             &ConversationNotificationBus::Events::OnChoiceAvailable, m_currentConversationData->AvailableResponses);
+    }
+
+    void ConversationSystemComponent::SelectResponseByNumber(const size_t choiceNumber)
+    {
+        if (m_currentConversationStatus != ConversationStatus::Active)
+        {
+            return;
+        }
+
+        AZ_Assert(m_currentConversationData, "No active conversation data is available.");
+
+        /**
+         * The choiceNumber starts at 1, meaning the user wants to pick choice number one.
+         * This is for readability when writing or scripting code to select a choice on screen.
+         *
+         * The code after this will minus one to keep it in line with C++ indexes. For now,
+         * we need to make sure choiceNumber is in a range of acceptable values; 1 <=> container size.
+         */
+        if (choiceNumber < 1 || choiceNumber > m_currentConversationData->AvailableResponses.size())
+        {
+            return;
+        }
+
+        // We minus one to line up with C++ indexes.
+        const size_t choiceIndex = choiceNumber - 1;
+
+        SelectResponse(m_currentConversationData->AvailableResponses[choiceNumber - 1]);
     }
 
     void ConversationSystemComponent::SelectResponseById(const DialogueId& dialogueId)
@@ -242,7 +271,7 @@ namespace Conversation
             return;
         }
 
-        ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnDialogue, selectedDialogueOutcome.GetValue());
+        SelectResponse(selectedDialogueOutcome.GetValue());
     }
 
     void ConversationSystemComponent::Init()
@@ -293,6 +322,17 @@ namespace Conversation
 
     void ConversationSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+    }
+
+    void ConversationSystemComponent::SelectResponse(const DialogueData& responseDialogueData)
+    {
+        AZ_Assert(responseDialogueData.IsValid(), "Attempting to select an invalid dialogue data as a response.");
+        if (!responseDialogueData.IsValid())
+        {
+            return;
+        }
+
+        ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnDialogue, responseDialogueData);
     }
 
     AZStd::vector<DialogueData> ConversationSystemComponent::GetAvailableDialogues(const AZStd::set<DialogueId>& responseIds)

@@ -35,21 +35,22 @@ namespace Conversation
         {
         }
 
-        virtual void SelectResponseByNumber(const AZ::u8)
+        virtual void SelectResponseByNumber([[maybe_unused]] const size_t choiceNumber)
         {
         }
         virtual void SelectResponseById(const DialogueId&)
         {
         }
-
+        /**
+         * Returns the entity id used to start a conversaion, if one is active.
+         * 
+         * Remember to check for validity if you're unsure there is an active conversation.
+         * 
+         * \return A valid AZ::EntityId if a conversation is active. Invalid otherwise.
+         */
         virtual AZ::EntityId GetConversationOwner() const
         {
             return AZ::EntityId();
-        }
-
-        virtual bool IsSpeakerThePlayer(const DialogueData& dialogueData)
-        {
-            return dialogueData.GetSpeaker() == SPEAKERTAG_PLAYER;
         }
     };
 

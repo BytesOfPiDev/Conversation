@@ -57,6 +57,19 @@ namespace Conversation
 
     void DialogueComponent::Deactivate()
     {
+        // We get the AZ::EntityId of a currently conversation (if there is one).
+        // We need this to later check if it matches our component's AZ::EntityId
+        // so we can end the conversation.
+        AZ::EntityId activeConversationOwnerResult;
+        ConversationRequestBus::BroadcastResult(activeConversationOwnerResult, &ConversationRequestBus::Events::GetConversationOwner);
+
+        // If it matches, then not only is there an active conversation, its one that was
+        // started using our data. Since we're deactivating, we abort the conversation.
+        if (activeConversationOwnerResult == GetEntityId())
+        {
+            ConversationRequestBus::Broadcast(&ConversationRequestBus::Events::AbortConversation);
+        }
+
         DialogueComponentRequestBus::Handler::BusDisconnect(GetEntityId());
         ConversationNotificationBus::Handler::BusDisconnect();
     }
@@ -100,7 +113,6 @@ namespace Conversation
             // A valid parent ID means this dialogue is a response to that dialogue, so
             // we add this ID as a response to the parent ID.
             m_conversationAsset->AddResponseId(parentDialogueId, dialogueDataToAdd.GetId());
-            //m_dialogues[parentDialogueId].AddResponseId(dialogueIdToAdd);
         }
 
         // Add the dialogue to the container of dialogues.
