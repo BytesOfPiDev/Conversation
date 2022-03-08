@@ -69,8 +69,9 @@ namespace Conversation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
 
-        protected:
+    protected:
         void SelectResponse(const DialogueData& responseDialogueData);
+        void SendDialogue(const DialogueData& dialogueToSend);
 
     private:
         AZStd::vector<DialogueData> GetAvailableDialogues(const AZStd::set<DialogueId>& responseIds);

@@ -220,17 +220,8 @@ namespace Conversation
             return;
         }
 
-        m_currentConversationData->CurrentlyActiveDialogue = outcome.GetValue();
-        m_currentConversationData->AvailableResponses = GetAvailableDialogues(outcome.GetValue().GetResponseIds());
         m_currentConversationStatus = ConversationStatus::Active;
-
-        ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnConversationStarted, entityId);
-        ConversationNotificationBus::Broadcast(
-            &ConversationNotificationBus::Events::OnDialogue, m_currentConversationData->CurrentlyActiveDialogue);
-        DialogueScriptRequestBus::Event(
-            m_currentConversationData->CurrentlyActiveDialogue.GetId(), &DialogueScriptRequestBus::Events::RunDialogueScript);
-        ConversationNotificationBus::Broadcast(
-            &ConversationNotificationBus::Events::OnChoiceAvailable, m_currentConversationData->AvailableResponses);
+        SendDialogue(outcome.GetValue());
     }
 
     void ConversationSystemComponent::SelectResponseByNumber(const size_t choiceNumber)
@@ -332,7 +323,19 @@ namespace Conversation
             return;
         }
 
-        ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnDialogue, responseDialogueData);
+        SendDialogue(responseDialogueData);
+    }
+
+    void ConversationSystemComponent::SendDialogue(const DialogueData& dialogueToSend)
+    {
+        m_currentConversationData->CurrentlyActiveDialogue = dialogueToSend;
+        m_currentConversationData->AvailableResponses = GetAvailableDialogues(dialogueToSend.GetResponseIds());
+
+        ConversationNotificationBus::Broadcast(&ConversationNotificationBus::Events::OnDialogue, dialogueToSend);
+        DialogueScriptRequestBus::Event(dialogueToSend.GetId(), &DialogueScriptRequestBus::Events::RunDialogueScript);
+        // @todo Delay sending choices.
+        ConversationNotificationBus::Broadcast(
+            &ConversationNotificationBus::Events::OnChoiceAvailable, m_currentConversationData->AvailableResponses);
     }
 
     AZStd::vector<DialogueData> ConversationSystemComponent::GetAvailableDialogues(const AZStd::set<DialogueId>& responseIds)
