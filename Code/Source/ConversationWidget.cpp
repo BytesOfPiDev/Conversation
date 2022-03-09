@@ -13,7 +13,7 @@ namespace Conversation
     {
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-        QLabel* introLabel = new QLabel(QObject::tr("Put your cunt stuff here!"), this);
+        QLabel* introLabel = new QLabel(QObject::tr("Put your cool stuff here!"), this);
         mainLayout->addWidget(introLabel, 0, Qt::AlignCenter);
 
         QString helpText = QString(
