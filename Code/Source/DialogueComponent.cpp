@@ -16,7 +16,7 @@ namespace Conversation
 
     void DialogueComponent::Reflect(AZ::ReflectContext* context)
     {
-        constexpr static const char* DIALOGUE_SYSTEM_CATEGORY = "Dialogue System";
+        [[maybe_unused]] constexpr static const char* DIALOGUE_SYSTEM_CATEGORY = "Dialogue System";
         constexpr static const char* DIALOGUE_COMPONENT_CATEGORY = "Dialogue System/DialogueComponent";
 
         auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

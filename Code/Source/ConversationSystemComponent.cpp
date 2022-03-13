@@ -248,7 +248,7 @@ namespace Conversation
         // We minus one to line up with C++ indexes.
         const size_t choiceIndex = choiceNumber - 1;
 
-        SelectResponse(m_currentConversationData->AvailableResponses[choiceNumber - 1]);
+        SelectResponse(m_currentConversationData->AvailableResponses[choiceIndex - 1]);
     }
 
     void ConversationSystemComponent::SelectResponseById(const DialogueId& dialogueId)
@@ -301,7 +301,6 @@ namespace Conversation
     {
         AbortConversation();
 
-        const AZ::Data::AssetType conversationAssetTypeId = ConversationAsset::TYPEINFO_Uuid();
         if (!AZ::Data::AssetManager::Instance().IsReady() && m_conversationAssetHandler)
         {
             m_conversationAssetHandler->Unregister();

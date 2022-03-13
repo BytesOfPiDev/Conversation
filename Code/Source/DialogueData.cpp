@@ -44,10 +44,9 @@ namespace Conversation
                 ->Attribute(AZ::Script::Attributes::Module, "dialogue_system")
                 ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
                 ->Constructor()
-                ->Constructor<const DialogueId, const AZStd::string, const AZStd::string, const AZStd::set<DialogueId>&>()
                 ->Property("Text", BehaviorValueProperty(&DialogueData::m_actorText))
                 ->Property("ID", BehaviorValueProperty(&DialogueData::m_id))
-                ->Method("AddResponseId", &DialogueData::AddResponseId, { "Response Id" })
+                ->Method("AddResponseId", &DialogueData::AddResponseId, "Response Id" )
                 ->Method("GetResponseIds", &DialogueData::GetResponseIds)
                 ->Property("Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
                 ->Property("AudioTrigger", BehaviorValueProperty(&DialogueData::m_audioTrigger));
@@ -76,8 +75,6 @@ namespace Conversation
             m_id = DialogueId::CreateRandom();
         }
     }
-
-#pragma region ConversationAsset
 
     void ConversationAsset::Reflect(AZ::ReflectContext* context)
     {
@@ -147,5 +144,5 @@ namespace Conversation
         return m_dialogues.contains(dialogueId) ? AZ::Success(m_dialogues[dialogueId]) : AZ::Outcome<DialogueData>(AZ::Failure());
     }
 
-#pragma endregion
 } // namespace Conversation
+
