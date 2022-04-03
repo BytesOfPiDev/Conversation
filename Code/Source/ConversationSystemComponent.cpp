@@ -248,7 +248,7 @@ namespace Conversation
         // We minus one to line up with C++ indexes.
         const size_t choiceIndex = choiceNumber - 1;
 
-        SelectResponse(m_currentConversationData->AvailableResponses[choiceIndex - 1]);
+        SelectResponse(m_currentConversationData->AvailableResponses[choiceIndex]);
     }
 
     void ConversationSystemComponent::SelectResponseById(const DialogueId& dialogueId)
