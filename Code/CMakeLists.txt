@@ -120,7 +120,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME Conversation.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
-                conversation_files.cmake
                 conversation_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
