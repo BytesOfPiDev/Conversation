@@ -35,6 +35,8 @@ ly_add_target(
             Gem::ScriptCanvas
         PRIVATE
     AUTOGEN_RULES
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
 )
 
 # Here add Conversation target, it depends on the Conversation.Static

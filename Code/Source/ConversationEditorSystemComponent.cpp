@@ -6,6 +6,7 @@
 #include <ConversationWidget.h>
 #include <ConversationEditorSystemComponent.h>
 
+#include <DialogueLibrary.h>
 namespace Conversation
 {
     void ConversationEditorSystemComponent::Reflect(AZ::ReflectContext* context)

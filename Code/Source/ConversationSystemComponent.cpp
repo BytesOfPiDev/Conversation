@@ -9,6 +9,7 @@
 #include <Conversation/ConversationBus.h>
 #include <Conversation/DialogueComponent.h>
 #include <Conversation/DialogueScript.h>
+#include <DialogueLibrary.h>
 
 namespace Conversation
 {
@@ -77,6 +78,7 @@ namespace Conversation
     {
         DialogueData::Reflect(context);
         ConversationAsset::Reflect(context);
+        DialogueLibrary::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -265,6 +267,13 @@ namespace Conversation
 
     void ConversationSystemComponent::Init()
     {
+        AZ::EnvironmentVariable<ScriptCanvas::NodeRegistry> nodeRegistryVariable =
+            AZ::Environment::FindVariable<ScriptCanvas::NodeRegistry>(ScriptCanvas::s_nodeRegistryName);
+        if (nodeRegistryVariable)
+        {
+            ScriptCanvas::NodeRegistry& nodeRegistry = nodeRegistryVariable.Get();
+            Conversation::DialogueLibrary::InitNodeRegistry(nodeRegistry);
+        }
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
