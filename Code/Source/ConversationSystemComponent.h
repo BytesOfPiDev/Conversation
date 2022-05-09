@@ -4,6 +4,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <Conversation/ConversationBus.h>
+#include <Conversation/ConversationAsset.h>
 
 namespace Conversation
 {
@@ -81,6 +82,7 @@ namespace Conversation
         ConversationStatus m_currentConversationStatus;
         AZ::Data::Asset<ConversationAsset> m_currentConversationAsset;
         AZStd::unique_ptr<ActiveConversationData> m_currentConversationData;
+        AZStd::unique_ptr<ConversationAssetHandler> m_dialogueAssetHandler;
     };
 
 } // namespace Conversation

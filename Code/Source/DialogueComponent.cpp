@@ -31,7 +31,12 @@ namespace Conversation
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &DialogueComponent::m_owner, "Owner", "The actor that this dialogue applies to.");
+
+                editContext->Class<AZStd::vector<AZ::Crc32>>("Crc Vector", "")->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true);
             }
+
+            serializeContext->RegisterGenericType<AZStd::vector<AZ::Crc32>>();
+            serializeContext->Class<AZStd::vector<AZ::Crc32>>()->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true);
         }
 
         auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
@@ -40,7 +45,8 @@ namespace Conversation
             behaviorContext->EBus<DialogueComponentRequestBus>("DialogueComponentRequests")
                 ->Attribute(AZ::Script::Attributes::Category, DIALOGUE_COMPONENT_CATEGORY)
                 ->Event("Add Dialogue", &DialogueComponentRequestBus::Events::AddDialogue, { { { "Dialogue Data", "" } } })
-                ->Event("ClearData", &DialogueComponentRequestBus::Events::ClearData);
+                ->Event("ClearData", &DialogueComponentRequestBus::Events::ClearData)
+                ->Event("GetConversationAsset", &DialogueComponentRequestBus::Events::GetConversationData);
         }
     }
 

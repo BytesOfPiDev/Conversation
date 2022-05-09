@@ -5,7 +5,10 @@
 namespace Conversation
 {
     AZ::Uuid DialogueNodeable::AddDialogue(
-        [[maybe_unused]] AZ::Uuid parentDialogueId, [[maybe_unused]] AZStd::string speaker, [[maybe_unused]] AZStd::string text)
+        const AZ::Uuid parentDialogueId,
+        const ScriptCanvas::Data::StringType speaker,
+        const ScriptCanvas::Data::StringType text,
+        const ScriptCanvas::Data::EntityIDType dialogueComponentEntityId)
     {
         // Generates a random id when true is passed to the constructor.
         DialogueData newDialogueData = DialogueData(true);
@@ -16,7 +19,7 @@ namespace Conversation
         newDialogueData.SetAudioTrigger(m_audioTrigger);
 
         DialogueComponentRequestBus::Event(
-            GetEntityId(), &DialogueComponentRequestBus::Events::AddDialogue, newDialogueData, parentDialogueId);
+            dialogueComponentEntityId, &DialogueComponentRequestBus::Events::AddDialogue, newDialogueData, parentDialogueId);
 
         DialogueScriptRequestBus::Handler::BusConnect(newDialogueData.GetId());
         return newDialogueData.GetId();

@@ -70,6 +70,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         AUTOMOC
         AUTORCC
+        AUTOUIC
         FILES_CMAKE
             conversation_editor_files.cmake
         INCLUDE_DIRECTORIES

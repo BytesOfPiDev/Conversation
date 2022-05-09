@@ -5,15 +5,25 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <QWidget>
+
 #endif
+
+namespace Ui
+{
+    class DialogueEditorWidget;
+}
 
 namespace Conversation
 {
-    class ConversationWidget
-        : public QWidget
+
+
+    class ConversationWidget : public QWidget
     {
         Q_OBJECT
     public:
         explicit ConversationWidget(QWidget* parent = nullptr);
+
+    private:
+        AZStd::unique_ptr<Ui::DialogueEditorWidget> m_editorWidgetUi;
     };
-} 
+} // namespace Conversation

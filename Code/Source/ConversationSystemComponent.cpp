@@ -10,6 +10,7 @@
 #include <Conversation/DialogueComponent.h>
 #include <Conversation/DialogueScript.h>
 #include <DialogueLibrary.h>
+#include <Conversation/ConversationAsset.h>
 
 namespace Conversation
 {
@@ -118,6 +119,8 @@ namespace Conversation
                 ->Attribute(AZ::Script::Attributes::Category, "Dialogue System")
                 ->Handler<BehaviorConversationNotificationBusHandler>();
         }
+
+        AvailabilityRequests::Reflect(context);
     }
 
     void ConversationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -139,6 +142,7 @@ namespace Conversation
     }
 
     ConversationSystemComponent::ConversationSystemComponent()
+        : m_currentConversationStatus(ConversationStatus::Inactive)
     {
         if (ConversationInterface::Get() == nullptr)
         {
@@ -274,6 +278,7 @@ namespace Conversation
             ScriptCanvas::NodeRegistry& nodeRegistry = nodeRegistryVariable.Get();
             Conversation::DialogueLibrary::InitNodeRegistry(nodeRegistry);
         }
+
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 

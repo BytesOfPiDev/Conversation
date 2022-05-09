@@ -7,6 +7,8 @@
 
 namespace Conversation
 {
+    class ConversationAsset;
+
     class DialogueComponentRequests : public AZ::ComponentBus
     {
     public:
@@ -26,6 +28,7 @@ namespace Conversation
         {
             return {};
         }
+
     };
 
     using DialogueComponentRequestBus = AZ::EBus<DialogueComponentRequests>;

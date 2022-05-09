@@ -16,11 +16,17 @@
 			<Parameter Name="ParentDialogueId" Type="AZ::Uuid" />
 			<Parameter Name="Speaker" Type="AZStd::string" Description="The speaker id of the actor saying the text."/>
 			<Parameter Name="Text" Type="AZStd::string" Description="The text the actor will say."/>
+			<Parameter Name="Owner" Type="AZ::EntityId" Description="The entity whose DialogueComponent to add this to."/>
 			<Return Name="DialogueId" Type="AZ::Uuid" />
 		</Input>/>
 		
 		<Output Name="On Dialogue" Description="Signal for when a dialogue has been selected (sent out, spoken)."/>
-		
+		<Property Name="m_parentEntity" Type="AZ::EntityId" DefaultValue="AZ::EntityId()" Serialize="true">
+			<PropertyData Name="Comments"
+						  Description=""
+						  Serialize="true"
+						  UIHandler="Default"/>
+		</Property>
 		<Property Name="m_comments" Type="AZStd::string" DefaultValue="AZStd::string()" Serialize="true">
 			<PropertyData Name="Comments"
 						  Description=""

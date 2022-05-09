@@ -1,6 +1,6 @@
 #include <Conversation/DialogueComponentBus.h>
 
-namespace Dialogue
+namespace Conversation
 {
 
 }

@@ -46,7 +46,7 @@ namespace Conversation
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        void AddDialogue(const DialogueData /*dialogueDataToAdd*/, const DialogueId& = DialogueId::CreateNull()) override;
+        void AddDialogue(const DialogueData /*dialogueDataToAdd*/, const DialogueId& parentDialogueId = DialogueId::CreateNull()) override;
         
         void ClearData() override
         {
