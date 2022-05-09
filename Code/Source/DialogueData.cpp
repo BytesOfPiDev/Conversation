@@ -21,6 +21,9 @@ namespace Conversation
             serializeContext->RegisterGenericType<DialogueDataPtr>();
             serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<DialogueId, DialogueData>>();
+            serializeContext->RegisterGenericType<AZStd::vector<AZ::Crc32>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueId>>();
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -43,6 +46,10 @@ namespace Conversation
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "dialogue_system")
                 ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
+                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::LessThan)
+                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::LessEqualThan)
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventReturnType, true)
                 ->Constructor()
                 ->Property("Text", BehaviorValueProperty(&DialogueData::m_actorText))
                 ->Property("ID", BehaviorValueProperty(&DialogueData::m_id))
@@ -50,6 +57,10 @@ namespace Conversation
                 ->Method("GetResponseIds", &DialogueData::GetResponseIds)
                 ->Property("Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
                 ->Property("AudioTrigger", BehaviorValueProperty(&DialogueData::m_audioTrigger));
+
+            behaviorContext->Class<AZStd::vector<AZ::Crc32>>("Crc Vector")
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventReturnType, true);
         }
     }
 
@@ -59,10 +70,11 @@ namespace Conversation
         , m_speaker("")
         , m_responseIds()
     {
+
     }
 
     DialogueData::DialogueData(
-        const DialogueId id, const AZStd::string actorText, const AZStd::string speaker, const AZStd::set<DialogueId>& responses)
+        const DialogueId id, const AZStd::string actorText, const AZStd::string speaker, const DialogueIdUnorderedSetContainer& responses)
         : m_id(id)
         , m_actorText(actorText)
         , m_speaker(speaker)
@@ -76,72 +88,9 @@ namespace Conversation
         }
     }
 
-    void ConversationAsset::Reflect(AZ::ReflectContext* context)
+    DialogueData::DialogueData(const DialogueId id)
+        : m_id(id)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<ConversationAsset, AZ::Data::AssetData>()
-                ->Version(0)
-                ->Field("StartingIds", &ConversationAsset::m_startingIds)
-                ->Field("Dialogues", &ConversationAsset::m_dialogues);
-
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-            {
-                editContext
-                    ->Class<ConversationAsset>(
-                        "Conversation Data", "Stores all the dialogue and other information needed to start a conversation.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "");
-            }
-        }
-    }
-
-    void ConversationAsset::AddStartingId(const DialogueId& newStartingId)
-    {
-        // No null Ids are allowed.
-        if (newStartingId.IsNull())
-        {
-            return;
-        }
-
-        // Check if it's already in the container.
-        auto iterFoundStartingId = AZStd::find_if(
-            m_startingIds.begin(), m_startingIds.end(),
-            [&newStartingId](const DialogueId& existingId)
-            {
-                return existingId.GetHash() == newStartingId.GetHash();
-            });
-
-        if (iterFoundStartingId != m_startingIds.end())
-        {
-            return;
-        }
-
-        m_startingIds.insert(newStartingId);
-    }
-
-    void ConversationAsset::AddDialogue(const DialogueData& newDialogueData)
-    {
-        if (!newDialogueData.IsValid() || m_dialogues.contains(newDialogueData.GetId()))
-        {
-            return;
-        }
-
-        m_dialogues[newDialogueData.GetId()] = newDialogueData;
-    }
-
-    void ConversationAsset::AddResponseId(const DialogueId& parentDialogueId, const DialogueId& responseDialogueId)
-    {
-        if (!m_dialogues.contains(parentDialogueId))
-        {
-            return;
-        }
-
-        m_dialogues[parentDialogueId].AddResponseId(responseDialogueId);
-    }
-
-    AZ::Outcome<DialogueData> ConversationAsset::GetDialogueById(const DialogueId& dialogueId)
-    {
-        return m_dialogues.contains(dialogueId) ? AZ::Success(m_dialogues[dialogueId]) : AZ::Outcome<DialogueData>(AZ::Failure());
     }
 
 } // namespace Conversation

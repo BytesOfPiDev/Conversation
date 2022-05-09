@@ -26,7 +26,6 @@ namespace Conversation
         : public AZ::Component
         , public AZ::EntityBus::Handler
         , public DialogueComponentRequestBus::Handler
-        , public ConversationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(DialogueComponent, "{C7AFDF51-ECCC-4BD3-8A56-0763ED87CB5B}");
@@ -46,20 +45,44 @@ namespace Conversation
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        void AddDialogue(const DialogueData /*dialogueDataToAdd*/, const DialogueId& = DialogueId::CreateNull()) override;
-        
-        void ClearData() override
+        DialogueIdUnorderedSetContainer GetStartingIds() const override
         {
-            m_conversationAsset.Reset();
+            return m_startingIds;
         }
 
-        AZ::Data::Asset<ConversationAsset> GetConversationData() const override
+        DialogueDataUnorderedSetContainer GetDialogues() const override
         {
-            return m_conversationAsset;
+            return m_dialogues;
+        }
+
+        DialogueData FindDialogue(const DialogueId& dialogueId) const override
+        {
+            auto foundIter = m_dialogues.find(dialogueId);
+            // We return a default createed object if we didn't find one with the given ID.
+            // It's up to the caller to check that the ID is non-null to confirm that a
+            // valid DialogueData was found.
+            // @todo Implement either an overload or another function that shows failure, such
+            // as a function that returns AZ::Outcome
+            return foundIter != m_dialogues.end() ? *foundIter : DialogueData();
         }
 
     private:
-        AZ::EntityId m_owner;
-        AZ::Data::Asset<ConversationAsset> m_conversationAsset;
+        ConversationAssetContainer m_conversationAssets;
+        AZ::Data::Asset<ConversationAsset> m_memoryConversationAsset;
+        AZStd::unordered_set<DialogueId> m_startingIds;
+        AZStd::unordered_set<DialogueData> m_dialogues;
+        /**
+         * An entity's speaker tag.
+         * 
+         * Each entity that is part of a conversation should have a speaker tag. This helps
+         * associate an entity with a DialogueData that has this value as its speaker. 
+         * 
+         * \note Currently, this is not considered, nor should it be, the same as a character's
+         * ID. The reason is that this speaker tag is added and removed during activation/deactivate.
+         * We don't want a character's ID being removed accidentally. Character ID's are not yet
+         * implemented, so this will be looked at down the line.
+         */
+        AZStd::string m_speakerTag;
     };
+
 } // namespace Conversation

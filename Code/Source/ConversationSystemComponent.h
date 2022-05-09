@@ -4,7 +4,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <Conversation/ConversationBus.h>
-
+#include <Conversation/ConversationAsset.h>
 namespace Conversation
 {
     enum class ConversationStatus
@@ -14,13 +14,6 @@ namespace Conversation
         Active,
         Aborting,
         Ending
-    };
-
-    struct ActiveConversationData
-    {
-        AZ::EntityId OwningEntity;
-        DialogueData CurrentlyActiveDialogue;
-        AZStd::vector<DialogueData> AvailableResponses;
     };
 
     class ConversationSystemComponent
@@ -45,16 +38,6 @@ namespace Conversation
         ////////////////////////////////////////////////////////////////////////
         // ConversationRequestBus interface implementation
 
-        void AbortConversation() override;
-        void EndConversation() override;
-        void StartConversation(const AZ::EntityId entityId) override;
-        void SelectResponseByNumber(const size_t choiceNumber) override;
-        void SelectResponseById(const DialogueId&) override;
-        AZ::EntityId GetConversationOwner() const override
-        {
-            return m_currentConversationData ? m_currentConversationData->OwningEntity : AZ::EntityId();
-        }
-
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -69,18 +52,8 @@ namespace Conversation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
 
-    protected:
-        void SelectResponse(const DialogueData& responseDialogueData);
-        void SendDialogue(const DialogueData& dialogueToSend);
-
-    private:
-        AZStd::vector<DialogueData> GetAvailableDialogues(const AZStd::set<DialogueId>& responseIds);
-
     private:
         AZStd::unique_ptr<ConversationAssetHandler> m_conversationAssetHandler;
-        ConversationStatus m_currentConversationStatus;
-        AZ::Data::Asset<ConversationAsset> m_currentConversationAsset;
-        AZStd::unique_ptr<ActiveConversationData> m_currentConversationData;
     };
 
 } // namespace Conversation

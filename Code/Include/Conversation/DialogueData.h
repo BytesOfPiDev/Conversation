@@ -18,6 +18,7 @@ namespace AZ
 namespace Conversation
 {
     using DialogueId = AZ::Uuid;
+    using DialogueIdUnorderedSetContainer = AZStd::unordered_set<DialogueId>;
     using AvailabilityId = AZStd::string;
     enum class DialogueActorType : int
     {
@@ -44,11 +45,57 @@ namespace Conversation
 
         DialogueData(bool generateRandomId = false);
         DialogueData(
-            const DialogueId id,
-            const AZStd::string actorText,
-            const AZStd::string speaker,
-            const AZStd::set<DialogueId>& responses);
+            const DialogueId id, const AZStd::string actorText, const AZStd::string speaker, const DialogueIdUnorderedSetContainer& responses);
+        /**
+         * Create a piece of dialogue with the given ID.
+         *
+         * This can be useful when you want to write the data at a later time
+         * It is also useful for comparing against another DialogueData, as two
+         * DialogueData's are considered the same if their ID's match.
+         *
+         * \param id
+         */
+        DialogueData(const DialogueId id);
         ~DialogueData() = default;
+
+        bool operator==(const DialogueData& other) const
+        {
+            return m_id == other.m_id;
+        }
+
+        /**
+         * Determine if this dialogue's ID is equal to the given dialogue ID.
+         *
+         * This is useful for keeping DialogueId's instead of entire DialogueData objects
+         * and then subsequently using the ID to find a matching DialogueData.
+         *
+         * \param dialogueId The DialogueId to compare against.
+         * \return Whether the DialogueId of this DialogueData matches the DialogueId given.
+         */
+        bool operator==(const DialogueId& dialogueId) const
+        {
+            return m_id == dialogueId;
+        }
+
+        bool operator<(const DialogueData& other) const
+        {
+            return m_id < other.m_id;
+        }
+
+        bool operator>(const DialogueData& other) const
+        {
+            return m_id > other.m_id;
+        }
+
+        bool operator<=(const DialogueData& other) const
+        {
+            return !(m_id > other.m_id);
+        }
+
+        bool operator>=(const DialogueData& other) const
+        {
+            return !(m_id < other.m_id);
+        }
 
         bool IsValid() const
         {
@@ -68,7 +115,7 @@ namespace Conversation
         {
             return m_speaker;
         }
-        const AZStd::set<DialogueId>& GetResponseIds() const
+        const DialogueIdUnorderedSetContainer& GetResponseIds() const
         {
             return m_responseIds;
         }
@@ -132,65 +179,25 @@ namespace Conversation
         DialogueId m_id;
         AZStd::string m_actorText = "";
         AZStd::string m_speaker;
-        AZStd::set<DialogueId> m_responseIds;
+        DialogueIdUnorderedSetContainer m_responseIds;
         AZStd::string m_audioTrigger;
         AZStd::string m_comment;
         float m_entryDelay = 5;
     };
 
     using DialogueDataPtr = AZStd::shared_ptr<DialogueData>;
-
-    class ConversationAsset : public AZ::Data::AssetData
-    {
-    public:
-        AZ_RTTI(ConversationAsset, "{C2B4E407-B74E-4E48-8B8A-ADD5BCC894D1}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(ConversationAsset, AZ::SystemAllocator, 0);
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        ConversationAsset() = default;
-        ~ConversationAsset() override = default;
-
-        size_t CountStartingIds() const
-        {
-            return m_startingIds.size();
-        }
-
-        size_t CountDialogues() const
-        {
-            return m_dialogues.size();
-        }
-
-        const AZStd::set<DialogueId>& GetStartingIds() const
-        {
-            return m_startingIds;
-        }
-
-        void AddStartingId(const DialogueId& newStartingId);
-        void AddDialogue(const DialogueData& newDialogueData);
-        void AddResponseId(const DialogueId& parentDialogueId, const DialogueId& responseDialogueId);
-        AZ::Outcome<DialogueData> GetDialogueById(const DialogueId& dialogueId);
-        bool CheckDialogueExists(const DialogueId& dialogueId)
-        {
-            return m_dialogues.contains(dialogueId);
-        }
-
-    private:
-        /**
-         * The IDs of any dialogues that can be used to begin a conversation.
-         */
-        AZStd::set<DialogueId> m_startingIds;
-        /**
-         * A map that associates each dialogue with their IDs.
-         *
-         * I am using a map for now, but I feel there's a better option.
-         * The DialogueId is already stored inside the map - maybe I can
-         * use operator overloading so dialogues can be compared for
-         * equality solely based on their IDs, then I could use a set.
-         */
-        AZStd::unordered_map<DialogueId, DialogueData> m_dialogues;
-    };
-
-    using ConversationAssetHandler = AzFramework::GenericAssetHandler<ConversationAsset>;
+    using DialogueDataUnorderedSetContainer = AZStd::unordered_set<DialogueData>;
 
 } // namespace Conversation
+
+namespace AZStd
+{
+    template<>
+    struct hash<Conversation::DialogueData>
+    {
+        size_t operator()(const Conversation::DialogueData& obj) const
+        {
+            return obj.GetId().GetHash();
+        }
+    };
+} // namespace AZStd

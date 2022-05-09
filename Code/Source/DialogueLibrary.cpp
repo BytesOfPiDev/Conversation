@@ -2,8 +2,10 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Conversation/DialogueNodes.h>
 
-#include "AddDialogueNodeable.h"
+#include <AddDialogueNodeable.h>
+#include <DialogueNodes.h>
 
 namespace Conversation
 {
@@ -15,19 +17,29 @@ namespace Conversation
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<DialogueLibrary>("Dialogue", "")
+                editContext->Class<DialogueLibrary>("ConversationLibrary", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/Math.png");
             }
+        }
 
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            SCRIPT_CANVAS_GENERICS_TO_VM(Nodes::Registrar, DialogueLibrary, behaviorContext, Nodes::k_categoryName);
         }
     }
     void DialogueLibrary::InitNodeRegistry(ScriptCanvas::NodeRegistry& nodeRegistry)
     {
         ScriptCanvas::Library::AddNodeToRegistry<DialogueLibrary, Nodes::DialogueNodeableNode>(nodeRegistry);
+
+        Nodes::Registrar::AddToRegistry<DialogueLibrary>(nodeRegistry);
     }
     AZStd::vector<AZ::ComponentDescriptor*> DialogueLibrary::GetComponentDescriptors()
     {
-        return AZStd::vector<AZ::ComponentDescriptor*>({ Nodes::DialogueNodeableNode::CreateDescriptor() });
+        auto descriptors = AZStd::vector<AZ::ComponentDescriptor*>();
+        descriptors.push_back(Nodes::DialogueNodeableNode::CreateDescriptor());
+
+        Nodes::Registrar::AddDescriptors(descriptors);
+        return descriptors;
     }
 } // namespace Conversation

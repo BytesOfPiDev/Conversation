@@ -1,6 +1,6 @@
 
 set(FILES
-    Include/Conversation/AvailabilityBus.h
+    Include/Conversation/ConversationAsset.h
     Include/Conversation/ConversationBus.h
     Include/Conversation/DialogueComponent.h
     Include/Conversation/DialogueComponentBus.h
@@ -9,6 +9,7 @@ set(FILES
     Source/AddDialogueNodeable.h
     Source/AddDialogueNodeable.cpp
     Source/AddDialogueNodeable.ScriptCanvasNodeable.xml
+    Source/ConversationAsset.cpp
     Source/ConversationModuleInterface.h
     Source/ConversationSystemComponent.cpp
     Source/ConversationSystemComponent.h
@@ -17,4 +18,6 @@ set(FILES
     Source/DialogueData.cpp
     Source/DialogueLibrary.h
     Source/DialogueLibrary.cpp
+    Source/DialogueNodes.h
+    Source/DialogueNodes.cpp
 )

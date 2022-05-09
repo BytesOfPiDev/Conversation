@@ -1,6 +1,7 @@
 
 #include <ConversationModuleInterface.h>
 #include <ConversationEditorSystemComponent.h>
+#include <Builder/ConversationAssetBuilderComponent.h>
 
 void InitConversationResources()
 {
@@ -25,8 +26,8 @@ namespace Conversation
             // Add ALL components descriptors associated with this gem to m_descriptors.
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
-            m_descriptors.insert(m_descriptors.end(), {
-                ConversationEditorSystemComponent::CreateDescriptor(),
+            m_descriptors.insert(m_descriptors.end(), { ConversationEditorSystemComponent::CreateDescriptor(),
+                  ConversationAssetBuilder::DialogueAssetBuilderComponent::CreateDescriptor()
             });
         }
 
