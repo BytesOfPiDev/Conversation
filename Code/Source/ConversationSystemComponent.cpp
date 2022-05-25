@@ -63,7 +63,6 @@ namespace Conversation
                 ->Attribute(AZ::Script::Attributes::Category, "Dialogue System");
         }
 
-        AvailabilityRequests::Reflect(context);
     }
 
     void ConversationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -85,7 +84,6 @@ namespace Conversation
     }
 
     ConversationSystemComponent::ConversationSystemComponent()
-        : m_currentConversationStatus(ConversationStatus::Inactive)
     {
         if (ConversationInterface::Get() == nullptr)
         {
