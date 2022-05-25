@@ -22,6 +22,9 @@ namespace Conversation
             serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<DialogueId, DialogueData>>();
             serializeContext->RegisterGenericType<AZStd::vector<AZ::Crc32>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueId>>();
+
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<DialogueData>("Dialogue Data", "Data describing a dialogue option.")
@@ -71,7 +74,7 @@ namespace Conversation
     }
 
     DialogueData::DialogueData(
-        const DialogueId id, const AZStd::string actorText, const AZStd::string speaker, const AZStd::set<DialogueId>& responses)
+        const DialogueId id, const AZStd::string actorText, const AZStd::string speaker, const DialogueIdUnorderedSetContainer& responses)
         : m_id(id)
         , m_actorText(actorText)
         , m_speaker(speaker)
@@ -83,6 +86,11 @@ namespace Conversation
             AZ_Printf("DialogueData", "A null ID was passed in. Creating random ID: %s.", m_id.ToString<AZStd::string>().c_str());
             m_id = DialogueId::CreateRandom();
         }
+    }
+
+    DialogueData::DialogueData(const DialogueId id)
+        : m_id(id)
+    {
     }
 
 } // namespace Conversation

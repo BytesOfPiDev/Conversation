@@ -34,6 +34,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::ScriptCanvas
         PRIVATE
+            Gem::LmbrCentral
     AUTOGEN_RULES
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
@@ -81,7 +82,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
+                AZ::AssetBuilderSDK
                 Gem::Conversation.Static
+                Gem::GraphModel.Editor.Static   
+                Gem::GraphCanvasWidgets
     )
 
     ly_add_target(

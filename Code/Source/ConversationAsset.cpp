@@ -18,7 +18,7 @@ namespace Conversation
             {
                 editContext
                     ->Class<ConversationAsset>(
-                        "Conversation Asset", "Stores dialogue and other information needed to start a conversation.")
+                        "ConversationAsset", "Stores dialogue and other information needed to start a conversation.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "");
             }
         }
@@ -60,22 +60,25 @@ namespace Conversation
             return;
         }
 
-        m_dialogues[newDialogueData.GetId()] = newDialogueData;
+        m_dialogues.insert(newDialogueData);
     }
 
     void ConversationAsset::AddResponseId(const DialogueId& parentDialogueId, const DialogueId& responseDialogueId)
     {
-        if (!m_dialogues.contains(parentDialogueId))
+        auto iter = m_dialogues.find(parentDialogueId);
+
+        if (iter == m_dialogues.end())
         {
             return;
         }
 
-        m_dialogues[parentDialogueId].AddResponseId(responseDialogueId);
+        iter->AddResponseId(responseDialogueId);
     }
 
     AZ::Outcome<DialogueData> ConversationAsset::GetDialogueById(const DialogueId& dialogueId)
     {
-        return m_dialogues.contains(dialogueId) ? AZ::Success(m_dialogues[dialogueId]) : AZ::Outcome<DialogueData>(AZ::Failure());
+        auto iter = m_dialogues.find(dialogueId);
+        return iter != m_dialogues.end() ? AZ::Success(*iter) : AZ::Outcome<DialogueData>(AZ::Failure());
     }
 
 } // namespace Conversation

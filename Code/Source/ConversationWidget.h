@@ -10,7 +10,7 @@
 
 namespace Ui
 {
-    class DialogueEditorWidget;
+    class ConversationEditorWidget;
 }
 
 namespace Conversation
@@ -24,6 +24,6 @@ namespace Conversation
         explicit ConversationWidget(QWidget* parent = nullptr);
 
     private:
-        AZStd::unique_ptr<Ui::DialogueEditorWidget> m_editorWidgetUi;
+        AZStd::unique_ptr<Ui::ConversationEditorWidget> m_editorWidgetUi;
     };
 } // namespace Conversation

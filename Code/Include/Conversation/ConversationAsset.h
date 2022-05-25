@@ -6,8 +6,8 @@
 
 namespace Conversation
 {
-	/** A string representing a specific script. */
-	using DialogueScriptId = AZStd::string;
+    /** A string representing a specific script. */
+    using DialogueScriptId = AZStd::string;
 
     class ConversationAsset : public AZ::Data::AssetData
     {
@@ -16,6 +16,13 @@ namespace Conversation
         AZ_CLASS_ALLOCATOR(ConversationAsset, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* context);
+
+        using Pointer = AZ::Data::Asset<ConversationAsset>;
+        static constexpr const char* PRODUCT_EXTENSION_PATTERN = "*.conversation";
+        static constexpr const char* SOURCE_EXTENSION_PATTERN = "*.conversationdoc";
+
+        static constexpr const char* PRODUCT_EXTENSION = "conversation";
+        static constexpr const char* SOURCE_EXTENSION = "conversationdoc";
 
         ConversationAsset() = default;
         ~ConversationAsset() override = default;
@@ -30,9 +37,14 @@ namespace Conversation
             return m_dialogues.size();
         }
 
-        const AZStd::set<DialogueId>& GetStartingIds() const
+        const DialogueIdUnorderedSetContainer& GetStartingIds() const
         {
             return m_startingIds;
+        }
+
+        const DialogueDataUnorderedSetContainer& GetDialogues() const
+        {
+            return m_dialogues;
         }
 
         void AddStartingId(const DialogueId& newStartingId);
@@ -44,20 +56,17 @@ namespace Conversation
             return m_dialogues.contains(dialogueId);
         }
 
+        void AddResponseToDialogue(const DialogueId&, const DialogueId&)
+        {
+            // Temporary function. Will switch to AddResponseId or nename.
+        }
+
     private:
         /**
          * The IDs of any dialogues that can be used to begin a conversation.
          */
-        AZStd::set<DialogueId> m_startingIds;
-        /**
-         * A map that associates each dialogue with their IDs.
-         *
-         * I am using a map for now, but I feel there's a better option.
-         * The DialogueId is already stored inside the map - maybe I can
-         * use operator overloading so dialogues can be compared for
-         * equality solely based on their IDs, then I could use a set.
-         */
-        AZStd::unordered_map<DialogueId, DialogueData> m_dialogues;
+        DialogueIdUnorderedSetContainer m_startingIds;
+        DialogueDataUnorderedSetContainer m_dialogues;
     };
 
     using ConversationAssetHandler = AzFramework::GenericAssetHandler<ConversationAsset>;

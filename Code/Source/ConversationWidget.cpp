@@ -5,14 +5,14 @@
 #include <QVBoxLayout>
 
 #include <ConversationWidget.h>
-#include <ConversationEditor/ui_DialogueEditorWidget.h>
+#include <ConversationEditor/ui_ConversationEditorWidget.h>
 
 namespace Conversation
 {
     ConversationWidget::ConversationWidget(QWidget* parent)
         : QWidget(parent)
     {
-        m_editorWidgetUi = AZStd::make_unique<Ui::DialogueEditorWidget>();
+        m_editorWidgetUi = AZStd::make_unique<Ui::ConversationEditorWidget>();
         m_editorWidgetUi->setupUi(this);
 
     }

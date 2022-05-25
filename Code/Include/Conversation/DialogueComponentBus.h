@@ -3,11 +3,13 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <Conversation/DialogueData.h>
+#include <Conversation/ConversationAsset.h>
 
 namespace Conversation
 {
     class ConversationAsset;
+
+    using ConversationAssetContainer = AZStd::vector<AZ::Data::Asset<ConversationAsset>>;
 
     class DialogueComponentRequests : public AZ::ComponentBus
     {
@@ -15,20 +17,36 @@ namespace Conversation
         ~DialogueComponentRequests() override = default;
 
     public: // Requests
-        virtual void AddDialogue(const DialogueData /*dialogueDataToAdd*/, const DialogueId& /*parentDialogueId*/)
-        {
 
+        virtual AZStd::unordered_set<DialogueId> GetStartingIds() const
+        {
+            return AZStd::unordered_set<DialogueId>();
         }
 
-        virtual void ClearData()
+        virtual AZStd::unordered_set<DialogueData> GetDialogues() const
         {
+            return AZStd::unordered_set<DialogueData>();
         }
 
-        virtual AZ::Data::Asset<ConversationAsset> GetConversationData() const
+        virtual DialogueData FindDialogue(const DialogueId& /*dialogueId*/) const
+        {
+            return DialogueData();
+        }
+
+        virtual bool CheckIfDialogueIdExists(const DialogueId& /*dialogueId*/) const
+        {
+            return false;
+        }
+
+        virtual const ConversationAssetContainer GetConversationAssets() const
+        {
+            return AZStd::move(ConversationAssetContainer());
+        }
+
+        virtual AZStd::string GetSpeakerTag() const
         {
             return {};
         }
-
     };
 
     using DialogueComponentRequestBus = AZ::EBus<DialogueComponentRequests>;
