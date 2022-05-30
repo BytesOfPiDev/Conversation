@@ -56,6 +56,7 @@ namespace Conversation
          * \param id
          */
         DialogueData(const DialogueId id);
+        DialogueData(const DialogueData&) = default;
         ~DialogueData() = default;
 
         bool operator==(const DialogueData& other) const

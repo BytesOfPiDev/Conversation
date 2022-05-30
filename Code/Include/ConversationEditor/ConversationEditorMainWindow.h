@@ -75,10 +75,16 @@ namespace ConversationEditor
         void OnFileOpenTriggered();
         void OnFileSaveTriggered();
 
+        private:
+        Conversation::DialogueDataPtr GetActiveNodeDialoguePointer() const;
+        
+
     private:
         ConversationAssetEditorWindowConfig* m_config;
         GraphModel::GraphContextPtr m_graphContext;
         GraphCanvas::GraphId m_lastActiveGraphId;
+
+        Conversation::DialogueDataPtr m_activeDialogueDataPointer;
 
         AzQtComponents::StyledDockWidget* m_rightDockWidget;
         AzQtComponents::StyledDockWidget* m_bottomDockWidget;

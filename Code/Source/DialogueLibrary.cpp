@@ -4,7 +4,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Conversation/DialogueNodes.h>
 
-#include <AddDialogueNodeable.h>
+
 #include <DialogueNodes.h>
 
 namespace Conversation
@@ -30,14 +30,12 @@ namespace Conversation
     }
     void DialogueLibrary::InitNodeRegistry(ScriptCanvas::NodeRegistry& nodeRegistry)
     {
-        ScriptCanvas::Library::AddNodeToRegistry<DialogueLibrary, Nodes::DialogueNodeableNode>(nodeRegistry);
 
         Nodes::Registrar::AddToRegistry<DialogueLibrary>(nodeRegistry);
     }
     AZStd::vector<AZ::ComponentDescriptor*> DialogueLibrary::GetComponentDescriptors()
     {
         auto descriptors = AZStd::vector<AZ::ComponentDescriptor*>();
-        descriptors.push_back(Nodes::DialogueNodeableNode::CreateDescriptor());
 
         Nodes::Registrar::AddDescriptors(descriptors);
         return descriptors;

@@ -49,11 +49,11 @@ namespace Conversation
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStatus::Aborting)>("ConversationStatus_Aborting");
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStatus::Active)>("ConversationStatus_Active");
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStatus::Ending)>("ConversationStatus_Ending");
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStatus::Inactive)>("ConversationStatus_Inactive");
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStatus::Starting)>("ConversationStatus_Starting");
+            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Aborting)>("ConversationStatus_Aborting");
+            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Active)>("ConversationStatus_Active");
+            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Ending)>("ConversationStatus_Ending");
+            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Inactive)>("ConversationStatus_Inactive");
+            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Starting)>("ConversationStatus_Starting");
 
             const AZ::BehaviorParameterOverrides startConversationEntityIdParam = {
                 "EntityId", "The Id of an entity that contains a conversation component that will be used to start the conversation."
@@ -89,6 +89,10 @@ namespace Conversation
         {
             ConversationInterface::Register(this);
         }
+
+        auto test = aznew DialogueComponent();
+        delete test;
+        test = nullptr;
     }
 
     ConversationSystemComponent::~ConversationSystemComponent()

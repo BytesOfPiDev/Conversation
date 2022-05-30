@@ -6,11 +6,52 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Entity/GameEntityContextBus.h>
 #include <Conversation/ConversationAsset.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 
 namespace Conversation
 {
+    class BehaviorDialogueComponentNotificationBusHandler
+        : public DialogueComponentNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER_WITH_DOC(
+            BehaviorDialogueComponentNotificationBusHandler,
+            "{D9A79838-589F-4BE3-9D87-7CFE187A52D3}",
+            AZ::SystemAllocator,
+            OnDialogue,
+            ({ "Dialogue", "The dialogue being that was selected/spoken." },
+             { "AvailableResponses", "A container of dialogues you can choose as a response." }),
+            OnConversationStarted,
+            ({ "Initiator", "The entity that started this conversation; typically the player or the NPC that spoke to another NPC." }),
+            OnConversationAborted,
+            (),
+            OnConversationEnded,
+            ());
+
+        void OnDialogue(const DialogueData& dialogue, const AZStd::vector<DialogueData>& availableResponses)
+        {
+            Call(FN_OnDialogue, dialogue, availableResponses);
+        }
+
+        void OnConversationStarted(const AZ::EntityId initiatingEntityId) override
+        {
+            Call(FN_OnConversationStarted, initiatingEntityId);
+        }
+
+        void OnConversationEnded() override
+        {
+            Call(FN_OnConversationEnded);
+        }
+
+        void OnConversationAborted() override
+        {
+            Call(FN_OnConversationAborted);
+        }
+    };
+
     DialogueComponent::~DialogueComponent()
     {
     }
@@ -55,11 +96,15 @@ namespace Conversation
         auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
         if (behaviorContext)
         {
-            behaviorContext->EBus<DialogueComponentRequestBus>("DialogueComponentRequests")
+            behaviorContext->EBus<DialogueComponentRequestBus>("DialogueComponentRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, DIALOGUE_COMPONENT_CATEGORY)
                 ->Event("FindDialogueById", &DialogueComponentRequestBus::Events::FindDialogue)
                 ->Event("GetDialogues", &DialogueComponentRequestBus::Events::GetDialogues)
                 ->Event("GetStartingIds", &DialogueComponentRequestBus::Events::GetStartingIds);
+
+            behaviorContext->EBus<DialogueComponentNotificationBus>("DialogueComponentNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, DIALOGUE_COMPONENT_CATEGORY)
+                ->Handler<BehaviorDialogueComponentNotificationBusHandler>();
         }
     }
 
@@ -120,6 +165,56 @@ namespace Conversation
     void DialogueComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         AZ_UNUSED(dependent);
+    }
+
+    void DialogueComponent::TryToStartConversation(const AZ::EntityId& initiatingEntityId)
+    {
+        AZStd::string initiatingEntityName = {};
+        AzFramework::GameEntityContextRequestBus::BroadcastResult(
+            initiatingEntityName, &AzFramework::GameEntityContextRequestBus::Events::GetEntityName, initiatingEntityId);
+
+        AZ_Printf("DialogueComponent", "Trying to start a conversation on Entity: %s.\n", initiatingEntityName.c_str());
+
+        AZ_Warning(
+            "DialogueComponent", m_currentState != ConversationStates::Inactive,
+            "An attempt was made to start a conversation on Entity: %s, but we're not in an 'Inactive' state.",
+            initiatingEntityName.c_str());
+
+        if (m_currentState != ConversationStates::Inactive || m_startingIds.empty() || m_dialogues.empty())
+        {
+            return;
+        }
+
+        m_currentState = ConversationStates::Starting;
+
+        // Until we have proper dialogue availability checking implemented, we pick the first ID.
+        // It is safe to access the first starting id iter because we checked for a non-empty
+        // container earlier.
+        auto startingDialogueIter = m_dialogues.find(*m_startingIds.begin());
+
+        if (startingDialogueIter == m_dialogues.end())
+        {
+            m_currentState = ConversationStates::Inactive;
+            return;
+        }
+
+        m_activeDialogue = AZStd::make_unique<DialogueData>(*startingDialogueIter);
+        m_currentState = ConversationStates::Active;
+
+        // We just copy the responses for now; availability checks aren't implemented yet.
+        AZStd::vector<DialogueData> availableResponses(
+            m_activeDialogue->GetResponseIds().begin(), m_activeDialogue->GetResponseIds().end());
+
+        DialogueComponentNotificationBus::Event(
+            GetEntityId(), &DialogueComponentNotificationBus::Events::OnDialogue, *m_activeDialogue, availableResponses);
+    }
+
+    void DialogueComponent::AbortConversation()
+    {
+    }
+
+    void DialogueComponent::EndConversation()
+    {
     }
 
 } // namespace Conversation

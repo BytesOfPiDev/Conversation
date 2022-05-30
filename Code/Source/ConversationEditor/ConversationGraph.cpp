@@ -202,7 +202,9 @@ namespace ConversationEditor
 
 					auto responseDialogueDataPtr = responseActorDialogueDataSlot->GetValue<Conversation::DialogueDataPtr>();
 					dialogueData.AddResponseId(responseDialogueDataPtr->GetId());
-					AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Response ID Added: %s.\n", responseDialogueDataPtr->GetId().ToString<AZStd::string>().c_str());
+                                        AZ_TracePrintf(
+                                            AssetBuilderSDK::InfoWindow, "Response ID Added: %s. Text: %s.\n",
+                                            responseDialogueDataPtr->GetId().ToString<AZStd::string>().c_str(), responseDialogueDataPtr->GetActorText().c_str());
 				}
 			}
 		}

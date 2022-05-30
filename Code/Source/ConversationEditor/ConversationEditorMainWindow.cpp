@@ -155,36 +155,7 @@ namespace ConversationEditor
     void ConversationEditorMainWindow::OnSelectionChanged()
     {
         GraphCanvas::AssetEditorMainWindow::OnSelectionChanged();
-
-        // Find the node that is currently selected, if any.
-        GraphModel::NodePtrList result;
-        GraphModelIntegration::GraphControllerRequestBus::EventResult(
-            result, this->GetActiveGraphCanvasGraphId(), &GraphModelIntegration::GraphControllerRequestBus::Events::GetSelectedNodes);
-
-        // If no node is selected, we send the appropriate signals to all parts of the UI
-        // can update as necessary. Typically this means disabling all widgets that allow
-        // manipulation of a DialogueData object/node.
-        if (result.empty())
-        {
-            emit nodeSelectionChanged(nullptr);
-            return;
-        }
-
-        AZ_Assert(
-            result.front()->RTTI_IsTypeOf(AZ::AzTypeInfo<GraphModel::Slot>::Uuid()),
-            "Result is not a slot. Happens in o3de branches without PR#5206 merged.");
-
-        const GraphModel::SlotPtr dialogueDataSlotPtr = result.front()->GetSlot(CommonSlotNames::DIALOGUEDATA);
-        if (!dialogueDataSlotPtr)
-        {
-            emit nodeSelectionChanged(nullptr);
-            return;
-        }
-
-        const auto dialogueDataPtr = dialogueDataSlotPtr->GetValue<Conversation::DialogueDataPtr>();
-        AZ_Assert(dialogueDataPtr != nullptr, "DialogueData retrieved from slot is null.");
-
-        emit nodeSelectionChanged(dialogueDataPtr);
+        emit nodeSelectionChanged(GetActiveNodeDialoguePointer());
     }
 
     void ConversationEditorMainWindow::OnNodeSelectionChanged(const Conversation::DialogueDataPtr dialogueDataPtr)
@@ -192,10 +163,11 @@ namespace ConversationEditor
         // Reset UI widgets that depend on an active node. I disable each
         // widget and then reset them to avoid sending unnecessary signals.
         m_actorTextEdit->setEnabled(false);
-        m_actorTextEdit->clear();
+        //m_actorTextEdit->clear();
 
         if (!dialogueDataPtr)
         {
+            m_actorTextEdit->clear();
             return;
         }
 
@@ -206,6 +178,11 @@ namespace ConversationEditor
 
     void ConversationEditorMainWindow::OnActorTextChanged()
     {
+        const Conversation::DialogueDataPtr dialogueDataPtr = GetActiveNodeDialoguePointer();
+        if (dialogueDataPtr)
+        {
+            dialogueDataPtr->SetActorText(m_actorTextEdit->toPlainText().toStdString().c_str());
+        }
     }
 
     void ConversationEditorMainWindow::OnFileOpenTriggered()
@@ -270,6 +247,21 @@ namespace ConversationEditor
 
         dialoguedoc.m_graphPtr = graph;
         AZ::Utils::SaveObjectToFile<ConversationDocument>(fileName.toStdString().c_str(), AZ::DataStream::ST_JSON, &dialoguedoc);
+    }
+
+    Conversation::DialogueDataPtr ConversationEditorMainWindow::GetActiveNodeDialoguePointer() const
+    {
+        // Find the node that is currently selected, if any.
+        GraphModel::NodePtrList result;
+        GraphModelIntegration::GraphControllerRequestBus::EventResult(
+            result, this->GetActiveGraphCanvasGraphId(), &GraphModelIntegration::GraphControllerRequestBus::Events::GetSelectedNodes);
+
+        // We're only interested in the first node right now, but it is possible the user has multiple nodes selected.
+        // \todo At some point, we need to handle multiple selection scenarios to make sure the right nodes are read
+        // and edited.
+        const GraphModel::SlotPtr dialogueDataSlotPtr = result.empty() ? nullptr : result.front()->GetSlot(CommonSlotNames::DIALOGUEDATA);
+
+        return dialogueDataSlotPtr ? dialogueDataSlotPtr->GetValue<Conversation::DialogueDataPtr>() : nullptr;
     }
 
     ConversationAssetEditorWindowConfig::ConversationAssetEditorWindowConfig()

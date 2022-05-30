@@ -8,6 +8,15 @@
 
 namespace Conversation
 {
+    enum class ConversationStates
+    {
+        Inactive,
+        Starting,
+        Active,
+        Aborting,
+        Ending
+    };
+
     /**
      * Represents a conversation.
      *
@@ -58,13 +67,18 @@ namespace Conversation
         DialogueData FindDialogue(const DialogueId& dialogueId) const override
         {
             auto foundIter = m_dialogues.find(dialogueId);
-            // We return a default createed object if we didn't find one with the given ID.
+            // We return a default created object if we didn't find one with the given ID.
             // It's up to the caller to check that the ID is non-null to confirm that a
             // valid DialogueData was found.
             // @todo Implement either an overload or another function that shows failure, such
             // as a function that returns AZ::Outcome
             return foundIter != m_dialogues.end() ? *foundIter : DialogueData();
         }
+
+        void TryToStartConversation(const AZ::EntityId& initiatingEntityId) override;
+        void AbortConversation() override;
+        void EndConversation() override;
+
 
     private:
         ConversationAssetContainer m_conversationAssets;
@@ -83,6 +97,8 @@ namespace Conversation
          * implemented, so this will be looked at down the line.
          */
         AZStd::string m_speakerTag;
+        ConversationStates m_currentState;
+        AZStd::unique_ptr<DialogueData> m_activeDialogue;
     };
 
 } // namespace Conversation

@@ -7,15 +7,6 @@
 #include <Conversation/ConversationAsset.h>
 namespace Conversation
 {
-    enum class ConversationStatus
-    {
-        Inactive,
-        Starting,
-        Active,
-        Aborting,
-        Ending
-    };
-
     class ConversationSystemComponent
         : public AZ::Component
         , protected ConversationRequestBus::Handler

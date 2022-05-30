@@ -53,10 +53,9 @@ namespace Conversation
                 ->Constructor()
                 ->Property("Text", BehaviorValueProperty(&DialogueData::m_actorText))
                 ->Property("ID", BehaviorValueProperty(&DialogueData::m_id))
-                ->Method("AddResponseId", &DialogueData::AddResponseId, "Response Id" )
-                ->Method("GetResponseIds", &DialogueData::GetResponseIds)
                 ->Property("Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
-                ->Property("AudioTrigger", BehaviorValueProperty(&DialogueData::m_audioTrigger));
+                ->Property("AudioTrigger", BehaviorValueProperty(&DialogueData::m_audioTrigger))
+                ->Property("ResponseIds", &DialogueData::GetResponseIds, nullptr);
 
             behaviorContext->Class<AZStd::vector<AZ::Crc32>>("Crc Vector")
                 ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
@@ -65,12 +64,8 @@ namespace Conversation
     }
 
     DialogueData::DialogueData(bool generateRandomId)
-        : m_id(generateRandomId ? DialogueId::CreateRandom() : DialogueId::CreateNull())
-        , m_actorText("")
-        , m_speaker("")
-        , m_responseIds()
     {
-
+        m_id = generateRandomId ? DialogueId::CreateRandom() : DialogueId::CreateNull();
     }
 
     DialogueData::DialogueData(

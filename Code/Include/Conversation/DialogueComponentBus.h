@@ -17,7 +17,6 @@ namespace Conversation
         ~DialogueComponentRequests() override = default;
 
     public: // Requests
-
         virtual AZStd::unordered_set<DialogueId> GetStartingIds() const
         {
             return AZStd::unordered_set<DialogueId>();
@@ -47,8 +46,53 @@ namespace Conversation
         {
             return {};
         }
+
+        virtual void TryToStartConversation([[maybe_unused]] const AZ::EntityId& initiatingEntityId)
+        {
+        }
+
+        virtual void SelectDialogue([[maybe_unused]] const DialogueData& dialogueToSelect)
+        {
+        }
+
+        virtual void AbortConversation()
+        {
+        }
+
+        virtual void EndConversation()
+        {
+        }
+
+        virtual bool CheckAvailability([[maybe_unused]] const DialogueData& dialogueToCheck)
+        {
+            return false;
+        }
+
+        virtual bool CheckAvailability([[maybe_unused]] const DialogueId& dialogueIdToCheck)
+        {
+            return false;
+        }
+    };
+    using DialogueComponentRequestBus = AZ::EBus<DialogueComponentRequests>;
+
+    class DialogueComponentNotifications : public AZ::ComponentBus
+    {
+    public:
+        virtual void OnDialogue(
+            [[maybe_unused]] const DialogueData& dialogue, [[maybe_unused]] const AZStd::vector<DialogueData>& availableResponses)
+        {
+        }
+        virtual void OnConversationStarted([[maybe_unused]] const AZ::EntityId initiatingEntityId)
+        {
+        }
+        virtual void OnConversationAborted()
+        {
+        }
+        virtual void OnConversationEnded()
+        {
+        }
     };
 
-    using DialogueComponentRequestBus = AZ::EBus<DialogueComponentRequests>;
+    using DialogueComponentNotificationBus = AZ::EBus<DialogueComponentNotifications>;
 
 } // namespace Conversation
