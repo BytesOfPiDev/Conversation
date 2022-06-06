@@ -95,4 +95,25 @@ namespace Conversation
 
     using DialogueComponentNotificationBus = AZ::EBus<DialogueComponentNotifications>;
 
+    class GlobalConversationNotifications : public AZ::EBusTraits
+    {
+    public:
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        virtual void OnConversationStarted(AZ::EntityId /*initiator*/, AZ::EntityId /*target*/)
+        {
+        }
+
+        virtual void OnConversationAborted(AZ::EntityId /*target*/)
+        {
+        }
+
+        virtual void OnConversationEnded(AZ::EntityId /*target*/)
+        {
+        }
+    };
+
+    using GlobalConversationNotificationBus = AZ::EBus<GlobalConversationNotifications>;
+
 } // namespace Conversation

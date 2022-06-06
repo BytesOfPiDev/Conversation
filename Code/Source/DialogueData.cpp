@@ -21,7 +21,7 @@ namespace Conversation
             serializeContext->RegisterGenericType<DialogueDataPtr>();
             serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<DialogueId, DialogueData>>();
-            serializeContext->RegisterGenericType<AZStd::vector<AZ::Crc32>>();
+
             serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
             serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueId>>();
 
@@ -56,10 +56,6 @@ namespace Conversation
                 ->Property("Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
                 ->Property("AudioTrigger", BehaviorValueProperty(&DialogueData::m_audioTrigger))
                 ->Property("ResponseIds", &DialogueData::GetResponseIds, nullptr);
-
-            behaviorContext->Class<AZStd::vector<AZ::Crc32>>("Crc Vector")
-                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
-                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventReturnType, true);
         }
     }
 

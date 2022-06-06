@@ -52,6 +52,38 @@ namespace Conversation
         }
     };
 
+    class BehaviorGlobalConversationNotificationBusHandler
+        : public GlobalConversationNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER_WITH_DOC(
+            BehaviorGlobalConversationNotificationBusHandler,
+            "{BC042832-201F-4797-B97E-CC5165D60361}",
+            AZ::SystemAllocator,
+            OnConversationStarted,
+            ({ "Initiator", "The entity wanting to speak to the target." }, { "Target", "The entity being spoken to." }),
+            OnConversationAborted,
+            ({ "Target", "The entity the conversation abort was called on." }),
+            OnConversationEnded,
+            ({ "Target", "The entity whose conversation ended (has the dialogue component that was used.)" }));
+
+        void OnConversationStarted(AZ::EntityId initiator, AZ::EntityId target) override
+        {
+            Call(FN_OnConversationStarted, initiator, target);
+        }
+
+        virtual void OnConversationAborted(AZ::EntityId target)
+        {
+            Call(FN_OnConversationAborted, target);
+        }
+
+        virtual void OnConversationEnded(AZ::EntityId target)
+        {
+            Call(FN_OnConversationEnded, target);
+        }
+    };
+
     DialogueComponent::~DialogueComponent()
     {
     }
@@ -100,11 +132,16 @@ namespace Conversation
                 ->Attribute(AZ::Script::Attributes::Category, DIALOGUE_COMPONENT_CATEGORY)
                 ->Event("FindDialogueById", &DialogueComponentRequestBus::Events::FindDialogue)
                 ->Event("GetDialogues", &DialogueComponentRequestBus::Events::GetDialogues)
-                ->Event("GetStartingIds", &DialogueComponentRequestBus::Events::GetStartingIds);
+                ->Event("GetStartingIds", &DialogueComponentRequestBus::Events::GetStartingIds)
+                ->Event("TryToStartConversation", &DialogueComponentRequestBus::Events::TryToStartConversation);
 
             behaviorContext->EBus<DialogueComponentNotificationBus>("DialogueComponentNotificationBus")
                 ->Attribute(AZ::Script::Attributes::Category, DIALOGUE_COMPONENT_CATEGORY)
                 ->Handler<BehaviorDialogueComponentNotificationBusHandler>();
+
+            behaviorContext->EBus<GlobalConversationNotificationBus>("GlobalConversationNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Conversation")
+                ->Handler<BehaviorGlobalConversationNotificationBusHandler>();
         }
     }
 
@@ -140,6 +177,9 @@ namespace Conversation
 
     void DialogueComponent::Deactivate()
     {
+        // Just in case there's a conversation, we abort on deactivation.
+        AbortConversation();
+
         DialogueComponentRequestBus::Handler::BusDisconnect(GetEntityId());
 
         // We don't want anyone talking to us using our speaker tag in a deactivated state.
@@ -169,16 +209,12 @@ namespace Conversation
 
     void DialogueComponent::TryToStartConversation(const AZ::EntityId& initiatingEntityId)
     {
-        AZStd::string initiatingEntityName = {};
-        AzFramework::GameEntityContextRequestBus::BroadcastResult(
-            initiatingEntityName, &AzFramework::GameEntityContextRequestBus::Events::GetEntityName, initiatingEntityId);
-
-        AZ_Printf("DialogueComponent", "Trying to start a conversation on Entity: %s.\n", initiatingEntityName.c_str());
+        AZ_Printf("DialogueComponent", "Trying to start a conversation on Entity: %s.\n", this->GetNamedEntityId().GetName().data());
 
         AZ_Warning(
-            "DialogueComponent", m_currentState != ConversationStates::Inactive,
+            "DialogueComponent", m_currentState == ConversationStates::Inactive,
             "An attempt was made to start a conversation on Entity: %s, but we're not in an 'Inactive' state.",
-            initiatingEntityName.c_str());
+            this->GetNamedEntityId().GetName().data());
 
         if (m_currentState != ConversationStates::Inactive || m_startingIds.empty() || m_dialogues.empty())
         {
@@ -201,6 +237,11 @@ namespace Conversation
         m_activeDialogue = AZStd::make_unique<DialogueData>(*startingDialogueIter);
         m_currentState = ConversationStates::Active;
 
+        DialogueComponentNotificationBus::Event(
+            GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationStarted, initiatingEntityId);
+        GlobalConversationNotificationBus::Broadcast(
+            &GlobalConversationNotificationBus::Events::OnConversationStarted, initiatingEntityId, GetEntityId());
+
         // We just copy the responses for now; availability checks aren't implemented yet.
         AZStd::vector<DialogueData> availableResponses(
             m_activeDialogue->GetResponseIds().begin(), m_activeDialogue->GetResponseIds().end());
@@ -211,10 +252,37 @@ namespace Conversation
 
     void DialogueComponent::AbortConversation()
     {
+        m_currentState = ConversationStates::Aborting;
+        m_startingIds.clear();
+        m_dialogues.clear();
+        m_activeDialogue = nullptr;
+        m_currentState = ConversationStates::Inactive;
+        DialogueComponentNotificationBus::Event(GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationAborted);
     }
 
     void DialogueComponent::EndConversation()
     {
+        m_currentState = ConversationStates::Ending;
+        m_startingIds.clear();
+        m_dialogues.clear();
+        m_activeDialogue = nullptr;
+        m_currentState = ConversationStates::Inactive;
+        DialogueComponentNotificationBus::Event(GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationEnded);
+    }
+
+    void DialogueComponent::SelectDialogue(const DialogueData& dialogueToSelect)
+    {
+        if (!dialogueToSelect.IsValid())
+        {
+            return;
+        }
+
+        const auto& responses = m_activeDialogue->GetResponseIds();
+
+        // Availability checks aren't implemented yet, so we're just sending all the responses.
+        DialogueComponentNotificationBus::Event(
+            GetEntityId(), &DialogueComponentNotificationBus::Events::OnDialogue, *m_activeDialogue,
+            AZStd::vector<DialogueData>(responses.begin(), responses.end()));
     }
 
 } // namespace Conversation

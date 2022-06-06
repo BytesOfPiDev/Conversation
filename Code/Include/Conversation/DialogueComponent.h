@@ -79,6 +79,8 @@ namespace Conversation
         void AbortConversation() override;
         void EndConversation() override;
 
+        void SelectDialogue(const DialogueData& dialogueToSelect) override;
+
 
     private:
         ConversationAssetContainer m_conversationAssets;
@@ -97,7 +99,7 @@ namespace Conversation
          * implemented, so this will be looked at down the line.
          */
         AZStd::string m_speakerTag;
-        ConversationStates m_currentState;
+        ConversationStates m_currentState = ConversationStates::Inactive;
         AZStd::unique_ptr<DialogueData> m_activeDialogue;
     };
 
