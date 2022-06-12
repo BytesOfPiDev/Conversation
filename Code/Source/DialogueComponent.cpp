@@ -122,7 +122,6 @@ namespace Conversation
             }
 
             serializeContext->RegisterGenericType<AZStd::vector<AZ::Crc32>>();
-            serializeContext->Class<AZStd::vector<AZ::Crc32>>()->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true);
         }
 
         auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
