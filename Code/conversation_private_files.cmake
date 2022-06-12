@@ -8,8 +8,4 @@ set(FILES
     Source/DialogueComponent.cpp
     Source/DialogueComponentBus.cpp
     Source/DialogueData.cpp
-    Source/DialogueLibrary.h
-    Source/DialogueLibrary.cpp
-    Source/DialogueNodes.h
-    Source/DialogueNodes.cpp
 )

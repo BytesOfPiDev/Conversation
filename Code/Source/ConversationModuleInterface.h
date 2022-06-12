@@ -4,7 +4,6 @@
 #include <ConversationSystemComponent.h>
 
 #include <Conversation/DialogueComponent.h>
-#include <DialogueLibrary.h>
 
 namespace Conversation
 {
@@ -23,7 +22,7 @@ namespace Conversation
             m_descriptors.insert(
                 m_descriptors.end(), { ConversationSystemComponent::CreateDescriptor(), DialogueComponent::CreateDescriptor() });
 
-            AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(DialogueLibrary::GetComponentDescriptors());
+            AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors;
             m_descriptors.insert(m_descriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
         }
 
