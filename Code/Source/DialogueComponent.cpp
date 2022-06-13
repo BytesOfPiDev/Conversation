@@ -294,8 +294,7 @@ namespace Conversation
         }
 
         m_activeDialogue = AZStd::make_unique<DialogueData>(dialogueToSelect);
-
-        AZStd::vector<DialogueData> availableResponses;
+        m_availableResponses.clear();
         for (const DialogueId& responseId : m_activeDialogue->GetResponseIds())
         {
             const DialogueData responseDialogue = FindDialogue(responseId);
@@ -308,7 +307,7 @@ namespace Conversation
         }
 
         DialogueComponentNotificationBus::Event(
-            GetEntityId(), &DialogueComponentNotificationBus::Events::OnDialogue, *m_activeDialogue, AZStd::move(availableResponses));
+            GetEntityId(), &DialogueComponentNotificationBus::Events::OnDialogue, *m_activeDialogue, m_availableResponses);
     }
 
     void DialogueComponent::SelectDialogue(const DialogueId dialogueId)
