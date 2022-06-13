@@ -109,9 +109,9 @@ namespace ConversationEditor
         this->addDockWidget(Qt::BottomDockWidgetArea, m_bottomDockWidget);
 
         Ui::ConversationEditorWidget editorui;
-        QWidget* ConversationEditor = new QWidget;
-        editorui.setupUi(ConversationEditor);
-        m_bottomDockWidget->setWidget(ConversationEditor);
+        QWidget* conversationEditor = new QWidget;
+        editorui.setupUi(conversationEditor);
+        m_bottomDockWidget->setWidget(conversationEditor);
 
         m_actorTextEdit = editorui.dialogueEdit;
 
@@ -163,7 +163,6 @@ namespace ConversationEditor
         // Reset UI widgets that depend on an active node. I disable each
         // widget and then reset them to avoid sending unnecessary signals.
         m_actorTextEdit->setEnabled(false);
-        //m_actorTextEdit->clear();
 
         if (!dialogueDataPtr)
         {
