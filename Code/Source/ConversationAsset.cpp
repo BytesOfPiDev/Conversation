@@ -55,7 +55,7 @@ namespace Conversation
 
     void ConversationAsset::AddDialogue(const DialogueData& newDialogueData)
     {
-        if (!newDialogueData.IsValid() || m_dialogues.contains(newDialogueData.GetId()))
+        if (!newDialogueData.IsValid() || m_dialogues.contains(DialogueData(newDialogueData.GetId())))
         {
             return;
         }
@@ -65,7 +65,7 @@ namespace Conversation
 
     void ConversationAsset::AddResponseId(const DialogueId& parentDialogueId, const DialogueId& responseDialogueId)
     {
-        auto iter = m_dialogues.find(parentDialogueId);
+        auto iter = m_dialogues.find(DialogueData(parentDialogueId));
 
         if (iter == m_dialogues.end())
         {
@@ -77,7 +77,7 @@ namespace Conversation
 
     AZ::Outcome<DialogueData> ConversationAsset::GetDialogueById(const DialogueId& dialogueId)
     {
-        auto iter = m_dialogues.find(dialogueId);
+        auto iter = m_dialogues.find(DialogueData(dialogueId));
         return iter != m_dialogues.end() ? AZ::Success(*iter) : AZ::Outcome<DialogueData>(AZ::Failure());
     }
 

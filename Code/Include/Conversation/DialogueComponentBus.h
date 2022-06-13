@@ -27,7 +27,7 @@ namespace Conversation
             return AZStd::unordered_set<DialogueData>();
         }
 
-        virtual DialogueData FindDialogue(const DialogueId& /*dialogueId*/) const
+        virtual DialogueData FindDialogue([[maybe_unused]] const DialogueId& dialogueIdToFind) const
         {
             return DialogueData();
         }
@@ -51,7 +51,25 @@ namespace Conversation
         {
         }
 
+        /**
+         * Sends out the given DialogueData, making it the active dialogue.
+         *
+         * \param dialogueToSelect The desired dialogue.
+         * 
+         * \note There is nothing that enforces that this dialogue actually
+         * exist in the assets attached to this component. Potentially, this
+         * may allow injecting a dialogue if desired.
+         */
         virtual void SelectDialogue([[maybe_unused]] const DialogueData& dialogueToSelect)
+        {
+        }
+
+        /**
+        * Attempts to find and send out a DialogueData using its DialogueId.
+        * 
+        * Does nothing if it could not find one.
+        */
+        virtual void SelectDialogue([[maybe_unused]] const DialogueId dialogueIdToFindAndSelect)
         {
         }
 
@@ -72,14 +90,24 @@ namespace Conversation
         {
             return false;
         }
+
+        virtual void ContinueConversation()
+        {
+        }
     };
     using DialogueComponentRequestBus = AZ::EBus<DialogueComponentRequests>;
 
     class DialogueComponentNotifications : public AZ::ComponentBus
     {
     public:
+        /**
+        * Sent out when a dialogue is selected/spoken.
+        * 
+        * @param dialogue The dialogue that was sent out and is now active.
+        * @param potentialResponses (Pending removal) A list of responses that may be sent out. 
+        */
         virtual void OnDialogue(
-            [[maybe_unused]] const DialogueData& dialogue, [[maybe_unused]] const AZStd::vector<DialogueData>& availableResponses)
+            [[maybe_unused]] const DialogueData& dialogue, [[maybe_unused]] const AZStd::vector<DialogueData>& potentialResponses)
         {
         }
         virtual void OnConversationStarted([[maybe_unused]] const AZ::EntityId initiatingEntityId)
@@ -89,6 +117,17 @@ namespace Conversation
         {
         }
         virtual void OnConversationEnded()
+        {
+        }
+        /**
+        * A dialogue choice that can be selected.
+        * 
+        * This notification may be sent zero or multiple times after a dialogue has
+        * been sent out. 
+        * 
+        * @note A response can be for any entity in the game - both the player and NPCs.
+        */
+        virtual void OnResponseAvailable([[maybe_unused]]const DialogueData& availableDialogue)
         {
         }
     };
@@ -110,6 +149,10 @@ namespace Conversation
         }
 
         virtual void OnConversationEnded(AZ::EntityId /*target*/)
+        {
+        }
+
+        virtual void OnWaitingForResponse([[maybe_unused]] AZ::EntityId target)
         {
         }
     };

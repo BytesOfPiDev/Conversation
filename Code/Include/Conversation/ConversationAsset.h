@@ -53,7 +53,7 @@ namespace Conversation
         AZ::Outcome<DialogueData> GetDialogueById(const DialogueId& dialogueId);
         bool CheckDialogueExists(const DialogueId& dialogueId)
         {
-            return m_dialogues.contains(dialogueId);
+            return m_dialogues.contains(DialogueData(dialogueId));
         }
 
         void AddResponseToDialogue(const DialogueId&, const DialogueId&)

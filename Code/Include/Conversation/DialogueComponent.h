@@ -66,7 +66,7 @@ namespace Conversation
 
         DialogueData FindDialogue(const DialogueId& dialogueId) const override
         {
-            auto foundIter = m_dialogues.find(dialogueId);
+            auto foundIter = m_dialogues.find(DialogueData(dialogueId));
             // We return a default created object if we didn't find one with the given ID.
             // It's up to the caller to check that the ID is non-null to confirm that a
             // valid DialogueData was found.
@@ -78,9 +78,32 @@ namespace Conversation
         void TryToStartConversation(const AZ::EntityId& initiatingEntityId) override;
         void AbortConversation() override;
         void EndConversation() override;
-
+        /**
+        * Processes and sends out a dialogue.
+        * 
+        * It will send out notifications that this dialogue has been spoken.
+        * 
+        * @param dialogueToSelect The dialogue that will be sent out.
+        * 
+        */
         void SelectDialogue(const DialogueData& dialogueToSelect) override;
+        void SelectDialogue(const DialogueId dialogueId) override;
+        /**
+        * \brief Attempts to move the conversation along by selecting the next dialogue.
+        * 
+        * What this function does depends what responses are available for the currently
+        * active dialogue.
+        * 
+        * If no responses are available, it ends the conversation.
+        * 
+        * If the first response available is an NPC response, it selects it.
+        * 
+        * If the first response is a player response, it sends out *all* available player
+        * responses found in the response list as choices.
+        */
+        void ContinueConversation() override;
 
+        private:
 
     private:
         ConversationAssetContainer m_conversationAssets;
@@ -101,6 +124,7 @@ namespace Conversation
         AZStd::string m_speakerTag;
         ConversationStates m_currentState = ConversationStates::Inactive;
         AZStd::unique_ptr<DialogueData> m_activeDialogue;
+        AZStd::vector<DialogueData> m_availableResponses;
     };
 
 } // namespace Conversation
