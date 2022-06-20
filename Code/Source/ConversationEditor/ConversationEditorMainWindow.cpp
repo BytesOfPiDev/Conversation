@@ -108,16 +108,20 @@ namespace ConversationEditor
 
         this->addDockWidget(Qt::BottomDockWidgetArea, m_bottomDockWidget);
 
-        Ui::ConversationEditorWidget editorui;
+        m_conversationEditorUi = AZStd::make_unique<Ui::ConversationEditorWidget>();
         QWidget* conversationEditor = new QWidget;
-        editorui.setupUi(conversationEditor);
+        m_conversationEditorUi->setupUi(conversationEditor);
         m_bottomDockWidget->setWidget(conversationEditor);
 
-        m_actorTextEdit = editorui.dialogueEdit;
+        m_actorTextEdit = m_conversationEditorUi->dialogueEdit;
+        m_conversationEditorUi->speakerTagComboBox->addItem("owner");
+        m_conversationEditorUi->speakerTagComboBox->addItem("player");
 
         QObject::connect(
             this, &ConversationEditorMainWindow::nodeSelectionChanged, this, &ConversationEditorMainWindow::OnNodeSelectionChanged);
         QObject::connect(m_actorTextEdit, &QPlainTextEdit::textChanged, this, &ConversationEditorMainWindow::OnActorTextChanged);
+        QObject::connect(
+            m_conversationEditorUi->speakerTagComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnSpeakerTagChanged(int)));
     }
 
     QAction* ConversationEditorMainWindow::AddFileOpenAction(QMenu* menu)
@@ -154,25 +158,44 @@ namespace ConversationEditor
 
     void ConversationEditorMainWindow::OnSelectionChanged()
     {
+        // The active dialogue should be set to null so programatic changes don't automatically try to
+        // put their new contents (usually just default/empty values due to the node changing) into
+        // the dialogue node that's about to be active. OnNodeSelectionChanged will be responsible for
+        // setting it, which should be trigged after the emit call later in this function.
+        m_activeDialogueDataPointer = nullptr;
+
         GraphCanvas::AssetEditorMainWindow::OnSelectionChanged();
         emit nodeSelectionChanged(GetActiveNodeDialoguePointer());
     }
 
     void ConversationEditorMainWindow::OnNodeSelectionChanged(const Conversation::DialogueDataPtr dialogueDataPtr)
     {
-        // Reset UI widgets that depend on an active node. I disable each
-        // widget and then reset them to avoid sending unnecessary signals.
-        m_actorTextEdit->setEnabled(false);
-
         if (!dialogueDataPtr)
         {
+            m_actorTextEdit->setEnabled(false);
             m_actorTextEdit->clear();
+
+            m_conversationEditorUi->speakerTagComboBox->setEnabled(false);
+
             return;
         }
 
         // Update the node editor widget
         m_actorTextEdit->setEnabled(true);
         m_actorTextEdit->setPlainText(dialogueDataPtr->GetActorText().c_str());
+
+        m_conversationEditorUi->speakerTagComboBox->setEnabled(true);
+        const char* const speakerTag = dialogueDataPtr->GetSpeaker().c_str();
+
+        const int speakerTagComboBoxIndex = m_conversationEditorUi->speakerTagComboBox->findText(speakerTag, Qt::MatchFixedString);
+        if (speakerTagComboBoxIndex >= 0)
+        {
+            m_conversationEditorUi->speakerTagComboBox->setCurrentIndex(speakerTagComboBoxIndex);
+        }
+
+        // With the active dialogue being set, signals and slots are now safe to use this cache'd pointer
+        // to make changes to the active node.
+        m_activeDialogueDataPointer = dialogueDataPtr;
     }
 
     void ConversationEditorMainWindow::OnActorTextChanged()
@@ -182,6 +205,16 @@ namespace ConversationEditor
         {
             dialogueDataPtr->SetActorText(m_actorTextEdit->toPlainText().toStdString().c_str());
         }
+    }
+
+    void ConversationEditorMainWindow::OnSpeakerTagChanged([[maybe_unused]] int index)
+    {
+        if (!m_activeDialogueDataPointer)
+        {
+            return;
+        }
+
+        m_activeDialogueDataPointer->SetSpeaker(m_conversationEditorUi->speakerTagComboBox->itemText(index).toStdString().c_str());
     }
 
     void ConversationEditorMainWindow::OnFileOpenTriggered()

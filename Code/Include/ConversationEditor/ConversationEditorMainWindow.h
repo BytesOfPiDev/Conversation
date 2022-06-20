@@ -21,6 +21,11 @@ namespace AzToolsFramework
     class ReflectedPropertyEditor;
 }
 
+namespace Ui
+{
+    class ConversationEditorWidget;
+}
+
 namespace ConversationEditor
 {
     class ConversationAssetEditorWindowConfig : public GraphCanvas::AssetEditorWindowConfig
@@ -67,17 +72,17 @@ namespace ConversationEditor
     signals:
         void nodeSelectionChanged(const Conversation::DialogueDataPtr dialogueDataPtr);
 
-    private:
+    private slots:
+        // Updates the active node's tag with the new 
+        void OnSpeakerTagChanged(int index);
         void OnNodeSelectionChanged(const Conversation::DialogueDataPtr dialogueDataPtr);
         void OnActorTextChanged();
 
-    public:
+    private:
         void OnFileOpenTriggered();
         void OnFileSaveTriggered();
 
-        private:
         Conversation::DialogueDataPtr GetActiveNodeDialoguePointer() const;
-        
 
     private:
         ConversationAssetEditorWindowConfig* m_config;
@@ -91,6 +96,7 @@ namespace ConversationEditor
 
         AZStd::shared_ptr<QAction> m_fileOpenAction;
         AZStd::shared_ptr<QAction> m_fileSaveAction;
+        AZStd::unique_ptr<Ui::ConversationEditorWidget> m_conversationEditorUi;
 
         QPlainTextEdit* m_actorTextEdit;
     };
