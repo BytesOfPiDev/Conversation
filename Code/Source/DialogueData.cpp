@@ -23,7 +23,6 @@ namespace Conversation
             serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
             serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<DialogueId, DialogueData>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueId>>();
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
