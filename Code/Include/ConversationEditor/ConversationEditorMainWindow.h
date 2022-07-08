@@ -93,6 +93,8 @@ namespace ConversationEditor
 
         AzQtComponents::StyledDockWidget* m_rightDockWidget;
         AzQtComponents::StyledDockWidget* m_bottomDockWidget;
+        AzQtComponents::Card* m_propertyEditorCard;
+        AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor;
 
         AZStd::shared_ptr<QAction> m_fileOpenAction;
         AZStd::shared_ptr<QAction> m_fileSaveAction;

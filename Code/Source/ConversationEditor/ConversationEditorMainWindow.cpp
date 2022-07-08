@@ -19,6 +19,9 @@
 #include <QFileDialog>
 #include <QMenuBar>
 
+#include <AzQtComponents/Components/Widgets/Card.h>
+#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+
 namespace ConversationEditor
 {
     ConversationEditor::ConversationEditorMainWindow::ConversationEditorMainWindow(
@@ -117,6 +120,14 @@ namespace ConversationEditor
         m_conversationEditorUi->speakerTagComboBox->addItem("owner");
         m_conversationEditorUi->speakerTagComboBox->addItem("player");
 
+        m_propertyEditorCard = new AzQtComponents::Card(m_rightDockWidget);
+        m_propertyEditor = aznew AzToolsFramework::ReflectedPropertyEditor(m_propertyEditorCard);
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        m_propertyEditor->Setup(serializeContext, nullptr, false);
+        m_propertyEditorCard->setContentWidget(m_propertyEditor);
+        m_rightDockWidget->setWidget(m_propertyEditorCard);
+
         QObject::connect(
             this, &ConversationEditorMainWindow::nodeSelectionChanged, this, &ConversationEditorMainWindow::OnNodeSelectionChanged);
         QObject::connect(m_actorTextEdit, &QPlainTextEdit::textChanged, this, &ConversationEditorMainWindow::OnActorTextChanged);
@@ -170,6 +181,7 @@ namespace ConversationEditor
 
     void ConversationEditorMainWindow::OnNodeSelectionChanged(const Conversation::DialogueDataPtr dialogueDataPtr)
     {
+        m_propertyEditor->ClearInstances();
         if (!dialogueDataPtr)
         {
             m_actorTextEdit->setEnabled(false);
@@ -180,7 +192,6 @@ namespace ConversationEditor
             return;
         }
 
-        // Update the node editor widget
         m_actorTextEdit->setEnabled(true);
         m_actorTextEdit->setPlainText(dialogueDataPtr->GetActorText().c_str());
 
@@ -192,6 +203,12 @@ namespace ConversationEditor
         {
             m_conversationEditorUi->speakerTagComboBox->setCurrentIndex(speakerTagComboBoxIndex);
         }
+
+        m_conversationEditorUi->nodeTabWidget->setEnabled(true);
+        m_conversationEditorUi->scriptsTab->setEnabled(true);
+        m_conversationEditorUi->scriptListWidget->setEnabled(true);
+        m_propertyEditor->AddInstance(dialogueDataPtr.get());
+        m_propertyEditor->InvalidateAll();
 
         // With the active dialogue being set, signals and slots are now safe to use this cache'd pointer
         // to make changes to the active node.
@@ -292,7 +309,6 @@ namespace ConversationEditor
         // \todo At some point, we need to handle multiple selection scenarios to make sure the right nodes are read
         // and edited.
         const GraphModel::SlotPtr dialogueDataSlotPtr = result.empty() ? nullptr : result.front()->GetSlot(CommonSlotNames::DIALOGUEDATA);
-
         return dialogueDataSlotPtr ? dialogueDataSlotPtr->GetValue<Conversation::DialogueDataPtr>() : nullptr;
     }
 

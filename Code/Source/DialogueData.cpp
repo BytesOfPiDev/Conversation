@@ -16,13 +16,13 @@ namespace Conversation
                 ->Field("DialogueID", &DialogueData::m_id)
                 ->Field("ResponseIds", &DialogueData::m_responseIds)
                 ->Field("Speaker", &DialogueData::m_speaker)
-                ->Field("AudioTrigger", &DialogueData::m_audioTrigger);
+                ->Field("AudioTrigger", &DialogueData::m_audioTrigger)
+                ->Field("ScriptIds", &DialogueData::m_scriptIds);
 
             serializeContext->RegisterGenericType<DialogueDataPtr>();
             serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_map<DialogueId, DialogueData>>();
-
             serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<DialogueId, DialogueData>>();
             serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueId>>();
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -35,7 +35,10 @@ namespace Conversation
                         "Represents a specific actor in the conversation.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &DialogueData::m_audioTrigger, "AudioTrigger",
-                        "The trigger for the audio file to play.");
+                        "The trigger for the audio file to play.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &DialogueData::m_scriptIds, "ScriptIds",
+                        "Script Ids to be executed upon dialogue selection.");
             }
         }
 
@@ -55,7 +58,8 @@ namespace Conversation
                 ->Property("ID", BehaviorValueProperty(&DialogueData::m_id))
                 ->Property("Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
                 ->Property("AudioTrigger", BehaviorValueProperty(&DialogueData::m_audioTrigger))
-                ->Property("ResponseIds", &DialogueData::GetResponseIds, nullptr);
+                ->Property("ResponseIds", &DialogueData::GetResponseIds, nullptr)
+                ->Property("ScriptIds", BehaviorValueGetter(&DialogueData::m_scriptIds), nullptr);
         }
     }
 
@@ -85,4 +89,3 @@ namespace Conversation
     }
 
 } // namespace Conversation
-

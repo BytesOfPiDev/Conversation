@@ -28,9 +28,8 @@ namespace Conversation
     };
 
     /**
-     * @brief Represents a line of dialogue in a conversation.
+     * @brief Represents a piece of dialogue in a conversation.
      *
-     * This class is used for both NPC and Player lines of dialogue.
      */
     class DialogueData
     {
@@ -41,11 +40,14 @@ namespace Conversation
         static void Reflect(AZ::ReflectContext* context);
         // There's a limited to the maximum amount of dialogue responses.
         // Attempting to go beyond this will likely result in it not being added.
-        constexpr static size_t MAX_RESPONSES = 10;
+        constexpr static const size_t MAX_RESPONSES = 10;
 
         DialogueData(bool generateRandomId = false);
         DialogueData(
-            const DialogueId id, const AZStd::string actorText, const AZStd::string speaker, const DialogueIdUnorderedSetContainer& responses);
+            const DialogueId id,
+            const AZStd::string actorText,
+            const AZStd::string speaker,
+            const DialogueIdUnorderedSetContainer& responses);
         /**
          * Create a piece of dialogue with the given ID.
          *
@@ -181,9 +183,13 @@ namespace Conversation
         AZStd::string m_actorText = "";
         AZStd::string m_speaker;
         DialogueIdUnorderedSetContainer m_responseIds;
+        // The audio trigger to execute upon selection of this dialogue.
         AZStd::string m_audioTrigger;
+        // Any comments from the writers of this dialogue.
         AZStd::string m_comment;
         float m_entryDelay = 5;
+        // Contains script IDs that should be executed upon dialogue selection.
+        AZStd::vector<AZStd::string> m_scriptIds;
     };
 
     using DialogueDataPtr = AZStd::shared_ptr<DialogueData>;

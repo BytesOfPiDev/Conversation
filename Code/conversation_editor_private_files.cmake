@@ -25,7 +25,6 @@ set(FILES
     Source/ConversationEditor/Nodes/RootNode.cpp
 
     Source/ConversationEditor/DataTypes.h
-    Source/ConversationEditor/DataTypes.cpp
     Source/ConversationEditor/ConversationDocument.h
     Source/ConversationEditor/ConversationDocument.cpp
     Source/ConversationEditor/ConversationEditorMainWindow.cpp

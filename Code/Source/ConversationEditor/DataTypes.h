@@ -55,22 +55,11 @@ namespace ConversationEditor
 			Dialogue,
 			String,
 			DialogueId,
-			Number
+			Number,
+			StringSetContainer
 		};
 
 		static const AZ::Uuid InvalidEntityTypeId = "{3BB6E8E9-5525-4B88-A406-DBDE20E9FA5E}";		static const AZ::Uuid RootTypeId = "{78F43C22-AEFC-44FB-A94C-F5B6DC87BFA8}";
 	}
 
-	class DocumentEditorDataType
-		: public GraphModel::DataType
-	{
-	public:
-		AZ_CLASS_ALLOCATOR(DocumentEditorDataType, AZ::SystemAllocator, 0);
-		AZ_RTTI(DocumentEditorDataType, "{D1FB14EC-D1C1-4CB0-BD81-C1A66EF84A3F}", GraphModel::DataType);
-
-		static void Reflect(AZ::ReflectContext* context);
-
-		DocumentEditorDataType() = default;
-		DocumentEditorDataType(Enum typeEnum, AZ::Uuid typeUuid, AZStd::any defaultValue, AZStd::string_view typeDisplayName, AZStd::string_view cppTypeName);
-	};
 }
