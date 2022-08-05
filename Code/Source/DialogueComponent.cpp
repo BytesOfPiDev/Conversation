@@ -1,4 +1,3 @@
-#include "..\Include\Conversation\DialogueComponent.h"
 #include <Conversation/DialogueComponent.h>
 
 #include <AzCore/Asset/AssetSerializer.h>
@@ -6,8 +5,11 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/ranges/ranges.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <Conversation/AvailabilityBus.h>
 #include <Conversation/ConversationAsset.h>
+#include <Conversation/DialogueScript.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 
 namespace Conversation
@@ -124,8 +126,6 @@ namespace Conversation
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &DialogueComponent::m_speakerTag, "Speaker Tag",
                         "Identifies this entity as the owner of any dialogue containing this speaker tag.");
-
-                editContext->Class<AZStd::vector<AZ::Crc32>>("Crc Vector", "")->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true);
             }
 
             serializeContext->RegisterGenericType<AZStd::vector<AZ::Crc32>>();
@@ -238,6 +238,7 @@ namespace Conversation
             "An attempt was made to start a conversation on Entity: %s, but we're not in an 'Inactive' state.",
             this->GetNamedEntityId().GetName().data());
 
+        // Check that we have what we need to start to successfully start a conversation.
         if (m_currentState != ConversationStates::Inactive || m_startingIds.empty() || m_dialogues.empty())
         {
             return;
@@ -245,23 +246,40 @@ namespace Conversation
 
         m_currentState = ConversationStates::Starting;
 
-        // Until we have proper dialogue availability checking implemented, we pick the first ID.
-        // It is safe to access the first starting id iter because we checked for a non-empty
-        // container earlier.
-        auto startingDialogueIter = m_dialogues.find(DialogueData(*m_startingIds.begin()));
-        if (startingDialogueIter == m_dialogues.end() || !startingDialogueIter->IsValid())
+        // We find the first available starting ID and use it to start the conversation.
+        for (const DialogueId& startingId : m_startingIds)
         {
-            m_currentState = ConversationStates::Inactive;
-            return;
+            // DialogueData and DialogueId are different types. We need to search a
+            // list of DialogueData for one matching the current DialogueId. To do so,
+            // I create a new instance of DialogueData based on the current DialogueId.
+            // DialogueData objects are always equal only if they have matching IDs.
+            // This allows me to use AZStd::find to search the container of dialogues.
+            const auto startingDialogueIter = m_dialogues.find(DialogueData(startingId));
+
+            // Verify we found one. This should never fail, but just in case.
+            if (startingDialogueIter == m_dialogues.end() || !startingDialogueIter->IsValid())
+            {
+                m_currentState = ConversationStates::Inactive;
+                return;
+            }
+
+            if (VerifyAvailability(*startingDialogueIter))
+            {
+                m_currentState = ConversationStates::Active;
+                DialogueComponentNotificationBus::Event(
+                    GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationStarted, initiatingEntityId);
+                GlobalConversationNotificationBus::Broadcast(
+                    &GlobalConversationNotificationBus::Events::OnConversationStarted, initiatingEntityId, GetEntityId());
+
+                SelectDialogue(*startingDialogueIter);
+                AZ_Printf("DialogueComponent", "A conversation was successfully started.");
+                return; // Success - We're only interested in the first available.
+            }
         }
 
-        m_currentState = ConversationStates::Active;
-        DialogueComponentNotificationBus::Event(
-            GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationStarted, initiatingEntityId);
-        GlobalConversationNotificationBus::Broadcast(
-            &GlobalConversationNotificationBus::Events::OnConversationStarted, initiatingEntityId, GetEntityId());
-
-        SelectDialogue(*startingDialogueIter);
+        // We failed to start the conversation.
+        m_currentState = ConversationStates::Inactive;
+        AZ_Printf("DialogueComponent", "A conversation failed to be started after checking for available starting IDs.");
     }
 
     void DialogueComponent::AbortConversation()
@@ -287,7 +305,6 @@ namespace Conversation
     void DialogueComponent::SelectDialogue(const DialogueData& dialogueToSelect)
     {
         AZ_Assert(dialogueToSelect.IsValid(), "A valid dialogue is needed in order to make a selection.");
-
         if (!dialogueToSelect.IsValid())
         {
             return;
@@ -295,19 +312,35 @@ namespace Conversation
 
         m_activeDialogue = AZStd::make_unique<DialogueData>(dialogueToSelect);
         m_availableResponses.clear();
+
+        // Check all responses and determine which should be available for use.
         for (const DialogueId& responseId : m_activeDialogue->GetResponseIds())
         {
             const DialogueData responseDialogue = FindDialogue(responseId);
-            // Availability Checks are not yet implemented, so we're only checking that
-            // the dialogue is valid for now.
-            if (responseDialogue.IsValid())
+            // An invalid ID means we didn't find a dialogue matching the responseId.
+            // We can only check valid dialogues, so we skip ahead if invalid.
+            if (!responseDialogue.IsValid())
+            {
+                continue;
+            }
+
+            if (VerifyAvailability(responseDialogue))
             {
                 m_availableResponses.push_back(responseDialogue);
             }
         }
 
+        // We send the dialogue out. It's considered spoken after this call.
         DialogueComponentNotificationBus::Event(
             GetEntityId(), &DialogueComponentNotificationBus::Events::OnDialogue, *m_activeDialogue, m_availableResponses);
+        // Since it's considered spoken, we should sent any necessary notifications related to speaking a dialogue.
+        // The first thing we want to do is run any provided scripts.
+        AZStd::for_each(
+            m_activeDialogue->GetScriptIds().begin(), m_activeDialogue->GetScriptIds().end(),
+            [](const auto scriptId)
+            {
+                DialogueScriptRequestBus::Event(AZ::Crc32(scriptId), &DialogueScriptRequestBus::Events::RunDialogueScript);
+            });
     }
 
     void DialogueComponent::SelectDialogue(const DialogueId dialogueId)
@@ -319,6 +352,10 @@ namespace Conversation
         }
 
         SelectDialogue(*dialogueIter);
+    }
+
+    void DialogueComponent::SelectDialogue(const int)
+    {
     }
 
     void DialogueComponent::ContinueConversation()
@@ -335,6 +372,28 @@ namespace Conversation
         AZ_Assert(firstResponseDialogueIter != m_dialogues.end(), "The given ID was not found in the dialogue container.");
 
         SelectDialogue(*firstResponseDialogueIter);
+    }
+
+    bool DialogueComponent::VerifyAvailability(const DialogueData& dialogueData)
+    {
+        // Empty availability ID list always means the dialogue is available.
+        if (dialogueData.GetAvailabilityIds().empty())
+        {
+            return true;
+        }
+
+        // All availability checks must pass for a dialogue to be available.
+        const bool isAvailable = AZStd::all_of(
+            dialogueData.GetAvailabilityIds().begin(), dialogueData.GetAvailabilityIds().end(),
+            [](const AZStd::string& stringId) -> bool
+            {
+                const AZ::Crc32 availabilityId = AZ::Crc32(stringId);
+                bool availabilityResult = false;
+                AvailabilityRequestBus::EventResult(availabilityResult, availabilityId, &AvailabilityRequestBus::Events::IsAvailable);
+                return availabilityResult;
+            });
+
+        return isAvailable;
     }
 
 } // namespace Conversation

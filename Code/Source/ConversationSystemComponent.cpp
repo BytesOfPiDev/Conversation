@@ -8,6 +8,7 @@
 #include <Conversation/ConversationBus.h>
 #include <Conversation/DialogueComponent.h>
 #include <Conversation/DialogueScript.h>
+#include <Conversation/AvailabilityBus.h>
 
 namespace Conversation
 {
@@ -57,6 +58,11 @@ namespace Conversation
 
             behaviorContext->EBus<ConversationRequestBus>("ConversationRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Dialogue System");
+
+            behaviorContext->EBus<AvailabilityRequestBus>("AvailabilityRequestBus")
+                ->Handler<BehaviorAvailabilityRequestBusHandler>();
+
+            behaviorContext->EBus<DialogueScriptRequestBus>("DialogueScriptRequestBus")->Handler<BehaviorDialogueScriptRequestBusHandler>();
         }
     }
 

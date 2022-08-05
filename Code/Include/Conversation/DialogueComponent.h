@@ -79,31 +79,50 @@ namespace Conversation
         void AbortConversation() override;
         void EndConversation() override;
         /**
-        * Processes and sends out a dialogue.
-        * 
-        * It will send out notifications that this dialogue has been spoken.
-        * 
-        * @param dialogueToSelect The dialogue that will be sent out.
-        * 
-        */
+         * Processes and sends out a dialogue.
+         * 
+         * Does nothing if the dialogue isn't valid (null ID). The dialogue does not have to exist as
+         * part of a dialogue asset - it can be created in memory, but be careful not to try to jump
+         * back to it if it isn't part of an attached asset.
+         *
+         * @param dialogueToSelect The dialogue that will be sent out.
+         *
+         */
         void SelectDialogue(const DialogueData& dialogueToSelect) override;
+        /**
+         * Processes and sends out a dialogue matching the given DialogueId.
+         * 
+         * Does nothing if no matching ID is found.
+         *
+         * @param dialogueId The ID of a dialogue contained in one of the assets attached to the parent entity.
+         *
+         */
         void SelectDialogue(const DialogueId dialogueId) override;
         /**
-        * \brief Attempts to move the conversation along by selecting the next dialogue.
+        * Processes and sends out the index matching an available dialogue choice.
         * 
-        * What this function does depends what responses are available for the currently
-        * active dialogue.
+        * For example, if the active dialogue has 4 available responses, you can select the second
+        * one by passing in an index of '1'. It's assumed these options are being presented on screen
+        * in random order, so it's up to the caller match selections with an index.
         * 
-        * If no responses are available, it ends the conversation.
-        * 
-        * If the first response available is an NPC response, it selects it.
-        * 
-        * If the first response is a player response, it sends out *all* available player
-        * responses found in the response list as choices.
         */
+        void SelectDialogue(const int availableResponseIndex);
+        /**
+         * \brief Attempts to move the conversation along by selecting the next dialogue.
+         *
+         * What this function does depends what responses are available for the currently
+         * active dialogue.
+         *
+         * If no responses are available, it ends the conversation.
+         *
+         * If the first response available is an NPC response, it selects it.
+         *
+         * If the first response is a player response, it sends out *all* available player
+         * responses found in the response list as choices.
+         */
         void ContinueConversation() override;
 
-        private:
+        static bool VerifyAvailability(const DialogueData& dialogueData);
 
     private:
         ConversationAssetContainer m_conversationAssets;
@@ -112,10 +131,10 @@ namespace Conversation
         AZStd::unordered_set<DialogueData> m_dialogues;
         /**
          * An entity's speaker tag.
-         * 
+         *
          * Each entity that is part of a conversation should have a speaker tag. This helps
-         * associate an entity with a DialogueData that has this value as its speaker. 
-         * 
+         * associate an entity with a DialogueData that has this value as its speaker.
+         *
          * \note Currently, this is not considered, nor should it be, the same as a character's
          * ID. The reason is that this speaker tag is added and removed during activation/deactivate.
          * We don't want a character's ID being removed accidentally. Character ID's are not yet

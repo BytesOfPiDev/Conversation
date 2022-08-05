@@ -56,11 +56,6 @@ namespace Conversation
             return m_dialogues.contains(DialogueData(dialogueId));
         }
 
-        void AddResponseToDialogue(const DialogueId&, const DialogueId&)
-        {
-            // Temporary function. Will switch to AddResponseId or nename.
-        }
-
     private:
         /**
          * The IDs of any dialogues that can be used to begin a conversation.

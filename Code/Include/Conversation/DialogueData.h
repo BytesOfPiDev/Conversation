@@ -130,6 +130,20 @@ namespace Conversation
         {
             return m_comment;
         }
+        const AZStd::vector<AZStd::string>& GetScriptIds()
+        {
+            return m_scriptIds;
+        }
+
+        const AZStd::vector<AZStd::string>& GetAvailabilityIds() const
+        {
+            return m_availabilityIds;
+        }
+
+        void AddAvailabilityId(const AZStd::string& newAvailabilityId)
+        {
+            m_availabilityIds.push_back(newAvailabilityId);
+        }
 
         void SetActorText(const AZStd::string& actorText)
         {
@@ -190,6 +204,7 @@ namespace Conversation
         float m_entryDelay = 5;
         // Contains script IDs that should be executed upon dialogue selection.
         AZStd::vector<AZStd::string> m_scriptIds;
+        AZStd::vector<AZStd::string> m_availabilityIds;
     };
 
     using DialogueDataPtr = AZStd::shared_ptr<DialogueData>;

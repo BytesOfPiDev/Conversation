@@ -17,7 +17,8 @@ namespace Conversation
                 ->Field("ResponseIds", &DialogueData::m_responseIds)
                 ->Field("Speaker", &DialogueData::m_speaker)
                 ->Field("AudioTrigger", &DialogueData::m_audioTrigger)
-                ->Field("ScriptIds", &DialogueData::m_scriptIds);
+                ->Field("ScriptIds", &DialogueData::m_scriptIds)
+                ->Field("AvailabilityIds", &DialogueData::m_availabilityIds);
 
             serializeContext->RegisterGenericType<DialogueDataPtr>();
             serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
@@ -37,7 +38,10 @@ namespace Conversation
                         "The trigger for the audio file to play.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &DialogueData::m_scriptIds, "ScriptIds",
-                        "Script Ids to be executed upon dialogue selection.");
+                        "Script Ids to be executed upon dialogue selection.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &DialogueData::m_availabilityIds, "AvailabilityIds",
+                        "Ids to be called when determining dialogue availability.");
             }
         }
 
@@ -58,7 +62,8 @@ namespace Conversation
                 ->Property("Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
                 ->Property("AudioTrigger", BehaviorValueProperty(&DialogueData::m_audioTrigger))
                 ->Property("ResponseIds", &DialogueData::GetResponseIds, nullptr)
-                ->Property("ScriptIds", BehaviorValueGetter(&DialogueData::m_scriptIds), nullptr);
+                ->Property("ScriptIds", BehaviorValueGetter(&DialogueData::m_scriptIds), nullptr)
+                ->Property("AvailabilityIds", BehaviorValueGetter(&DialogueData::m_availabilityIds), nullptr);
         }
     }
 
