@@ -90,10 +90,6 @@ namespace Conversation
         {
             ConversationInterface::Register(this);
         }
-
-        auto test = aznew DialogueComponent();
-        delete test;
-        test = nullptr;
     }
 
     ConversationSystemComponent::~ConversationSystemComponent()
