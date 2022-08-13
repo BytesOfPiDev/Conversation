@@ -136,6 +136,8 @@ namespace Conversation
         {
             behaviorContext->EBus<DialogueComponentRequestBus>("DialogueComponentRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, DIALOGUE_COMPONENT_CATEGORY)
+                ->Event("AbortConversation", &DialogueComponentRequestBus::Events::AbortConversation)
+                ->Event("EndConversation", &DialogueComponentRequestBus::Events::EndConversation)
                 ->Event("FindDialogueById", &DialogueComponentRequestBus::Events::FindDialogue)
                 ->Event("GetDialogues", &DialogueComponentRequestBus::Events::GetDialogues)
                 ->Event("GetStartingIds", &DialogueComponentRequestBus::Events::GetStartingIds)
@@ -285,28 +287,44 @@ namespace Conversation
     void DialogueComponent::AbortConversation()
     {
         m_currentState = ConversationStates::Aborting;
-        m_startingIds.clear();
-        m_dialogues.clear();
         m_activeDialogue = nullptr;
         m_currentState = ConversationStates::Inactive;
         DialogueComponentNotificationBus::Event(GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationAborted);
+        GlobalConversationNotificationBus::Broadcast(&GlobalConversationNotificationBus::Events::OnConversationAborted, GetEntityId());
     }
 
     void DialogueComponent::EndConversation()
     {
         m_currentState = ConversationStates::Ending;
-        m_startingIds.clear();
-        m_dialogues.clear();
         m_activeDialogue = nullptr;
         m_currentState = ConversationStates::Inactive;
         DialogueComponentNotificationBus::Event(GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationEnded);
+        GlobalConversationNotificationBus::Broadcast(&GlobalConversationNotificationBus::Events::OnConversationEnded, GetEntityId());
     }
 
     void DialogueComponent::SelectDialogue(const DialogueData& dialogueToSelect)
     {
+        // Ensure we have an active dialogue to work with and there's a conversation running.
+        if (!(m_currentState == ConversationStates::Active || m_currentState == ConversationStates::Starting))
+        {
+            return;
+        }
+        // For now, if an attempt is made to select a dialogue and there are no
+        // responses available, we're going to assume the caller wants to end the
+        // conversation. Only check if there's an active dialogue because this function
+        // can be called when there's no active dialogue, such as when first starting
+        // a conversation.
+        if (m_activeDialogue && m_activeDialogue->GetResponseIds().empty())
+        {
+            EndConversation();
+            return;
+        }
+
         AZ_Assert(dialogueToSelect.IsValid(), "A valid dialogue is needed in order to make a selection.");
         if (!dialogueToSelect.IsValid())
         {
+            // Abort when given an invalid dialogue.
+            AbortConversation();
             return;
         }
 
@@ -346,16 +364,12 @@ namespace Conversation
     void DialogueComponent::SelectDialogue(const DialogueId dialogueId)
     {
         auto dialogueIter = m_dialogues.find(DialogueData(dialogueId));
-        if (dialogueIter == m_dialogues.end())
-        {
-            return;
-        }
-
-        SelectDialogue(*dialogueIter);
+        SelectDialogue(dialogueIter != m_dialogues.end() ? *dialogueIter : DialogueData());
     }
 
-    void DialogueComponent::SelectDialogue(const int)
+    void DialogueComponent::SelectDialogue(const int responseIndex)
     {
+        SelectDialogue(m_availableResponses.size() > responseIndex ? m_availableResponses[responseIndex] : DialogueData());
     }
 
     void DialogueComponent::ContinueConversation()
