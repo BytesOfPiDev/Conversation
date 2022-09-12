@@ -1,6 +1,8 @@
 #include <ConversationEditor/ConversationEditorMainWindow.h>
 
+#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <Conversation/DialogueData.h>
 #include <ConversationEditor/Common.h>
@@ -9,6 +11,7 @@
 #include <ConversationEditor/Nodes/ActorDialogue.h>
 #include <ConversationEditor/Nodes/Link.h>
 #include <ConversationEditor/Nodes/RootNode.h>
+#include <ConversationEditor/SettingsDialog.h>
 #include <ConversationEditor/VariableNodePaletteTreeItemTypes.h>
 #include <ConversationEditor/ui_ConversationEditorWidget.h>
 #include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasEditorDockWidget.h>
@@ -33,6 +36,8 @@ namespace ConversationEditor
         , m_fileOpenAction(nullptr)
         , m_fileSaveAction(nullptr)
     {
+        m_userSettings = AZ::UserSettings::CreateFind<ConversationEditorSettings>(ConversationEditorSettingsId, AZ::UserSettings::CT_LOCAL);
+
         config ? m_graphContext = config->GetGraphContext() : m_graphContext = nullptr;
         SetupUI();
     }
@@ -50,6 +55,7 @@ namespace ConversationEditor
     void ConversationEditor::ConversationEditorMainWindow::OnEditorClosing(GraphCanvas::EditorDockWidget* dockWidget)
     {
         GraphModelIntegration::EditorMainWindow::OnEditorClosing(dockWidget);
+        AZ::UserSettingsOwnerRequestBus::Event(AZ::UserSettings::CT_LOCAL, &AZ::UserSettingsOwnerRequestBus::Events::SaveSettings);
     }
 
     void ConversationEditor::ConversationEditorMainWindow::OnEditorOpened(GraphCanvas::EditorDockWidget* dockWidget)
@@ -128,6 +134,8 @@ namespace ConversationEditor
         m_propertyEditorCard->setContentWidget(m_propertyEditor);
         m_rightDockWidget->setWidget(m_propertyEditorCard);
 
+        m_settingsDialog = new ConversationSettingsDialog(m_userSettings.get(), this);
+
         QObject::connect(
             this, &ConversationEditorMainWindow::nodeSelectionChanged, this, &ConversationEditorMainWindow::OnNodeSelectionChanged);
         QObject::connect(m_actorTextEdit, &QPlainTextEdit::textChanged, this, &ConversationEditorMainWindow::OnActorTextChanged);
@@ -135,36 +143,55 @@ namespace ConversationEditor
             m_conversationEditorUi->speakerTagComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnSpeakerTagChanged(int)));
     }
 
+    QMenu* ConversationEditorMainWindow::AddFileMenu()
+    {
+        return GraphModelIntegration::EditorMainWindow::AddFileMenu();
+    }
+
+    QMenu* ConversationEditorMainWindow::AddEditMenu()
+    {
+        QMenu* editMenu = GraphModelIntegration::EditorMainWindow::AddEditMenu();
+
+        m_editSettingsAction = new QAction(tr("&Settings"), editMenu);
+
+        editMenu->addSeparator();
+        editMenu->addAction(m_editSettingsAction);
+
+        QObject::connect(m_editSettingsAction, &QAction::triggered, this, &ConversationEditorMainWindow::OnEditSettingsTriggered);
+
+        return editMenu;
+    }
+
     QAction* ConversationEditorMainWindow::AddFileOpenAction(QMenu* menu)
     {
-        m_fileOpenAction = AZStd::shared_ptr<QAction>(EditorMainWindow::AddFileOpenAction(menu));
+        m_fileOpenAction = EditorMainWindow::AddFileOpenAction(menu);
 
         QObject::connect(
-            m_fileOpenAction.get(), &QAction::triggered,
+            m_fileOpenAction, &QAction::triggered,
             [this]
             {
                 OnFileOpenTriggered();
             });
 
-        menu->addAction(m_fileOpenAction.get());
+        menu->addAction(m_fileOpenAction);
 
-        return m_fileOpenAction.get();
+        return m_fileOpenAction;
     }
 
     QAction* ConversationEditorMainWindow::AddFileSaveAction(QMenu* menu)
     {
-        m_fileSaveAction = AZStd::shared_ptr<QAction>(EditorMainWindow::AddFileSaveAction(menu));
+        m_fileSaveAction = EditorMainWindow::AddFileSaveAction(menu);
 
         QObject::connect(
-            m_fileSaveAction.get(), &QAction::triggered,
+            m_fileSaveAction, &QAction::triggered,
             [this]
             {
                 OnFileSaveTriggered();
             });
 
-        menu->addAction(m_fileSaveAction.get());
+        menu->addAction(m_fileSaveAction);
 
-        return m_fileSaveAction.get();
+        return m_fileSaveAction;
     }
 
     void ConversationEditorMainWindow::OnSelectionChanged()
@@ -208,6 +235,11 @@ namespace ConversationEditor
         m_conversationEditorUi->scriptsTab->setEnabled(true);
         m_conversationEditorUi->scriptListWidget->setEnabled(true);
         m_propertyEditor->AddInstance(dialogueDataPtr.get());
+        if (auto graph = azrtti_cast<ConversationGraph*>(this->GetGraphById(this->GetActiveGraphCanvasGraphId())))
+        {
+            m_propertyEditor->AddInstance(m_userSettings.get());
+        }
+
         m_propertyEditor->InvalidateAll();
 
         // With the active dialogue being set, signals and slots are now safe to use this cache'd pointer
@@ -222,6 +254,12 @@ namespace ConversationEditor
         {
             dialogueDataPtr->SetActorText(m_actorTextEdit->toPlainText().toStdString().c_str());
         }
+    }
+
+    void ConversationEditorMainWindow::OnEditSettingsTriggered()
+    {
+        m_settingsDialog->setModal(true);
+        m_settingsDialog->show();
     }
 
     void ConversationEditorMainWindow::OnSpeakerTagChanged([[maybe_unused]] int index)

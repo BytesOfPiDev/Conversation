@@ -13,6 +13,7 @@
 #include <ConversationEditor/Nodes/ActorDialogue.h>
 #include <ConversationEditor/Nodes/Link.h>
 #include <ConversationEditor/Nodes/RootNode.h>
+#include <ConversationEditor/Settings.h>
 
 static constexpr const char* const ConversationEditorAppName = "Conversation Editor";
 
@@ -42,9 +43,13 @@ namespace Conversation
         ConversationEditor::Nodes::Link::Reflect(context);
         ConversationEditor::Nodes::RootNode::Reflect(context);
         ConversationEditor::Nodes::ActorDialogue::Reflect(context);
+        ConversationEditor::ConversationEditorSettings::Reflect(context);
     }
 
-    ConversationEditorSystemComponent::ConversationEditorSystemComponent() = default;
+    ConversationEditorSystemComponent::ConversationEditorSystemComponent()
+        : m_conversationEditorNodeManager(AZ_CRC_CE("ConversationEditor"))
+    {
+    }
 
     ConversationEditorSystemComponent::~ConversationEditorSystemComponent() = default;
 
@@ -68,6 +73,14 @@ namespace Conversation
     void ConversationEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         BaseSystemComponent::GetDependentServices(dependent);
+    }
+
+    void ConversationEditorSystemComponent::Init()
+    {
+        ConversationSystemComponent::Init();
+
+        auto editorSettings = AZ::UserSettings::CreateFind<ConversationEditor::ConversationEditorSettings>(
+            ConversationEditor::ConversationEditorSettingsId, AZ::UserSettings::CT_LOCAL);
     }
 
     void ConversationEditorSystemComponent::Activate()

@@ -45,10 +45,11 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            Gem::Atom_RPI.Public
             Gem::ScriptCanvas
             Gem::LmbrCentral
+            Legacy::CryCommon
         PRIVATE
-
 )
 
 # Here add Conversation target, it depends on the Private Object library and Public API interface
@@ -117,11 +118,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::Conversation.Private.Object>
+                Gem::Conversation.Private.Object
                 Gem::ScriptCanvas
                 AZ::AssetBuilderSDK
                 Gem::GraphModel.Editor.Static
                 Gem::GraphCanvasWidgets
+                Gem::AtomToolsFramework.Static
+                Gem::AtomToolsFramework.Editor
     )
 
     ly_add_target(
@@ -138,6 +141,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 Gem::Conversation.Editor.API
+                Gem::AtomToolsFramework.Editor
             PRIVATE
                 Gem::Conversation.Editor.Private.Object
     )

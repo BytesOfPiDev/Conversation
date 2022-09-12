@@ -3,8 +3,9 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <Conversation/ConversationBus.h>
 #include <Conversation/ConversationAsset.h>
+#include <Conversation/ConversationBus.h>
+
 namespace Conversation
 {
     class ConversationSystemComponent

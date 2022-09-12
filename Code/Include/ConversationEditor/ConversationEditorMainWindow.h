@@ -6,9 +6,11 @@
 #include <Conversation/DialogueData.h>
 #include <ConversationEditor/Common.h>
 #include <ConversationEditor/ConversationGraphContext.h>
+#include <ScriptEvents/ScriptEventsBus.h>
 #endif
 
 class QPlainTextEdit;
+
 
 namespace AzQtComponents
 {
@@ -28,6 +30,9 @@ namespace Ui
 
 namespace ConversationEditor
 {
+    class ConversationEditorSettings;
+    class ConversationSettingsDialog;
+
     class ConversationAssetEditorWindowConfig : public GraphCanvas::AssetEditorWindowConfig
     {
     public:
@@ -64,6 +69,8 @@ namespace ConversationEditor
             const QPointF& scenePoint,
             const QPoint& screenPoint) override;
 
+        QMenu* AddFileMenu() override;
+        QMenu* AddEditMenu() override;
         QAction* AddFileOpenAction(QMenu* menu) override;
         QAction* AddFileSaveAction(QMenu* menu) override;
 
@@ -73,10 +80,11 @@ namespace ConversationEditor
         void nodeSelectionChanged(const Conversation::DialogueDataPtr dialogueDataPtr);
 
     private slots:
-        // Updates the active node's tag with the new 
+        // Updates the active node's tag with the new
         void OnSpeakerTagChanged(int index);
         void OnNodeSelectionChanged(const Conversation::DialogueDataPtr dialogueDataPtr);
         void OnActorTextChanged();
+        void OnEditSettingsTriggered();
 
     private:
         void OnFileOpenTriggered();
@@ -96,10 +104,16 @@ namespace ConversationEditor
         AzQtComponents::Card* m_propertyEditorCard;
         AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor;
 
-        AZStd::shared_ptr<QAction> m_fileOpenAction;
-        AZStd::shared_ptr<QAction> m_fileSaveAction;
+        QAction* m_fileOpenAction = nullptr;
+        QAction* m_fileSaveAction = nullptr;
+        QAction* m_editSettingsAction = nullptr;
         AZStd::unique_ptr<Ui::ConversationEditorWidget> m_conversationEditorUi;
 
         QPlainTextEdit* m_actorTextEdit;
+        
+        AZStd::intrusive_ptr<ConversationEditorSettings> m_userSettings = nullptr;
+        QAction* m_settingsAction = nullptr;
+
+        ConversationSettingsDialog* m_settingsDialog;
     };
 } // namespace ConversationEditor

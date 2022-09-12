@@ -1,10 +1,12 @@
 #pragma once
 
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/std/parallel/lock.h>
 #include <Conversation/ConversationBus.h>
 #include <Conversation/DialogueComponentBus.h>
+#include <LmbrCentral/Rendering/MaterialAsset.h>
 
 namespace Conversation
 {
@@ -80,7 +82,7 @@ namespace Conversation
         void EndConversation() override;
         /**
          * Processes and sends out a dialogue.
-         * 
+         *
          * Does nothing if the dialogue isn't valid (null ID). The dialogue does not have to exist as
          * part of a dialogue asset - it can be created in memory, but be careful not to try to jump
          * back to it if it isn't part of an attached asset.
@@ -91,7 +93,7 @@ namespace Conversation
         void SelectDialogue(const DialogueData& dialogueToSelect) override;
         /**
          * Processes and sends out a dialogue matching the given DialogueId.
-         * 
+         *
          * Does nothing if no matching ID is found.
          *
          * @param dialogueId The ID of a dialogue contained in one of the assets attached to the parent entity.
@@ -99,14 +101,14 @@ namespace Conversation
          */
         void SelectDialogue(const DialogueId dialogueId) override;
         /**
-        * Processes and sends out the index matching an available dialogue choice.
-        * 
-        * For example, if the active dialogue has 4 available responses, you can select the second
-        * one by passing in an index of '1'. It's assumed these options are being presented on screen
-        * in random order, so it's up to the caller match selections with an index.
-        * 
-        */
-        void SelectDialogue(const int availableResponseIndex);
+         * Processes and sends out the index matching an available dialogue choice.
+         *
+         * For example, if the active dialogue has 4 available responses, you can select the second
+         * one by passing in an index of '1'. It's assumed these options are being presented on screen
+         * in random order, so it's up to the caller match selections with an index.
+         *
+         */
+        void SelectAvailableResponse(const int availableResponseIndex);
         /**
          * \brief Attempts to move the conversation along by selecting the next dialogue.
          *
@@ -122,6 +124,21 @@ namespace Conversation
          */
         void ContinueConversation() override;
 
+        AZStd::string GetDisplayName() const
+        {
+            return m_displayName;
+        }
+
+        DialogueData GetActiveDialogue() const override
+        {
+            return m_activeDialogue ? *m_activeDialogue : DialogueData();
+        }
+
+        AZStd::vector<DialogueData> GetAvailableResponses() const override
+        {
+            return m_availableResponses;
+        }
+
         static bool VerifyAvailability(const DialogueData& dialogueData);
 
     private:
@@ -134,13 +151,10 @@ namespace Conversation
          *
          * Each entity that is part of a conversation should have a speaker tag. This helps
          * associate an entity with a DialogueData that has this value as its speaker.
-         *
-         * \note Currently, this is not considered, nor should it be, the same as a character's
-         * ID. The reason is that this speaker tag is added and removed during activation/deactivate.
-         * We don't want a character's ID being removed accidentally. Character ID's are not yet
-         * implemented, so this will be looked at down the line.
          */
         AZStd::string m_speakerTag;
+        AZStd::string m_displayName;
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_speakerIconPath;
         ConversationStates m_currentState = ConversationStates::Inactive;
         AZStd::unique_ptr<DialogueData> m_activeDialogue;
         AZStd::vector<DialogueData> m_availableResponses;

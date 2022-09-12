@@ -25,6 +25,8 @@ set(FILES
     Source/ConversationEditor/Nodes/RootNode.cpp
 
     Source/ConversationEditor/DataTypes.h
+    Source/ConversationEditor/Conditional.h
+    Source/ConversationEditor/Conditional.cpp
     Source/ConversationEditor/ConversationDocument.h
     Source/ConversationEditor/ConversationDocument.cpp
     Source/ConversationEditor/ConversationEditorMainWindow.cpp
@@ -33,6 +35,10 @@ set(FILES
     Source/ConversationEditor/ConversationEditorWidget.ui
     Source/ConversationEditor/GraphControllerHandler.h
     Source/ConversationEditor/GraphControllerHandler.cpp
+    Source/ConversationEditor/Settings.h
+    Source/ConversationEditor/Settings.cpp
+    Source/ConversationEditor/SettingsDialog.h
+    Source/ConversationEditor/SettingsDialog.cpp
     Source/ConversationEditor/VariableNodePaletteTreeItemTypes.cpp
 
     Source/ConversationEditor/ConversationEditorWidget.ui

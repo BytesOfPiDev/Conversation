@@ -20,11 +20,13 @@ namespace ConversationEditor
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ConversationGraph, GraphModel::Graph>()->Version(0);
+            serializeContext->Class<ConversationGraph, GraphModel::Graph>()->Version(0)->Field("ScriptEventsFilePath", &ConversationGraph::m_dialogueScriptEventsFilepath);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ConversationGraph>("DialogueGraph", "A dialogue graph.");
+                editContext->Class<ConversationGraph>("DialogueGraph", "A dialogue graph.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &ConversationGraph::m_dialogueScriptEventsFilepath, "ScriptEventsFilePath", "");
             }
         }
     }
