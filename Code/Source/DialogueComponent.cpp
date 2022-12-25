@@ -190,7 +190,7 @@ namespace Conversation
     void DialogueComponent::Activate()
     {
         // Combine the starting IDs and dialogues into one container.
-        for (const AZ::Data::Asset<ConversationAsset> asset : m_conversationAssets)
+        for (const AZ::Data::Asset<ConversationAsset>& asset : m_conversationAssets)
         {
             if (!asset.IsReady())
             {
