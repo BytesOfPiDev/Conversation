@@ -1,68 +1,104 @@
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzFramework/Asset/GenericAssetHandler.h>
-#include <Conversation/DialogueData.h>
+#include "AzCore/Asset/AssetCommon.h"
+#include "AzCore/Script/ScriptAsset.h"
+#include "AzFramework/Asset/GenericAssetHandler.h"
+#include "Conversation/DialogueData.h"
+#include "Conversation/IConversationAsset.h"
 
 namespace Conversation
 {
-    /** A string representing a specific script. */
-    using DialogueScriptId = AZStd::string;
-
-    class ConversationAsset : public AZ::Data::AssetData
+    class ConversationAsset
+        : public AZ::Data::AssetData
+        , public IConversationAsset
     {
     public:
-        AZ_RTTI(ConversationAsset, "{C2B4E407-B74E-4E48-8B8A-ADD5BCC894D1}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(ConversationAsset, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ConversationAsset); // NOLINT
+        AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
+        AZ_CLASS_ALLOCATOR_DECL; // NOLINT
+        AZ_DISABLE_COPY_MOVE(ConversationAsset); // NOLINT
 
         static void Reflect(AZ::ReflectContext* context);
-
-        using Pointer = AZ::Data::Asset<ConversationAsset>;
-        static constexpr const char* PRODUCT_EXTENSION_PATTERN = "*.conversation";
-        static constexpr const char* SOURCE_EXTENSION_PATTERN = "*.conversationdoc";
-
-        static constexpr const char* PRODUCT_EXTENSION = "conversation";
-        static constexpr const char* SOURCE_EXTENSION = "conversationdoc";
 
         ConversationAsset() = default;
         ~ConversationAsset() override = default;
 
-        size_t CountStartingIds() const
+        static constexpr const char* ProductExtension = "conversationasset";
+        static constexpr const char* ProductExtensionPattern = "*.conversationasset";
+
+        static constexpr const char* SourceExtension = "conversation";
+        static constexpr const char* SourceExtensionPattern = "*.conversation";
+
+        [[nodiscard]] auto CountStartingIds() const -> size_t override
         {
             return m_startingIds.size();
         }
 
-        size_t CountDialogues() const
+        [[nodiscard]] auto CountDialogues() const -> size_t override
         {
             return m_dialogues.size();
         }
 
-        const DialogueIdUnorderedSetContainer& GetStartingIds() const
+        [[nodiscard]] auto GetStartingIds() const -> const AZStd::vector<DialogueId>& override
         {
             return m_startingIds;
         }
 
-        const DialogueDataUnorderedSetContainer& GetDialogues() const
+        [[nodiscard]] auto GetDialogues() const -> const DialogueDataContainer& override
         {
             return m_dialogues;
         }
 
-        void AddStartingId(const DialogueId& newStartingId);
-        void AddDialogue(const DialogueData& newDialogueData);
-        void AddResponseId(const DialogueId& parentDialogueId, const DialogueId& responseDialogueId);
-        AZ::Outcome<DialogueData> GetDialogueById(const DialogueId& dialogueId);
-        bool CheckDialogueExists(const DialogueId& dialogueId)
+        void AddStartingId(const DialogueId& newStartingId) override;
+        void AddDialogue(const DialogueData& newDialogueData) override;
+        /**
+         * @brief Add a dialogue as a response to another dialogue
+         *
+         * As long as the ResponseData is valid (not null), the response will
+         * be added, even if there is not currently a DialogueData in this
+         * asset with matching DialogueIds.
+         *
+         * @param responseData The response to add.
+         */
+
+        void AddResponse(ResponseData const& responseData) override;
+        auto GetDialogueById(const DialogueId& dialogueId) -> AZ::Outcome<DialogueData> override;
+        [[nodiscard]] auto CheckDialogueExists(const DialogueId& dialogueId) -> bool override
         {
             return m_dialogues.contains(DialogueData(dialogueId));
         }
 
+        [[nodiscard]] auto GetMainScriptAsset() const -> AZ::Data::Asset<AZ::ScriptAsset> override
+        {
+            return m_mainScript;
+        }
+
+        void AddChunk(DialogueChunk const& dialogueChunk) override
+        {
+            m_chunks.insert(dialogueChunk);
+        }
+
+        [[nodiscard]] auto GetResponses() const -> AZStd::vector<ResponseData> const& override
+        {
+            return m_responses;
+        }
+
     private:
-        /**
-         * The IDs of any dialogues that can be used to begin a conversation.
-         */
-        DialogueIdUnorderedSetContainer m_startingIds;
-        DialogueDataUnorderedSetContainer m_dialogues;
+        //! The IDs of any dialogues that can be used to begin a conversation.
+        AZStd::vector<DialogueId> m_startingIds{};
+        AZStd::vector<ResponseData> m_responses;
+        AZStd::unordered_set<DialogueChunk> m_chunks;
+        DialogueDataContainer m_dialogues{};
+        AZStd::string m_comment{};
+        AZ::Data::Asset<AZ::ScriptAsset> m_mainScript{};
     };
 
     using ConversationAssetHandler = AzFramework::GenericAssetHandler<ConversationAsset>;
+
+    using ConversationAssetContainer = AZStd::vector<AZ::Data::Asset<ConversationAsset>>;
+
+    inline constexpr void AddStartingId(ConversationAsset& conversationAsset, DialogueId const& startingId)
+    {
+        conversationAsset.AddStartingId(startingId);
+    }
 } // namespace Conversation

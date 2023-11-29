@@ -1,37 +1,23 @@
 #pragma once
 
-#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/EntityBus.h>
-#include <AzCore/std/parallel/lock.h>
-#include <Conversation/ConversationBus.h>
-#include <Conversation/DialogueComponentBus.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include "Atom/RPI.Reflect/Image/StreamingImageAsset.h"
+#include "AzCore/Component/Component.h"
+#include "AzCore/Component/EntityBus.h"
+
+#include "Conversation/Components/DialogueComponentConfig.h"
+#include "Conversation/DialogueComponentBus.h"
+#include "Conversation/IConversationAsset.h"
 
 namespace Conversation
 {
-    enum class ConversationStates
-    {
-        Inactive,
-        Starting,
-        Active,
-        Aborting,
-        Ending
-    };
-
     /**
-     * Represents a conversation.
+     * @brief Allows an entity to use the conversation system.
      *
-     * Currently, an entity can only use one instance of this component. However,
-     * it would be useful to allow multiple instances in the future in order to allow
-     * separation of different conversations that may be added to the entity later.
+     * @note It is not necessary to have any dialogue assets assigned to the
+     * component.
      *
-     * The m_owner AZ::EntityId is the entity you want to "own" the dialogue. This
-     * allows you to have the DialogueComponent on a different entity than the one
-     * it's attached to - it will listen to requests and send notifications using
-     * that AZ::EntityId.
-     *
-     * @author Andre
+     * @note Any entity that wants to be part of a conversation will need
+     * an instance of this component.
      */
     class DialogueComponent
         : public AZ::Component
@@ -39,10 +25,12 @@ namespace Conversation
         , public DialogueComponentRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(DialogueComponent, "{C7AFDF51-ECCC-4BD3-8A56-0763ED87CB5B}");
+        AZ_COMPONENT_DECL(DialogueComponent); // NOLINT
+        // AZ_COMPONENT(DialogueComponent, DialogueComponentTypeId); // NOLINT
+        AZ_DISABLE_COPY_MOVE(DialogueComponent); // NOLINT
 
         DialogueComponent() = default;
-        ~DialogueComponent() override;
+        ~DialogueComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -51,24 +39,35 @@ namespace Conversation
         void Activate() override;
         void Deactivate() override;
 
+        auto ReadInConfig(AZ::ComponentConfig const* config) -> bool override;
+
+        auto WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const -> bool override;
+
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        DialogueIdUnorderedSetContainer GetStartingIds() const override
+        /**
+         * @brief Returns a container of DialogueId's that can be used to start a conversation.
+         * @return The container of DialogueId's.
+         *
+         * @see DialogueId.
+         */
+        [[nodiscard]] auto GetStartingIds() const -> AZStd::vector<DialogueId> const& override
         {
             return m_startingIds;
         }
 
-        DialogueDataUnorderedSetContainer GetDialogues() const override
+        [[nodiscard]] auto GetDialogues() const -> DialogueDataContainer const& override
         {
             return m_dialogues;
         }
 
-        DialogueData FindDialogue(const DialogueId& dialogueId) const override
+        [[nodiscard]] auto FindDialogue(const DialogueId& dialogueId) const -> DialogueData override
         {
             auto foundIter = m_dialogues.find(DialogueData(dialogueId));
+
             // We return a default created object if we didn't find one with the given ID.
             // It's up to the caller to check that the ID is non-null to confirm that a
             // valid DialogueData was found.
@@ -77,7 +76,17 @@ namespace Conversation
             return foundIter != m_dialogues.end() ? *foundIter : DialogueData();
         }
 
-        void TryToStartConversation(const AZ::EntityId& initiatingEntityId) override;
+        [[nodiscard]] auto GetConversationAssets() const -> ConversationAssetContainer const& override
+        {
+            return m_config.m_assets;
+        };
+
+        /**
+         * @brief Tries to start a conversation if possible.
+         *
+         * @return A string error message on failure, and nothing otherwise.
+         */
+        auto TryToStartConversation(const AZ::EntityId& initiatingEntityId) -> AZStd::optional<AZStd::string> override;
         void AbortConversation() override;
         void EndConversation() override;
         /**
@@ -108,7 +117,7 @@ namespace Conversation
          * in random order, so it's up to the caller match selections with an index.
          *
          */
-        void SelectAvailableResponse(const int availableResponseIndex);
+        void SelectAvailableResponse(int const responseNumber) override;
         /**
          * \brief Attempts to move the conversation along by selecting the next dialogue.
          *
@@ -124,27 +133,40 @@ namespace Conversation
          */
         void ContinueConversation() override;
 
-        AZStd::string GetDisplayName() const
+        [[nodiscard]] auto GetDisplayName() const -> AZStd::string override
         {
             return m_displayName;
         }
 
-        DialogueData GetActiveDialogue() const override
+        [[nodiscard]] auto GetActiveDialogue() const -> DialogueData override
         {
             return m_activeDialogue ? *m_activeDialogue : DialogueData();
         }
 
-        AZStd::vector<DialogueData> GetAvailableResponses() const override
+        [[nodiscard]] auto GetAvailableResponses() const -> AZStd::vector<DialogueData> override
         {
             return m_availableResponses;
         }
 
-        static bool VerifyAvailability(const DialogueData& dialogueData);
+        [[nodiscard]] auto GetSpeakerTag() const -> AZStd::string override
+        {
+            return m_speakerTag;
+        }
+
+        [[nodiscard]] auto GetCurrentState() const -> DialogueState override
+        {
+            return m_currentState;
+        }
+
+        [[nodiscard]] auto CheckAvailability(DialogueData const& dialogueData) -> bool override;
+        [[nodiscard]] auto CheckAvailability(DialogueId const& dialogueIdToCheck) -> bool override;
+        [[nodiscard]] auto CheckIfDialogueIdExists(const DialogueId& /*dialogueId*/) const -> bool override;
 
     private:
-        ConversationAssetContainer m_conversationAssets;
-        AZ::Data::Asset<ConversationAsset> m_memoryConversationAsset;
-        AZStd::unordered_set<DialogueId> m_startingIds;
+        DialogueComponentConfig m_config;
+        ConversationAsset m_memoryConversationAsset;
+        AZStd::vector<DialogueId> m_startingIds;
+        AZStd::vector<DialogueId> m_dialogueIds;
         AZStd::unordered_set<DialogueData> m_dialogues;
         /**
          * An entity's speaker tag.
@@ -155,8 +177,8 @@ namespace Conversation
         AZStd::string m_speakerTag;
         AZStd::string m_displayName;
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_speakerIconPath;
-        ConversationStates m_currentState = ConversationStates::Inactive;
-        AZStd::unique_ptr<DialogueData> m_activeDialogue;
+        DialogueState m_currentState = DialogueState::Inactive;
+        AZStd::optional<DialogueData> m_activeDialogue;
         AZStd::vector<DialogueData> m_availableResponses;
     };
 

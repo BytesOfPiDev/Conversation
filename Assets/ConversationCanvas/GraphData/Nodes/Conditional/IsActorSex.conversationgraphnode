@@ -1,0 +1,60 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{72F6C219-10E1-4A49-8479-08B8454A7584}",
+        "category": "Conditions",
+        "title": "Is Actor Sex",
+        "settings": {
+            "templatePaths": {}
+        },
+        "propertySlots": [
+            {
+                "name": "inSex",
+                "displayName": "Value",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "Male"
+                },
+                "enumValues": [
+                    "Male",
+                    "Female"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false
+            }
+        ],
+        "inputSlots": [
+            {
+                "name": "inTag",
+                "displayName": "Tag",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outCondition",
+                "displayName": "Script",
+                "supportedDataTypeRegex": "condition_Id",
+                "defaultDataType": "condition_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "settings": {
+                    "instructions": [
+                        "-- Begin NODEID|SLOTNAME\n    local SLOTNAME = function()\n        return GetActorSex(\"SLOTVALUE(inTag)\") == Crc32(\"SLOTVALUE(inSex)\");\n    end\n-- End NODEID|SLOTNAME"
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,166 @@
+#include "Conversation/Constants.h"
+#include <Tools/Window/ConversationCanvasMainWindow.h>
+
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportInputController.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
+#include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
+#include <AzQtComponents/Components/StyleManager.h>
+#include <qnamespace.h>
+
+#include <QApplication>
+#include <QMessageBox>
+#include <QWindow>
+
+namespace ConversationEditor
+{
+    ConversationCanvasMainWindow::ConversationCanvasMainWindow(
+        AZ::Crc32 const& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
+        : Base(toolId, "ConversationCanvasMainWindow", parent)
+        , m_graphViewSettingsPtr(graphViewSettingsPtr)
+        , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
+    {
+        // m_assetBrowser->SetFileTypeFilters("", "Conversation", true);
+
+        m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this); // NOLINT
+        m_documentInspector->SetDocumentSettingsPrefix("O3DE/Atom/ConversationCanvas/DocumentInspector");
+        AddDockWidget("Inspector", m_documentInspector, Qt::RightDockWidgetArea);
+
+        m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this); // NOLINT
+
+        m_conversationViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this); // NOLINT
+
+        auto entityContext = AZStd::make_shared<AzFramework::EntityContext>();
+        entityContext->InitContext();
+
+        auto viewportScene = AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportScene>(
+            m_toolId, m_conversationViewport, entityContext, "ConversationCanvasViewportWidget", "passes/lowendrenderpipeline.azasset");
+
+        auto viewportContent =
+            AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportContent>(m_toolId, m_conversationViewport, entityContext);
+
+        auto viewportController =
+            AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportInputController>(m_toolId, m_conversationViewport, viewportContent);
+
+        m_conversationViewport->Init(entityContext, viewportScene, viewportContent, viewportController);
+
+        auto viewPortAndToolbar = new QWidget(this);
+        viewPortAndToolbar->setLayout(new QVBoxLayout(viewPortAndToolbar));
+        viewPortAndToolbar->layout()->setContentsMargins(0, 0, 0, 0);
+        viewPortAndToolbar->layout()->setMargin(0);
+        viewPortAndToolbar->layout()->setSpacing(0);
+        viewPortAndToolbar->layout()->addWidget(m_toolBar);
+        viewPortAndToolbar->layout()->addWidget(m_conversationViewport);
+
+        AddDockWidget("Viewport", viewPortAndToolbar, Qt::BottomDockWidgetArea);
+
+        m_viewportSettingsInspector = new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this);
+        AddDockWidget("Viewport Settings", m_viewportSettingsInspector, Qt::LeftDockWidgetArea);
+        SetDockWidgetVisible("Viewport Settings", false);
+
+        m_bookmarkDockWidget = aznew GraphCanvas::BookmarkDockWidget(m_toolId, this);
+        AddDockWidget("Bookmarks", m_bookmarkDockWidget, Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("Bookmarks", false);
+
+        AddDockWidget("MiniMap", aznew GraphCanvas::MiniMapDockWidget(m_toolId, this), Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("MiniMap", false);
+
+        GraphCanvas::NodePaletteConfig nodePaletteConfig;
+        nodePaletteConfig.m_rootTreeItem = m_graphViewSettingsPtr->m_createNodeTreeItemsFn(m_toolId);
+        nodePaletteConfig.m_editorId = m_toolId;
+        nodePaletteConfig.m_mimeType = m_graphViewSettingsPtr->m_nodeMimeType.c_str();
+        nodePaletteConfig.m_isInContextMenu = false;
+        nodePaletteConfig.m_saveIdentifier = m_graphViewSettingsPtr->m_nodeSaveIdentifier;
+
+        m_nodePalette = aznew GraphCanvas::NodePaletteDockWidget(this, "Node Palette", nodePaletteConfig);
+        AddDockWidget("Node Palette", m_nodePalette, Qt::LeftDockWidgetArea);
+
+        AZ::IO::FixedMaxPath resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(resolvedPath, m_graphViewSettingsPtr->m_translationPath.c_str());
+        const AZ::IO::FixedMaxPathString translationFilePath = resolvedPath.LexicallyNormal().FixedMaxPathString();
+        if (m_translator.load(QLocale::Language::English, translationFilePath.c_str()))
+        {
+            if (!qApp->installTranslator(&m_translator))
+            {
+                AZ_Warning("ConversationCanvas", false, "Error installing translation %s!", translationFilePath.c_str());
+            }
+        }
+        else
+        {
+            AZ_Warning("ConversationCanvas", false, "Error loading translation file %s", translationFilePath.c_str());
+        }
+
+        // Set up style sheet to fix highlighting in the node palette
+        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/GraphView/GraphView.qss"));
+
+        OnDocumentOpened(AZ::Uuid::CreateNull());
+    }
+
+    void ConversationCanvasMainWindow::OnDocumentOpened(AZ::Uuid const& documentId)
+    {
+        Base::OnDocumentOpened(documentId);
+        m_documentInspector->SetDocumentId(documentId);
+    }
+
+    void ConversationCanvasMainWindow::ResizeViewportRenderTarget(AZ::u32 width, AZ::u32 height)
+    {
+        QSize requestedViewportSize = QSize(width, height) / devicePixelRatioF();
+        QSize currentViewportSize = m_conversationViewport->size();
+        QSize offset = requestedViewportSize - currentViewportSize;
+        QSize requestedWindowSize = size() + offset;
+        resize(requestedWindowSize);
+
+        AZ_Assert(
+            m_conversationViewport->size() == requestedViewportSize,
+            "Resizing the window did not give the expected viewport size. Requested %d x %d but got %d x %d.",
+            requestedViewportSize.width(), requestedViewportSize.height(), m_conversationViewport->size().width(),
+            m_conversationViewport->size().height());
+
+        [[maybe_unused]] QSize newDeviceSize = m_conversationViewport->size();
+        AZ_Warning(
+            "Conversation Canvas",
+            static_cast<uint32_t>(newDeviceSize.width()) == width && static_cast<uint32_t>(newDeviceSize.height()) == height,
+            "Resizing the window did not give the expected frame size. Requested %d x %d but got %d x %d.", width, height,
+            newDeviceSize.width(), newDeviceSize.height());
+    }
+
+    void ConversationCanvasMainWindow::LockViewportRenderTargetSize(AZ::u32 width, AZ::u32 height)
+    {
+        m_conversationViewport->LockRenderTargetSize(width, height);
+    }
+
+    void ConversationCanvasMainWindow::UnlockViewportRenderTargetSize()
+    {
+        m_conversationViewport->UnlockRenderTargetSize();
+    }
+
+    void ConversationCanvasMainWindow::PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const
+    {
+        m_conversationCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
+            "Conversation Canvas Settings", "Conversation Canvas Settings",
+            { AtomToolsFramework::CreateSettingsPropertyValue(
+                "/O3DE/Atom/ConversationCanvas/EnablePreview", "Enable Preview Functionality", "Just testing.", false) });
+
+        inspector->AddGroup(
+            "Graph View Settings", "Graph View Settings",
+            "Configuration settings for the graph view interaction, animation, and other behavior.",
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
+
+        Base::PopulateSettingsInspector(inspector);
+    }
+
+    void ConversationCanvasMainWindow::OnSettingsDialogClosed()
+    {
+        AtomToolsFramework::SetSettingsObject(ConversationCanvasGraphViewSettings, m_graphViewSettingsPtr);
+        Base::OnSettingsDialogClosed();
+    }
+
+    AZStd::string ConversationCanvasMainWindow::GetHelpDialogText() const
+    {
+        return R"(Halp!)";
+    }
+} // namespace ConversationEditor
+
+#include <Tools/Window/moc_ConversationCanvasMainWindow.cpp>

@@ -1,0 +1,41 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{360591F1-858B-4EFA-8738-DCB10953C8AB}",
+        "category": "Scripting",
+        "title": "Lua Script (Snippet)",
+        "propertySlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outCondition",
+                "displayName": "Script",
+                "supportedDataTypeRegex": "condition_id",
+                "defaultDataType": "condition_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "settings": {
+                    "instructions": [
+                        "    local SLOTNAME =  function ()\n        SLOTVALUE(inValue)\n    end"
+                    ]
+                }
+            }
+        ]
+    }
+}

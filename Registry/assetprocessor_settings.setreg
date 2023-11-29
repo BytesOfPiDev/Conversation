@@ -11,6 +11,11 @@
                     "watch": "@GEMROOT:Conversation@/Registry",
                     "recursive": 1,
                     "order": 102
+                },
+                "ScanFolder Conversation/Scripts": {
+                    "watch": "@GEMROOT:Conversation@/Scripts",
+                    "recursive": 1,
+                    "order": 102
                 }
             }
         }

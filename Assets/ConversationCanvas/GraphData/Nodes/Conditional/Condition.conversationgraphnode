@@ -1,0 +1,59 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{6836FA8B-A9FE-4EAA-9CCA-F42BFB645C64}",
+        "category": "Default",
+        "title": "Condition Data",
+        "settings": {
+            "instructions": [
+                "self.NODEID_IsAvailable = function()\n    SLOTVALUE(inFunctionId)(); -- SLOTNAME(inConditionOp) ;\nend"
+            ]
+        },
+        "inputSlots": [
+            {
+                "name": "inFunctionId",
+                "displayName": "FunctionId",
+                "supportedDataTypeRegex": "dialogue_id",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "editableOnNode": false
+            },
+            {
+                "name": "inConditionOp",
+                "displayName": "Op",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "=="
+                },
+                "enumValues": [
+                    "==",
+                    "!=",
+                    ">=",
+                    "<="
+                ],
+                "settings": {
+                    "instructions": {}
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "outValue",
+                "supportedDataTypeRegex": "dialogue_id",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                }
+            }
+        ]
+    }
+}

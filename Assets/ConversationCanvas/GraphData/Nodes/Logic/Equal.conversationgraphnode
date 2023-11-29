@@ -1,0 +1,54 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{948D0E1B-02A9-4576-997D-DB1C2771B286}",
+        "category": "Logic",
+        "title": "Equal To",
+        "slotDataTypeGroups": [
+            "left_value|right_value"
+        ],
+        "inputSlots": [
+            {
+                "name": "left_value",
+                "displayName": "Left",
+                "supportedDataTypeRegex": "int|bool|string|entity_id",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "editableOnNode": false
+            },
+            {
+                "name": "right_value",
+                "displayName": "Right",
+                "supportedDataTypeRegex": "int|bool|string|entity_id",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "editableOnNode": false
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "result",
+                "displayName": "Result",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                },
+                "settings": {
+                    "instructions": [
+                        "(left_value == right_value);"
+                    ]
+                }
+            }
+        ]
+    }
+}

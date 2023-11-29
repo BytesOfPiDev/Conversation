@@ -1,0 +1,36 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{0798D2A0-B97C-48D4-9E86-EB147D0ECADF}",
+        "category": "Default",
+        "title": "Conditional",
+        "inputSlots": [
+            {
+                "name": "input_result",
+                "displayName": "Result",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                },
+                "editableOnNode": false
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "output_id",
+                "displayName": "ConditionalId",
+                "supportedDataTypeRegex": "dialogue_id",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "editableOnNode": false
+            }
+        ]
+    }
+}

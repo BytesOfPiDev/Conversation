@@ -1,0 +1,137 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{CD9BA751-1338-44A0-AE80-2E7148F03775}",
+        "category": "Conversation",
+        "title": "Actor Dialogue",
+        "subTitle": "Dialogue",
+        "titlePaletteName": "DialogueOutputNodeTitlePalette",
+        "description": "A short version of this node's dialogue.",
+        "slotDataTypeGroups": [
+            "inDialogueData|outDialogueData",
+            "inDialogueId|outDialogueId"
+        ],
+        "settings": {
+            "nodeType": [
+                "Dialogue"
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inIsStarter",
+                "displayName": "IsStarter",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                }
+            },
+            {
+                "name": "inDelay",
+                "displayName": "Delay",
+                "supportedDataTypeRegex": "int",
+                "defaultDataType": "int",
+                "defaultValue": {
+                    "$type": "int",
+                    "Value": 0
+                }
+            },
+            {
+                "name": "inText",
+                "displayName": "Short Text",
+                "supportedDataTypeRegex": "actor_text",
+                "defaultDataType": "actor_text",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "..."
+                }
+            },
+            {
+                "name": "inScript",
+                "displayName": "Script",
+                "description": "A script that gets executed when this dialogue is chosen.",
+                "supportedDataTypeRegex": "lua_script",
+                "defaultDataType": "lua_script",
+                "defaultValue": {
+                    "$type": "{F0CB5839-52FC-5B3B-83F2-6EAFCD6DDE06} Asset<ScriptAsset>"
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inComment",
+                "displayName": "Comment",
+                "supportedDataTypeRegex": "comment",
+                "defaultDataType": "comment",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "visibleOnNode": false
+            },
+            {
+                "name": "inChunk",
+                "displayName": "Text Chunk",
+                "supportedDataTypeRegex": "dialogue_chunk",
+                "defaultDataType": "dialogue_chunk",
+                "defaultValue": {
+                    "$type": "DialogueChunk"
+                }
+            }
+        ],
+        "inputSlots": [
+            {
+                "name": "inParent",
+                "displayName": "Parent",
+                "supportedDataTypeRegex": "dialogue_id|dialogue_data",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "editableOnNode": false
+            },
+            {
+                "name": "inCondition",
+                "displayName": "Condition Id",
+                "supportedDataTypeRegex": "condition_id",
+                "defaultDataType": "condition_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [
+                        "-- Begin NODEID settings\n    self:AddCondition('NODEID', SLOTVALUE(inCondition));\n-- End NODEID settings"
+                    ]
+                }
+            },
+            {
+                "name": "inSpeaker",
+                "displayName": "Speaker",
+                "supportedDataTypeRegex": "speaker_tag",
+                "defaultDataType": "speaker_tag",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outDialogueId",
+                "displayName": "Dialogue",
+                "supportedDataTypeRegex": "dialogue_id",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                }
+            }
+        ]
+    }
+}

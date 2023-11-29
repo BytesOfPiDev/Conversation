@@ -1,0 +1,49 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{F3BC8A8C-2100-400C-8E6C-0309D7606770}",
+        "category": "Functions/IsLegendary",
+        "title": "IsLegendary",
+        "propertySlots": [
+            {
+                "name": "inActorTag",
+                "displayName": "Actor Tag",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
+            },
+            {
+                "name": "inCompareTo",
+                "displayName": "Compare To",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": true
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outScript",
+                "displayName": "Script",
+                "supportedDataTypeRegex": "dialogue_id",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "settings": {
+                    "instructions": [
+                        "self.conditions['NODEID'] = function()\n\t\t\t\t-- IsLegendary(SLOTVALUE(inActorTag)) == SLOTVALUE(inCompareTo);\nend"
+                    ]
+                }
+            }
+        ]
+    }
+}

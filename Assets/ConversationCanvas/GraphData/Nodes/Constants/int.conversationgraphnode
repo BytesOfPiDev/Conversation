@@ -1,0 +1,46 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{96F5DD02-8536-4CFF-A2A3-3DE58034698D}",
+        "category": "Constants",
+        "title": "Int Constant",
+        "titlePaletteName": "ConstantNodeTitlePalette",
+        "propertySlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "int",
+                "defaultDataType": "int",
+                "defaultValue": {
+                    "$type": "int",
+                    "Value": 0
+                },
+                "settings": {
+                    "instructions": [
+                        "local SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "result",
+                "displayName": "Value",
+                "supportedDataTypeRegex": "int",
+                "defaultDataType": "int",
+                "defaultValue": {
+                    "$type": "int",
+                    "Value": 0
+                },
+                "settings": {
+                    "instructions": [
+                        "local SLOTNAME = inValue;"
+                    ]
+                }
+            }
+        ]
+    }
+}

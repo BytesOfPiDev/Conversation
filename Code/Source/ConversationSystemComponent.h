@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "Conversation/ConversationTypeIds.h"
+#include "Conversation/DialogueData.h"
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <Conversation/ConversationAsset.h>
@@ -14,17 +16,17 @@ namespace Conversation
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT(ConversationSystemComponent, "{30f94275-e830-466f-b1c6-140156911232}");
+        AZ_COMPONENT(ConversationSystemComponent, ConversationSystemComponentTypeId); // NOLINT
+        AZ_DISABLE_COPY_MOVE(ConversationSystemComponent); // NOLINT
+
+        ConversationSystemComponent();
+        ~ConversationSystemComponent() override;
 
         static void Reflect(AZ::ReflectContext* context);
-
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
-
-        ConversationSystemComponent();
-        ~ConversationSystemComponent();
 
     protected:
         ////////////////////////////////////////////////////////////////////////
@@ -46,6 +48,7 @@ namespace Conversation
 
     private:
         AZStd::unique_ptr<ConversationAssetHandler> m_conversationAssetHandler;
+        AZStd::vector<DialogueData> m_dialogues;
     };
 
 } // namespace Conversation

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <Conversation/DialogueData.h>
+
+#include "Conversation/DialogueData.h"
 
 namespace Conversation
 {
@@ -15,7 +16,6 @@ namespace Conversation
 
         virtual void RunDialogueScript()
         {
-
         }
     };
     using DialogueScriptRequestBus = AZ::EBus<DialogueScriptRequests>;

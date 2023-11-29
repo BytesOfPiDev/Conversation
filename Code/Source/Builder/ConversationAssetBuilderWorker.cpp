@@ -1,3 +1,6 @@
+#include "AssetBuilderSDK/AssetBuilderSDK.h"
+#include "AzCore/Asset/AssetCommon.h"
+#include "AzCore/Debug/Trace.h"
 #include <Builder/ConversationAssetBuilderWorker.h>
 
 #include <algorithm>
@@ -10,17 +13,10 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <ConversationEditor/ConversationDocument.h>
-#include <ConversationEditor/ConversationGraph.h>
-#include <ConversationEditor/ConversationGraphContext.h>
-#include <ConversationEditor/DataTypes.h>
-#include <ConversationEditor/Nodes/Link.h>
-#include <ConversationEditor/Nodes/RootNode.h>
+#include <Conversation/ConversationAsset.h>
 
-namespace ConversationAssetBuilder
+namespace ConversationEditor
 {
-    static constexpr const char* const CONVERSATION_DOCUMENT_EXTENSION = Conversation::ConversationAsset::SOURCE_EXTENSION;
-    static constexpr const char* const CONVERSATION_ASSET_EXTENSION = Conversation::ConversationAsset::PRODUCT_EXTENSION;
     static constexpr const char* const COMPILEKEY = "Compile Conversation";
 
     ConversationAssetBuilderWorker::ConversationAssetBuilderWorker() = default;
@@ -45,9 +41,9 @@ namespace ConversationAssetBuilder
         AzFramework::StringFunc::Path::Normalize(fullPath);
         AZStd::string relPath = request.m_sourceFile;
 
-        if (AzFramework::StringFunc::Equal(ext.c_str(), CONVERSATION_ASSET_EXTENSION))
+        if (AzFramework::StringFunc::Equal(ext.c_str(), Conversation::ConversationAsset::ProductExtension))
         {
-            AzFramework::StringFunc::Path::ReplaceExtension(relPath, CONVERSATION_DOCUMENT_EXTENSION);
+            AzFramework::StringFunc::Path::ReplaceExtension(relPath, Conversation::ConversationAsset::SourceExtension);
             // Declare and add the dependency on the *.dialoguedoc file:
             sourceFileDependencyInfo.m_sourceFileDependencyPath = relPath;
             response.m_sourceFileDependencyList.push_back(sourceFileDependencyInfo);
@@ -73,10 +69,10 @@ namespace ConversationAssetBuilder
             return;
         }
 
-        AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Checking for: %s. \n", CONVERSATION_DOCUMENT_EXTENSION);
+        AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Checking for: %s. \n", Conversation::ConversationAsset::SourceExtension); // NOLINT
 
         // Create a job when for dialogue documents.
-        if (AzFramework::StringFunc::Equal(ext.c_str(), CONVERSATION_DOCUMENT_EXTENSION))
+        if (AzFramework::StringFunc::Equal(ext.c_str(), Conversation::ConversationAsset::SourceExtension))
         {
             // Create a job for each platform that is enabled/supported.
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
@@ -110,7 +106,7 @@ namespace ConversationAssetBuilder
 
         // Use AZ_TracePrintf to communicate job details. The logging system will automatically file the text under the appropriate log file
         // and category.
-        AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Starting Job.\n");
+        AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Starting Job.\n"); // NOLINT
 
         // The assets filename; e.g. "myasset.assetextension"
         AZStd::string fileName;
@@ -120,40 +116,30 @@ namespace ConversationAssetBuilder
         AZStd::string ext;
         AzFramework::StringFunc::Path::GetExtension(request.m_sourceFile.c_str(), ext, false);
         // Perform work based on extension type
-        if (AzFramework::StringFunc::Equal(ext.c_str(), CONVERSATION_DOCUMENT_EXTENSION))
+        if (AzFramework::StringFunc::Equal(ext.c_str(), Conversation::ConversationAsset::SourceExtension))
         {
             if (AzFramework::StringFunc::Equal(request.m_jobDescription.m_jobKey.c_str(), COMPILEKEY))
             {
                 // Change the extension to what will be present in the shipped product.
-                AzFramework::StringFunc::Path::ReplaceExtension(fileName, "conversation");
+                AzFramework::StringFunc::Path::ReplaceExtension(fileName, Conversation::ConversationAsset::ProductExtension);
             }
         }
 
-        AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Loading/deserializing the conversation document.\n");
-        AZStd::shared_ptr<ConversationEditor::ConversationDocument> doc(
-            AZ::Utils::LoadObjectFromFile<ConversationEditor::ConversationDocument>(request.m_fullPath.c_str()));
+        AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Loading/deserializing the conversation document.\n"); // NOLINT
 
-        if (doc)
+        AZStd::unique_ptr<Conversation::ConversationAsset> conversationAsset{
+            AZ::Utils::LoadObjectFromFile<Conversation::ConversationAsset>(request.m_fullPath.c_str())
+        };
+
+        if (conversationAsset)
         {
-            AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Successfully loaded/deserialized the conversation document.\n");
+            AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Successfully loaded/deserialized the conversation document.\n"); // NOLINT
         }
         else
         {
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Job failed. Unable to deserialize.\n", request.m_fullPath.c_str());
+            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Job failed. Unable to load/deserialize the conversation document.\n");
             return;
-        }
-
-        AZStd::shared_ptr<ConversationEditor::ConversationGraph> graph;
-        {
-            GraphModel::GraphContextPtr graphContext = AZStd::make_shared<ConversationEditor::ConversationGraphContext>();
-
-            if (doc->m_graphPtr)
-            {
-                doc->m_graphPtr->PostLoadSetup(graphContext); // REQUIRED AFTER DESERIALIZATION!
-            }
-
-            doc->m_graphPtr;
         }
 
         // All your work should happen inside the tempDirPath.
@@ -165,7 +151,7 @@ namespace ConversationAssetBuilder
         // Check if we are cancelled or shutting down before doing intensive processing on this source file
         if (jobCancelListener.IsCancelled())
         {
-            AZ_TracePrintf(AssetBuilderSDK::WarningWindow, "Cancel was requested for job %s.\n", request.m_fullPath.c_str());
+            AZ_TracePrintf(AssetBuilderSDK::WarningWindow, "Cancel was requested for job %s.\n", request.m_fullPath.c_str()); // NOLINT
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
             return;
         }
@@ -177,24 +163,9 @@ namespace ConversationAssetBuilder
             return;
         }
 
-        AZStd::shared_ptr<Conversation::ConversationAsset> ConversationAssetData;
-
-        if (doc->m_graphPtr)
-        {
-            ConversationAssetData = doc->m_graphPtr->MakeAsset();
-        }
-        else
-        {
-            // Instead of failing the build, create an empty asset.
-            AZ_TracePrintf(
-                AssetBuilderSDK::WarningWindow, "The conversation document's graph is null/empty. The built asset will be empty.\n");
-            ConversationAssetData = AZStd::make_shared<Conversation::ConversationAsset>();
-        }
-
         // Save the asset to the temp destination path.
-
         bool success = AZ::Utils::SaveObjectToFile<Conversation::ConversationAsset>(
-            destPath.c_str(), AZ::DataStream::ST_JSON, ConversationAssetData.get());
+            destPath.c_str(), AZ::DataStream::ST_JSON, conversationAsset.get());
 
         if (!success)
         {
@@ -218,7 +189,7 @@ namespace ConversationAssetBuilder
 
         AZ_TracePrintf(
             AssetBuilderSDK::InfoWindow, "Job completed. Asset has %i starting IDs and %i dialogues.",
-            ConversationAssetData->GetStartingIds().size(), ConversationAssetData->GetDialogues().size());
+            conversationAsset->GetStartingIds().size(), conversationAsset->GetDialogues().size());
         return;
     }
 
@@ -226,4 +197,4 @@ namespace ConversationAssetBuilder
     {
         m_isShuttingDown = true;
     }
-} // namespace ConversationAssetBuilder
+} // namespace ConversationEditor

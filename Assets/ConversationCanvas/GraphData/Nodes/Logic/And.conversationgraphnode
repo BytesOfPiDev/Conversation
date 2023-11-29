@@ -1,0 +1,48 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{0B808045-039F-4469-9525-8D214224E815}",
+        "category": "Logic",
+        "title": "And",
+        "subTitle": "Logical And",
+        "slotDataTypeGroups": [
+            "leftValue|rightValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "left_value",
+                "displayName": "Left",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                }
+            },
+            {
+                "name": "right_value",
+                "displayName": "Right",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "result",
+                "displayName": "result",
+                "supportedDataTypeRegex": "bool",
+                "defaultDataType": "bool",
+                "defaultValue": {
+                    "$type": "bool",
+                    "Value": false
+                }
+            }
+        ]
+    }
+}

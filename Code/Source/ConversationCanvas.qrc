@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/">
+        <file>Tools/Window/Icons/application.svg</file>
+    </qresource>
+</RCC>

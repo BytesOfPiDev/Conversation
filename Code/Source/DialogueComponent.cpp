@@ -1,26 +1,38 @@
-#include <Conversation/DialogueComponent.h>
+#include "Conversation/DialogueComponent.h"
 
-#include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/ranges/ranges.h>
-#include <AzFramework/Entity/GameEntityContextBus.h>
-#include <Conversation/AvailabilityBus.h>
-#include <Conversation/ConversationAsset.h>
-#include <Conversation/ConversationBus.h>
-#include <Conversation/DialogueScript.h>
-#include <LmbrCentral/Scripting/TagComponentBus.h>
+#include "AzCore/Asset/AssetSerializer.h"
+#include "AzCore/Console/IConsole.h"
+#include "AzCore/Console/ILogger.h"
+#include "AzCore/Debug/Trace.h"
+#include "AzCore/RTTI/BehaviorContext.h"
+#include "AzCore/RTTI/RTTIMacros.h"
+#include "AzCore/Script/ScriptContextAttributes.h"
+#include "AzCore/Serialization/SerializeContext.h"
+#include "Conversation/ConversationTypeIds.h"
+#include "Conversation/DialogueComponentBus.h"
+#include "Conversation/DialogueData_incl.h"
+#include "LmbrCentral/Scripting/TagComponentBus.h"
+#include "cstdlib"
+
+#include "Conversation/AvailabilityBus.h"
+#include "Conversation/Components/DialogueComponentConfig.h"
+#include "Conversation/Constants.h"
+#include "Conversation/ConversationAsset.h"
+#include "Conversation/DialogueScript.h"
 
 namespace Conversation
 {
+    constexpr auto ActiveConversationTag = AZ_CRC_CE("active_conversation");
+    constexpr auto PlayerConversationTag = AZ_CRC_CE("player_conversation");
+
+    AZ_COMPONENT_IMPL(DialogueComponent, "DialogueComponent", DialogueComponentTypeId); // NOLINT
+
     class BehaviorDialogueComponentNotificationBusHandler
         : public DialogueComponentNotificationBus::Handler
         , public AZ::BehaviorEBusHandler
     {
     public:
-        AZ_EBUS_BEHAVIOR_BINDER_WITH_DOC(
+        AZ_EBUS_BEHAVIOR_BINDER_WITH_DOC( // NOLINT
             BehaviorDialogueComponentNotificationBusHandler,
             "{D9A79838-589F-4BE3-9D87-7CFE187A52D3}",
             AZ::SystemAllocator,
@@ -36,7 +48,10 @@ namespace Conversation
             OnResponseAvailable,
             ({ "AvailableDialogue", "An available response to the currently active dialogue." }));
 
-        void OnDialogue(const DialogueData& dialogue, const AZStd::vector<DialogueData>& availableResponses)
+        AZ_DISABLE_COPY_MOVE(BehaviorDialogueComponentNotificationBusHandler); // NOLINT
+        ~BehaviorDialogueComponentNotificationBusHandler() override = default;
+
+        void OnDialogue(const DialogueData& dialogue, const AZStd::vector<DialogueData>& availableResponses) override
         {
             Call(FN_OnDialogue, dialogue, availableResponses);
         }
@@ -56,7 +71,7 @@ namespace Conversation
             Call(FN_OnConversationAborted);
         }
 
-        void OnResponseAvailable(const DialogueData& availableDialogue)
+        void OnResponseAvailable(const DialogueData& availableDialogue) override
         {
             Call(FN_OnResponseAvailable, availableDialogue);
         }
@@ -67,7 +82,7 @@ namespace Conversation
         , public AZ::BehaviorEBusHandler
     {
     public:
-        AZ_EBUS_BEHAVIOR_BINDER_WITH_DOC(
+        AZ_EBUS_BEHAVIOR_BINDER_WITH_DOC( // NOLINT
             BehaviorGlobalConversationNotificationBusHandler,
             "{BC042832-201F-4797-B97E-CC5165D60361}",
             AZ::SystemAllocator,
@@ -77,6 +92,9 @@ namespace Conversation
             ({ "Target", "The entity the conversation abort was called on." }),
             OnConversationEnded,
             ({ "Target", "The entity whose conversation ended (has the dialogue component that was used.)" }));
+
+        AZ_DISABLE_COPY_MOVE(BehaviorGlobalConversationNotificationBusHandler); // NOLINT
+        ~BehaviorGlobalConversationNotificationBusHandler() override = default;
 
         void OnConversationStarted(AZ::EntityId initiator, AZ::EntityId target) override
         {
@@ -94,47 +112,23 @@ namespace Conversation
         }
     };
 
-    DialogueComponent::~DialogueComponent()
-    {
-    }
-
     void DialogueComponent::Reflect(AZ::ReflectContext* context)
     {
         ConversationAsset::Reflect(context);
-
-        [[maybe_unused]] constexpr static const char* DIALOGUE_SYSTEM_CATEGORY = "Dialogue System";
-        constexpr static const char* DIALOGUE_COMPONENT_CATEGORY = "Dialogue System/DialogueComponent";
+        DialogueComponentConfig::Reflect(context);
 
         auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
             serializeContext->Class<DialogueComponent, AZ::Component>()
-                ->Version(0)
-                ->Field("Assets", &DialogueComponent::m_conversationAssets)
+                ->Version(1)
+                ->Field("Config", &DialogueComponent::m_config)
                 ->Field("Dialogues", &DialogueComponent::m_dialogues)
                 ->Field("DisplayName", &DialogueComponent::m_displayName)
                 ->Field("MemoryAsset", &DialogueComponent::m_memoryConversationAsset)
                 ->Field("SpeakerIconPath", &DialogueComponent::m_speakerIconPath)
                 ->Field("SpeakerTag", &DialogueComponent::m_speakerTag)
                 ->Field("StartingIds", &DialogueComponent::m_startingIds);
-
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-            {
-                auto editInfo = editContext->Class<DialogueComponent>("DialogueComponent", "");
-
-                editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DialogueComponent::m_conversationAssets, "Assets",
-                        "The conversation file that will be used.")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DialogueComponent::m_speakerTag, "Speaker Tag",
-                        "Identifies this entity as the owner of any dialogue containing this speaker tag.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DialogueComponent::m_displayName, "Display Name", "");
-
-                editInfo->DataElement(AZ::Edit::UIHandlers::Default, &DialogueComponent::m_speakerIconPath, "SpeakerIconPath", "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, true);
-            }
 
             serializeContext->RegisterGenericType<AZStd::vector<AZ::Crc32>>();
         }
@@ -143,61 +137,80 @@ namespace Conversation
         if (behaviorContext)
         {
             behaviorContext->EBus<DialogueComponentRequestBus>("DialogueComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, DIALOGUE_COMPONENT_CATEGORY)
-                ->Event("AbortConversation", &DialogueComponentRequestBus::Events::AbortConversation)
-                ->Event("ContinueConversation", &DialogueComponentRequestBus::Events::ContinueConversation)
-                ->Event("EndConversation", &DialogueComponentRequestBus::Events::EndConversation)
-                ->Event("FindDialogueById", &DialogueComponentRequestBus::Events::FindDialogue)
-                ->Event("GetActiveDialogue", &DialogueComponentRequestBus::Events::GetActiveDialogue)
-                ->Event("GetAvailableResponses", &DialogueComponentRequestBus::Events::GetAvailableResponses)
-                ->Event("GetDialogues", &DialogueComponentRequestBus::Events::GetDialogues)
-                ->Event("GetDisplayName", &DialogueComponentRequestBus::Events::GetDisplayName)
-                ->Event("GetStartingIds", &DialogueComponentRequestBus::Events::GetStartingIds)
-                ->Event(
+                ->Attribute(AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->EventWithBus<DialogueComponentRequestBus>(
+                    "SelectAvailableResponseByNum", &DialogueComponentRequests::SelectAvailableResponse,
+                    { { { "Choice Number", "The number corresponding to the desired dialogue choice. Starts at '1'." } } })
+                ->EventWithBus<DialogueComponentRequestBus>("AbortConversation", &DialogueComponentRequestBus::Events::AbortConversation)
+                ->EventWithBus<DialogueComponentRequestBus>(
+                    "ContinueConversation", &DialogueComponentRequestBus::Events::ContinueConversation)
+                ->EventWithBus<DialogueComponentRequestBus>("EndConversation", &DialogueComponentRequestBus::Events::EndConversation)
+                ->EventWithBus<DialogueComponentRequestBus>("GetActiveDialogue", &DialogueComponentRequestBus::Events::GetActiveDialogue)
+                ->EventWithBus<DialogueComponentRequestBus>(
+                    "GetAvailableResponses", &DialogueComponentRequestBus::Events::GetAvailableResponses)
+                ->EventWithBus<DialogueComponentRequestBus>("GetDialogues", &DialogueComponentRequestBus::Events::GetDialogues)
+                ->EventWithBus<DialogueComponentRequestBus>("GetDisplayName", &DialogueComponentRequestBus::Events::GetDisplayName)
+                ->EventWithBus<DialogueComponentRequestBus>("GetStartingIds", &DialogueComponentRequestBus::Events::GetStartingIds)
+                ->EventWithBus<DialogueComponentRequestBus>(
                     "TryToStartConversation", &DialogueComponentRequestBus::Events::TryToStartConversation,
                     { { { "Initiator", "The entity starting the conversation." } } })
-                ->Event("FindDialogueById", &DialogueComponentRequestBus::Events::FindDialogue, { { { "DialogueId", "" } } })
-                ->Event(
+                ->EventWithBus<DialogueComponentRequestBus>(
+                    "FindDialogueById", &DialogueComponentRequestBus::Events::FindDialogue, { { { "DialogueId", "" } } })
+                ->EventWithBus<DialogueComponentRequestBus>(
                     "DoesDialogueWithIdExist", &DialogueComponentRequestBus::Events::CheckIfDialogueIdExists, { { { "DialogueId", "" } } })
-                ->Event("GetConversationAssets", &DialogueComponentRequestBus::Events::GetConversationAssets)
-                ->Event("GetSpeakerTag", &DialogueComponentRequestBus::Events::GetSpeakerTag)
+                ->EventWithBus<DialogueComponentRequestBus>(
+                    "GetConversationAssets", &DialogueComponentRequestBus::Events::GetConversationAssets)
+                ->EventWithBus<DialogueComponentRequestBus>("GetSpeakerTag", &DialogueComponentRequestBus::Events::GetSpeakerTag)
                 // Specifying the specific overloaded SelectDialogue function that takes DialogueData as a parameter.
-                ->Event<void (DialogueComponentRequestBus::Events::*)(const DialogueData&)>(
+                ->EventWithBus<DialogueComponentRequestBus, void (DialogueComponentRequestBus::Events::*)(const DialogueData&)>(
                     "SelectDialogue", &DialogueComponentRequestBus::Events::SelectDialogue,
                     { { { "DialogueData", "The dialogue to make active." } } })
                 // Specifying the specific overloaded SelectDialogue function that takes DialogueId as a parameter.
-                ->Event<void (DialogueComponentRequestBus::Events::*)(const DialogueId)>(
+                ->EventWithBus<DialogueComponentRequestBus, void (DialogueComponentRequestBus::Events::*)(const DialogueId)>(
                     "SelectDialogueById", &DialogueComponentRequestBus::Events::SelectDialogue,
                     { { { "DialogueId", "The ID of the dialogue to look for and make active." } } });
 
             behaviorContext->EBus<DialogueComponentNotificationBus>("DialogueComponentNotificationBus")
-                ->Attribute(AZ::Script::Attributes::Category, DIALOGUE_COMPONENT_CATEGORY)
+                ->Attribute(AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Handler<BehaviorDialogueComponentNotificationBusHandler>();
 
             behaviorContext->EBus<GlobalConversationNotificationBus>("GlobalConversationNotificationBus")
-                ->Attribute(AZ::Script::Attributes::Category, "Conversation")
+                ->Attribute(AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Handler<BehaviorGlobalConversationNotificationBusHandler>();
+
+            behaviorContext->Constant(
+                "ActiveConversationTag",
+                []() -> AZ::Crc32
+                {
+                    return ActiveConversationTag;
+                });
+
+            behaviorContext->Constant(
+                "PlayerConversationTag",
+                []() -> AZ::Crc32
+                {
+                    return PlayerConversationTag;
+                });
         }
     }
 
     void DialogueComponent::Init()
     {
-        m_memoryConversationAsset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-        LmbrCentral::TagComponentRequestBus::Event(
-            GetEntityId(), &LmbrCentral::TagComponentRequestBus::Events::AddTag, AZ::Crc32(m_speakerTag));
     }
 
     void DialogueComponent::Activate()
     {
+        AZ_Trace("DialogueComponent", "TestTraceActivate");
         // Combine the starting IDs and dialogues into one container.
-        for (const AZ::Data::Asset<ConversationAsset>& asset : m_conversationAssets)
+        for (AZ::Data::Asset<ConversationAsset>& asset : m_config.m_assets)
         {
-            if (!asset.IsReady())
-            {
-                return;
-            }
-
-            m_startingIds.insert(asset->GetStartingIds().begin(), asset->GetStartingIds().end());
+            m_startingIds.insert(m_startingIds.end(), asset->GetStartingIds().begin(), asset->GetStartingIds().end());
             m_dialogues.insert(asset->GetDialogues().begin(), asset->GetDialogues().end());
         }
 
@@ -205,9 +218,6 @@ namespace Conversation
         // It will need to be removed upon deactivation.
         LmbrCentral::TagComponentRequestBus::Event(
             GetEntityId(), &LmbrCentral::TagComponentRequestBus::Events::AddTag, AZ::Crc32(m_speakerTag));
-
-        AZ_Warning("ConversationModel", m_startingIds.size() != 0, "No starting IDs found. There should be at least one.");
-        AZ_Warning("ConversationModel", m_dialogues.size() != 0, "No dialogues found. There should be one (multiple, really).");
 
         DialogueComponentRequestBus::Handler::BusConnect(GetEntityId());
     }
@@ -221,6 +231,27 @@ namespace Conversation
         // We don't want anyone talking to us using our speaker tag in a deactivated state.
         LmbrCentral::TagComponentRequestBus::Event(
             GetEntityId(), &LmbrCentral::TagComponentRequestBus::Events::RemoveTag, AZ::Crc32(m_speakerTag));
+    }
+
+    auto DialogueComponent::ReadInConfig(AZ::ComponentConfig const* baseConfig) -> bool
+    {
+        if (auto config = azrtti_cast<DialogueComponentConfig const*>(baseConfig))
+        {
+            m_config = (*config);
+            return true;
+        }
+
+        return false;
+    }
+
+    auto DialogueComponent::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const -> bool
+    {
+        if (auto* const config = azrtti_cast<DialogueComponentConfig*>(outBaseConfig))
+        {
+            (*config) = m_config;
+            return true;
+        }
+        return false;
     }
 
     void DialogueComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -243,22 +274,48 @@ namespace Conversation
         AZ_UNUSED(dependent);
     }
 
-    void DialogueComponent::TryToStartConversation(const AZ::EntityId& initiatingEntityId)
+    auto DialogueComponent::TryToStartConversation(AZ::EntityId const& initiatingEntityId) -> AZStd::optional<AZStd::string>
     {
-        AZ_Printf("DialogueComponent", "Trying to start a conversation on Entity: %s.\n", this->GetNamedEntityId().GetName().data());
-
-        AZ_Warning(
-            "DialogueComponent", m_currentState == ConversationStates::Inactive,
-            "An attempt was made to start a conversation on Entity: %s, but we're not in an 'Inactive' state.",
-            this->GetNamedEntityId().GetName().data());
+        AZ_Info( // NOLINT
+            "DialogueComponent", "[Entity: '%s'] Trying to start a conversation.\n", GetNamedEntityId().GetName().data());
 
         // Check that we have what we need to start to successfully start a conversation.
-        if (m_currentState != ConversationStates::Inactive || m_startingIds.empty() || m_dialogues.empty())
+
+        if (m_currentState != DialogueState::Inactive)
         {
-            return;
+            auto const error = AZStd::string::format(
+                "Failed to start conversation. Entity '%s' needs to be in the inactive state . \n", GetNamedEntityId().GetName().data());
+
+            AZ_Warning( // NOLINT
+                "DialogueComponent", false, error.data());
+            return error;
         }
 
-        m_currentState = ConversationStates::Starting;
+        if (m_dialogues.empty())
+        {
+            auto const error =
+                AZStd::string::format("Failed to start conversation. Entity '%s' has no dialogues.\n", GetNamedEntityId().GetName().data());
+
+            AZ_Warning( // NOLINT
+                "DialogueComponent", false, error.data());
+            return error;
+        }
+
+        if (m_startingIds.empty())
+        {
+            auto const error = AZStd::string::format(
+                "Failed to start conversation. Entity '%s' has no starting ids.\n", GetNamedEntityId().GetName().data());
+
+            AZ_Warning( // NOLINT
+                "DialogueComponent", false, error.data());
+            return error;
+        }
+
+        m_currentState = DialogueState::Starting;
+
+        AZLOG( // NOLINT
+            LOG_FollowConversation, "[Entity: '%s'] Entered starting state. Now checking for available starting dialogues.\n",
+            GetNamedEntityId().GetName().data());
 
         // We find the first available starting ID and use it to start the conversation.
         for (const DialogueId& startingId : m_startingIds)
@@ -271,90 +328,134 @@ namespace Conversation
             const auto startingDialogueIter = m_dialogues.find(DialogueData(startingId));
 
             // Verify we found one. This should never fail, but just in case.
-            if (startingDialogueIter == m_dialogues.end() || !startingDialogueIter->IsValid())
+            if (startingDialogueIter == m_dialogues.end() || !IsValid(*startingDialogueIter))
             {
-                m_currentState = ConversationStates::Inactive;
-                return;
+                m_currentState = DialogueState::Inactive;
+
+                auto const error =
+                    AZStd::string::format("[Entity: '%s'] Failed to find an expected dialogue.\n", GetNamedEntityId().GetName().data());
+
+                AZ_Error( // NOLINT
+                    "DialogueComponent", false, error.data());
+
+                return error;
             }
 
-            if (VerifyAvailability(*startingDialogueIter))
+            if (CheckAvailability(*startingDialogueIter))
             {
-                m_currentState = ConversationStates::Active;
+                m_currentState = DialogueState::Active;
+                LmbrCentral::TagComponentRequestBus::Event(
+                    GetEntityId(), &LmbrCentral::TagComponentRequests::AddTag, ActiveConversationTag);
+
+                auto const initiatingEntityIsPlayer = [&initiatingEntityId]() -> bool
+                {
+                    bool result{};
+                    LmbrCentral::TagComponentRequestBus::EventResult(
+                        result, initiatingEntityId, &LmbrCentral::TagComponentRequests::HasTag, AZ_CRC_CE("player"));
+                    return result;
+                }();
+
+                if (initiatingEntityIsPlayer)
+                {
+                    LmbrCentral::TagComponentRequestBus::Event(
+                        GetEntityId(), &LmbrCentral::TagComponentRequests::AddTag, PlayerConversationTag);
+                }
+
                 DialogueComponentNotificationBus::Event(
                     GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationStarted, initiatingEntityId);
                 GlobalConversationNotificationBus::Broadcast(
                     &GlobalConversationNotificationBus::Events::OnConversationStarted, initiatingEntityId, GetEntityId());
 
                 SelectDialogue(*startingDialogueIter);
-                AZ_Printf("DialogueComponent", "A conversation was successfully started.");
-                return; // Success - We're only interested in the first available.
+                AZLOG(LOG_FollowConversation, "A conversation was successfully started."); // NOLINT
+                return {}; // Success - We're only interested in the first available.
             }
         }
 
         // We failed to start the conversation.
-        m_currentState = ConversationStates::Inactive;
-        AZ_Printf("DialogueComponent", "A conversation failed to be started after checking for available starting IDs.");
+        m_currentState = DialogueState::Inactive;
+
+        auto const error = "A conversation failed to be started after checking for available starting IDs.";
+        AZ_Printf("DialogueComponent", error);
+
+        return error;
     }
 
     void DialogueComponent::AbortConversation()
     {
-        m_currentState = ConversationStates::Aborting;
-        m_activeDialogue = nullptr;
-        m_currentState = ConversationStates::Inactive;
+        m_currentState = DialogueState::Aborting;
+        m_activeDialogue.reset();
+        m_currentState = DialogueState::Inactive;
+
+        LmbrCentral::TagComponentRequestBus::Event(
+            GetEntityId(), &LmbrCentral::TagComponentRequests::RemoveTags,
+            AZStd::unordered_set{ ActiveConversationTag, PlayerConversationTag });
+
         DialogueComponentNotificationBus::Event(GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationAborted);
         GlobalConversationNotificationBus::Broadcast(&GlobalConversationNotificationBus::Events::OnConversationAborted, GetEntityId());
     }
 
     void DialogueComponent::EndConversation()
     {
-        m_currentState = ConversationStates::Ending;
-        m_activeDialogue = nullptr;
-        m_currentState = ConversationStates::Inactive;
+        m_currentState = DialogueState::Ending;
+        m_activeDialogue.reset();
+        m_currentState = DialogueState::Inactive;
+
+        LmbrCentral::TagComponentRequestBus::Event(
+            GetEntityId(), &LmbrCentral::TagComponentRequests::RemoveTags,
+            AZStd::unordered_set{ ActiveConversationTag, PlayerConversationTag });
+
         DialogueComponentNotificationBus::Event(GetEntityId(), &DialogueComponentNotificationBus::Events::OnConversationEnded);
         GlobalConversationNotificationBus::Broadcast(&GlobalConversationNotificationBus::Events::OnConversationEnded, GetEntityId());
     }
 
-    void DialogueComponent::SelectDialogue(const DialogueData& dialogueToSelect)
+    void DialogueComponent::SelectDialogue(DialogueData const& dialogueToSelect)
     {
-        // Ensure we have an active dialogue to work with and there's a conversation running.
-        if (!(m_currentState == ConversationStates::Active || m_currentState == ConversationStates::Starting))
+        // Selection should only be possible in 'Active' or 'Starting'.
+        if (!(m_currentState == DialogueState::Active || m_currentState == DialogueState::Starting))
         {
+            AZ_Error( // NOLINT
+                "DialogueComponent", false, "SelectDialogue should only be called while we're in the 'Active' or 'Starting' state.");
             return;
         }
-        // For now, if an attempt is made to select a dialogue and there are no
+
+        // TODO: Review. For now, if an attempt is made to select a dialogue and there are no
         // responses available, we're going to assume the caller wants to end the
         // conversation. Only check if there's an active dialogue because this function
         // can be called when there's no active dialogue, such as when first starting
         // a conversation.
-        if (m_activeDialogue && m_activeDialogue->GetResponseIds().empty())
+        if (m_activeDialogue && GetDialogueResponseIds(*m_activeDialogue).empty())
         {
+            AZLOG(LOG_FollowConversation, "Ending conversation because there are no responses available."); // NOLINT
             EndConversation();
             return;
         }
 
-        AZ_Assert(dialogueToSelect.IsValid(), "A valid dialogue is needed in order to make a selection.");
-        if (!dialogueToSelect.IsValid())
+        if (!IsValid(dialogueToSelect))
         {
+            AZ_Assert( // NOLINT
+                false, "A valid dialogue is needed in order to make a selection.");
+
             // Abort when given an invalid dialogue.
             AbortConversation();
             return;
         }
 
-        m_activeDialogue = AZStd::make_unique<DialogueData>(dialogueToSelect);
+        m_activeDialogue = dialogueToSelect;
         m_availableResponses.clear();
 
         // Check all responses and determine which should be available for use.
-        for (const DialogueId& responseId : m_activeDialogue->GetResponseIds())
+        for (DialogueId const& responseId : GetDialogueResponseIds(*m_activeDialogue))
         {
-            const DialogueData responseDialogue = FindDialogue(responseId);
+            DialogueData const responseDialogue = FindDialogue(responseId);
             // An invalid ID means we didn't find a dialogue matching the responseId.
             // We can only check valid dialogues, so we skip ahead if invalid.
-            if (!responseDialogue.IsValid())
+            if (!IsValid(responseDialogue))
             {
                 continue;
             }
 
-            if (VerifyAvailability(responseDialogue))
+            if (CheckAvailability(responseDialogue))
             {
                 m_availableResponses.push_back(responseDialogue);
             }
@@ -363,25 +464,35 @@ namespace Conversation
         // We send the dialogue out. It's considered spoken after this call.
         DialogueComponentNotificationBus::Event(
             GetEntityId(), &DialogueComponentNotificationBus::Events::OnDialogue, *m_activeDialogue, m_availableResponses);
+
+        AZLOG( // NOLINT
+            LOG_FollowConversation, "[Dialogue: '%s'] \"%s\"", GetNamedEntityId().GetName().data(),
+            GetDialogueActorText(*m_activeDialogue).data());
+
         // Since it's considered spoken, we should sent any necessary notifications related to speaking a dialogue.
         // The first thing we want to do is run any provided scripts.
-        AZStd::for_each(
-            m_activeDialogue->GetScriptIds().begin(), m_activeDialogue->GetScriptIds().end(),
-            [](const auto scriptId)
+        AZStd::ranges::for_each(
+            GetDialogueScriptIds(*m_activeDialogue),
+            [](auto const scriptId)
             {
                 DialogueScriptRequestBus::Event(AZ::Crc32(scriptId), &DialogueScriptRequestBus::Events::RunDialogueScript);
             });
     }
 
-    void DialogueComponent::SelectDialogue(const DialogueId dialogueId)
+    void DialogueComponent::SelectDialogue(DialogueId const dialogueId)
     {
         auto dialogueIter = m_dialogues.find(DialogueData(dialogueId));
         SelectDialogue(dialogueIter != m_dialogues.end() ? *dialogueIter : DialogueData());
     }
 
-    void DialogueComponent::SelectAvailableResponse(const int responseIndex)
+    void DialogueComponent::SelectAvailableResponse(int const responseNumber)
     {
-        SelectDialogue(m_availableResponses.size() > responseIndex ? m_availableResponses[responseIndex] : DialogueData());
+        if (responseNumber < 1 || responseNumber > m_availableResponses.size())
+        {
+            return;
+        }
+
+        SelectDialogue(m_availableResponses[responseNumber - 1]);
     }
 
     void DialogueComponent::ContinueConversation()
@@ -398,7 +509,7 @@ namespace Conversation
             return;
         }
         // Only if the first available response is the same speaker as the active dialogue, select it.
-        if (m_activeDialogue->GetSpeaker() == m_availableResponses.begin()->GetSpeaker())
+        if (GetDialogueSpeaker(*m_activeDialogue) == GetDialogueSpeaker(*m_availableResponses.begin()))
         {
             SelectDialogue(*m_availableResponses.begin());
             return;
@@ -406,36 +517,39 @@ namespace Conversation
 
         // If the active dialogue's speaker is the player, we automatically choose an NPC response.
         // This is just a workaround until proper NPC response handling is implemented.
-        if (m_activeDialogue->GetSpeaker() == "player") // @todo make "player" a constant
+        if (GetDialogueSpeaker(*m_activeDialogue) == "player") // @todo make "player" a constant
         {
-            const auto firstAvailableResponseIter = m_availableResponses.begin();
-            if (firstAvailableResponseIter != m_availableResponses.end() && firstAvailableResponseIter->GetSpeaker() != "player")
+            auto const firstAvailableResponseIter = m_availableResponses.begin();
+            if (firstAvailableResponseIter != m_availableResponses.end() && GetDialogueSpeaker(*firstAvailableResponseIter) != "player")
             {
                 SelectDialogue(*firstAvailableResponseIter);
             }
         }
     }
 
-    bool DialogueComponent::VerifyAvailability(const DialogueData& dialogueData)
+    auto DialogueComponent::CheckAvailability(DialogueData const& dialogueData) -> bool
     {
-        // Empty availability ID list always means the dialogue is available.
-        if (dialogueData.GetAvailabilityIds().empty())
-        {
-            return true;
-        }
-
         // All availability checks must pass for a dialogue to be available.
-        const bool isAvailable = AZStd::all_of(
-            dialogueData.GetAvailabilityIds().begin(), dialogueData.GetAvailabilityIds().end(),
-            [](const AZStd::string& stringId) -> bool
-            {
-                const AZ::Crc32 availabilityId = AZ::Crc32(stringId);
-                bool availabilityResult = false;
-                AvailabilityRequestBus::EventResult(availabilityResult, availabilityId, &AvailabilityRequestBus::Events::IsAvailable);
-                return availabilityResult;
-            });
+        bool const isDialogueAvailable = [this, &dialogueData]() -> bool
+        {
+            // NOTE: A DialogueData is, by default, available, unless a handler explicitly sets it to false.
+            AZ::EBusReduceResult<bool, AZStd::logical_and<bool>> result(true);
+            AvailabilityRequestBus::EventResult(
+                result, GetEntityId(), &AvailabilityRequestBus::Events::IsAvailable, dialogueData.m_availabilityId.GetStringView());
+            return result.value;
+        }();
 
-        return isAvailable;
+        return isDialogueAvailable;
+    }
+
+    auto DialogueComponent::CheckAvailability(DialogueId const& dialogueId) -> bool
+    {
+        return CheckIfDialogueIdExists(dialogueId) ? CheckAvailability(*m_dialogues.find(DialogueData{ dialogueId })) : false;
+    }
+
+    auto DialogueComponent::CheckIfDialogueIdExists(DialogueId const& dialogueId) const -> bool
+    {
+        return m_dialogues.find(DialogueData{ dialogueId }) != m_dialogues.end();
     }
 
 } // namespace Conversation

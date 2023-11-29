@@ -1,0 +1,60 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{AB1AB517-88B6-4C05-9F4B-84EE73B67943}",
+        "category": "Functions/Player",
+        "title": "Player Level",
+        "subTitle": "Condition",
+        "settings": {
+            "templatePaths": {}
+        },
+        "propertySlots": [
+            {
+                "name": "inCompareTo",
+                "displayName": "CompareTo",
+                "supportedDataTypeRegex": "int",
+                "defaultDataType": "int",
+                "defaultValue": {
+                    "$type": "int",
+                    "Value": 0
+                }
+            },
+            {
+                "name": "inOp",
+                "displayName": "Op",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "enumValues": [
+                    {},
+                    "==",
+                    "!=",
+                    ">=",
+                    "<="
+                ]
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outConditionFunction",
+                "displayName": "Function",
+                "supportedDataTypeRegex": "dialogue_id",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "settings": {
+                    "instructions": [
+                        "\n----------------------------------------------------------------------------------------------------\n-- NODEID condition function\nlocal SLOTNAME = function()\n    return GetPlayerLevel() SLOTVALUE(inOp) SLOTVALUE(inCompareTo);\nend\n----------------------------------------------------------------------------------------------------"
+                    ]
+                }
+            }
+        ]
+    }
+}

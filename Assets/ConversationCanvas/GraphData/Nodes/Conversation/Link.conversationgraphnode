@@ -1,0 +1,34 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{2847483B-3012-41C4-8A94-6CC13DC85DFE}",
+        "category": "Conversation",
+        "title": "Link",
+        "inputSlots": [
+            {
+                "name": "inLinkFrom",
+                "displayName": "From",
+                "supportedDataTypeRegex": "dialogue_id|dialogue_data",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "editableOnNode": false
+            },
+            {
+                "name": "inLinkTo",
+                "displayName": "To",
+                "supportedDataTypeRegex": "dialogue_id|dialogue_data",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "editableOnNode": false
+            }
+        ]
+    }
+}

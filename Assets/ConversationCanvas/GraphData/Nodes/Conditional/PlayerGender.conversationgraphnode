@@ -1,0 +1,48 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{E16E3EDC-50F4-48A9-A947-A295A65A6580}",
+        "category": "Conditions",
+        "title": "Is Player Gender",
+        "settings": {
+            "templatePaths": {}
+        },
+        "propertySlots": [
+            {
+                "name": "inGender",
+                "displayName": "Value",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "Male"
+                },
+                "enumValues": [
+                    "Male",
+                    "Female"
+                ],
+                "visibleOnNode": false,
+                "editableOnNode": false
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outCondition",
+                "displayName": "Condition",
+                "supportedDataTypeRegex": "condition_Id",
+                "defaultDataType": "condition_id",
+                "defaultValue": {
+                    "$type": "AZ::Uuid",
+                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                },
+                "settings": {
+                    "instructions": [
+                        "-- Begin NODEID|SLOTNAME\n    local SLOTNAME = function()\n        local result = GameActorRequestBus.Event.GetGender(GetEntityByTag(\"player\"));\n        return result == \"SLOTVALUE(inGender)\";\n    end\n-- End NODEID|SLOTNAME"
+                    ]
+                }
+            }
+        ]
+    }
+}

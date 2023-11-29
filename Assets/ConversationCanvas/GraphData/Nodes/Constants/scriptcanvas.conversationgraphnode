@@ -1,0 +1,24 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{7B861F4B-D5A3-495F-AB41-6602EBAEFEED}",
+        "category": "Scripts",
+        "title": "Script Canvas",
+        "settings": {
+            "templatePaths": {}
+        },
+        "propertySlots": [
+            {
+                "name": "script_canvas_path",
+                "displayName": "Script Canvas",
+                "supportedDataTypeRegex": "script_canvas_handle",
+                "defaultDataType": "script_canvas_handle",
+                "defaultValue": {
+                    "$type": "SourceHandle"
+                }
+            }
+        ]
+    }
+}

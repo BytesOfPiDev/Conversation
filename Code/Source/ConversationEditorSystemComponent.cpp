@@ -1,23 +1,12 @@
-
-#include <AzCore/Serialization/SerializeContext.h>
+#include "Tools/EditorActorText.h"
+#include <ConversationEditorSystemComponent.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <Tools/ConversationGraphContext.h>
 
-#include <ConversationEditorSystemComponent.h>
-#include <ConversationWidget.h>
-
-#include <ConversationEditor/ConversationDocument.h>
-#include <ConversationEditor/ConversationEditorMainWindow.h>
-#include <ConversationEditor/ConversationGraphContext.h>
-#include <ConversationEditor/Nodes/ActorDialogue.h>
-#include <ConversationEditor/Nodes/Link.h>
-#include <ConversationEditor/Nodes/RootNode.h>
-#include <ConversationEditor/Settings.h>
-
-static constexpr const char* const ConversationEditorAppName = "Conversation Editor";
-
-namespace Conversation
+namespace ConversationEditor
 {
     void ConversationEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -37,13 +26,6 @@ namespace Conversation
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
-
-        ConversationEditor::ConversationGraph::Reflect(context);
-        ConversationEditor::ConversationDocument::Reflect(context);
-        ConversationEditor::Nodes::Link::Reflect(context);
-        ConversationEditor::Nodes::RootNode::Reflect(context);
-        ConversationEditor::Nodes::ActorDialogue::Reflect(context);
-        ConversationEditor::ConversationEditorSettings::Reflect(context);
     }
 
     ConversationEditorSystemComponent::ConversationEditorSystemComponent()
@@ -73,14 +55,12 @@ namespace Conversation
     void ConversationEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         BaseSystemComponent::GetDependentServices(dependent);
+        dependent.push_back(AZ_CRC_CE("ConversationAssetBuilderService"));
     }
 
     void ConversationEditorSystemComponent::Init()
     {
         ConversationSystemComponent::Init();
-
-        auto editorSettings = AZ::UserSettings::CreateFind<ConversationEditor::ConversationEditorSettings>(
-            ConversationEditor::ConversationEditorSettingsId, AZ::UserSettings::CT_LOCAL);
     }
 
     void ConversationEditorSystemComponent::Activate()
@@ -94,28 +74,4 @@ namespace Conversation
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ConversationSystemComponent::Deactivate();
     }
-
-    void ConversationEditorSystemComponent::NotifyRegisterViews()
-    {
-        AzToolsFramework::ViewPaneOptions options;
-        options.paneRect = QRect(100, 100, 500, 400);
-        options.showOnToolsToolbar = true;
-        options.toolbarIcon = ":/Conversation/toolbar_icon.svg";
-        options.isPreview = true;
-
-        AzToolsFramework::EditorRequests::WidgetCreationFunc cb = [](QWidget*)
-        {
-            auto config = new ConversationEditor::ConversationAssetEditorWindowConfig();
-            config->m_editorId = ConversationEditor::AssetEditorId;
-            config->m_baseStyleSheet = "default_style.json";
-            config->m_saveIdentifier = ConversationEditor::SAVE_IDENTIFIER;
-
-            return new ConversationEditor::ConversationEditorMainWindow(config, nullptr);
-        };
-
-        // Register our custom widget as a dockable tool with the Editor under an Examples sub-menu
-        AzToolsFramework::RegisterViewPane<ConversationEditor::ConversationEditorMainWindow>(
-            ConversationEditorAppName, "Conversation", options, cb);
-    }
-
-} // namespace Conversation
+} // namespace ConversationEditor

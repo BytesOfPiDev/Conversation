@@ -1,14 +1,15 @@
 #include <ConversationSystemComponent.h>
 
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <Conversation/ConversationAsset.h>
-#include <Conversation/ConversationBus.h>
-#include <Conversation/DialogueComponent.h>
-#include <Conversation/DialogueScript.h>
-#include <Conversation/AvailabilityBus.h>
+#include "AzCore/RTTI/BehaviorContext.h"
+#include "AzCore/Serialization/EditContext.h"
+#include "AzCore/Serialization/EditContextConstants.inl"
+#include "AzCore/Serialization/SerializeContext.h"
+#include "Conditions/ConditionFunction.h"
+#include "Conversation/AvailabilityBus.h"
+#include "Conversation/ConversationAsset.h"
+#include "Conversation/ConversationBus.h"
+#include "Conversation/DialogueComponent.h"
+#include "Conversation/DialogueScript.h"
 
 namespace Conversation
 {
@@ -17,8 +18,11 @@ namespace Conversation
         , public AZ::BehaviorEBusHandler
     {
     public:
-        AZ_EBUS_BEHAVIOR_BINDER(
-            BehaviorDialogueScriptRequestBusHandler, "{168DA145-68E2-4D49-BCE7-3BAE5589C3D1}", AZ::SystemAllocator, RunDialogueScript);
+        AZ_EBUS_BEHAVIOR_BINDER( // NOLINT
+            BehaviorDialogueScriptRequestBusHandler,
+            "{168DA145-68E2-4D49-BCE7-3BAE5589C3D1}",
+            AZ::SystemAllocator,
+            RunDialogueScript);
 
         void RunDialogueScript() override
         {
@@ -29,8 +33,9 @@ namespace Conversation
     void ConversationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         DialogueData::Reflect(context);
+        ConditionFunction::Reflect(context);
 
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<ConversationSystemComponent, AZ::Component>()->Version(0);
 
@@ -46,11 +51,11 @@ namespace Conversation
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Aborting)>("ConversationStatus_Aborting");
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Active)>("ConversationStatus_Active");
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Ending)>("ConversationStatus_Ending");
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Inactive)>("ConversationStatus_Inactive");
-            behaviorContext->EnumProperty<static_cast<int>(ConversationStates::Starting)>("ConversationStatus_Starting");
+            behaviorContext->EnumProperty<static_cast<int>(DialogueState::Aborting)>("ConversationStatus_Aborting");
+            behaviorContext->EnumProperty<static_cast<int>(DialogueState::Active)>("ConversationStatus_Active");
+            behaviorContext->EnumProperty<static_cast<int>(DialogueState::Ending)>("ConversationStatus_Ending");
+            behaviorContext->EnumProperty<static_cast<int>(DialogueState::Inactive)>("ConversationStatus_Inactive");
+            behaviorContext->EnumProperty<static_cast<int>(DialogueState::Starting)>("ConversationStatus_Starting");
 
             const AZ::BehaviorParameterOverrides startConversationEntityIdParam = {
                 "EntityId", "The Id of an entity that contains a conversation component that will be used to start the conversation."
@@ -59,8 +64,8 @@ namespace Conversation
             behaviorContext->EBus<ConversationRequestBus>("ConversationRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Dialogue System");
 
-            behaviorContext->EBus<AvailabilityRequestBus>("AvailabilityRequestBus")
-                ->Handler<BehaviorAvailabilityRequestBusHandler>();
+            behaviorContext->EBus<AvailabilityRequestBus>("AvailabilityRequestBus")->Handler<BehaviorAvailabilityRequestBusHandler>();
+            behaviorContext->EBus<ConditionalRequestBus>("ConditionalRequestBus")->Handler<BehaviorConditionalRequestBusHandler>();
 
             behaviorContext->EBus<DialogueScriptRequestBus>("DialogueScriptRequestBus")->Handler<BehaviorDialogueScriptRequestBusHandler>();
         }
@@ -82,6 +87,8 @@ namespace Conversation
 
     void ConversationSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
+        dependent.push_back(AZ_CRC_CE("ScriptCanvasService"));
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
     }
 
     ConversationSystemComponent::ConversationSystemComponent()
@@ -107,7 +114,7 @@ namespace Conversation
 
         m_conversationAssetHandler = AZStd::make_unique<ConversationAssetHandler>(
             "Conversation Asset", "Conversation System", ".conversation", AZ::AzTypeInfo<ConversationAsset>::Uuid(), serializeContext);
-        AZ_Assert(m_conversationAssetHandler, "Unable to create conversation asset handler.");
+        AZ_Assert(m_conversationAssetHandler, "Unable to create conversation asset handler."); // NOLINT
     }
 
     void ConversationSystemComponent::Activate()
@@ -115,7 +122,7 @@ namespace Conversation
         const AZ::Data::AssetType conversationAssetTypeId = azrtti_typeid<ConversationAsset>();
         if (!AZ::Data::AssetManager::Instance().GetHandler(conversationAssetTypeId))
         {
-            AZ_Assert(
+            AZ_Assert( // NOLINT
                 m_conversationAssetHandler,
                 "Conversation asset handler is null! It should have been created in the Init function already.");
             m_conversationAssetHandler->Register();
