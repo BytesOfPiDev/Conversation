@@ -11,7 +11,7 @@ A conversation system and editor for O3DE that aims to provide a simple way to c
 #### Long term goals:
 * After (hopefully) some feedback, formalize what functionality will be added.
 * Design and implement a simple conversation programming language, similar to https://github.com/YarnSpinnerTool/YarnSpinner. 
-* Allow importing [YarnSpinner](https://github.com/YarnSpinnerTool/YarnSpinner) (and potentially other) dialogue file
+* Allow importing [YarnSpinner](https://github.com/YarnSpinnerTool/YarnSpinner) (and potentially other) dialogue files
 * Allow exporting to other file formats.
 * I'd like it to be a tool that can be used to create and preview dialogues, even if you don't use O3DE as your engine.
 * Play a conversation in the editor.
