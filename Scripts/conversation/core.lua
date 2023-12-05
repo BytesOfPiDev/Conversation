@@ -1,7 +1,7 @@
 -- core.lua
 
 function GetEntityByTag(tag)
-	return TagGlobalRequestBus.Event.GetEntityByTag(Crc32(tag));
+	return TagGlobalRequestBus.Event.GetEntityByTag(Crc32(tag))
 end
 
 DialogueScript = { owningEntityId = "", firstName = "" }
@@ -49,17 +49,16 @@ ScriptDialogueComponent = {
 	},
 	conditions = {},
 	dialogues = {},
-	scripts = {},
 	dialogueComponentNotificationHandler = nil,
 	availabilityRequestBusHandler = nil,
 }
 
-function ScriptDialogueComponent:Setup()
+function ScriptDialogueComponent:ActivateConversationScript()
 	-- Activation Code
-	assert(self.Configure ~= nil, "Missing required Configure function!")
+	assert(self.InitConversationScript ~= nil, "Missing required InitConversationScript function!")
 
-	if self.Configure ~= nil then
-		self:Configure()
+	if self.InitConversationScript ~= nil then
+		self:InitConversationScript()
 	end
 
 	self.dialogueComponentNotificationHandler = DialogueComponentNotificationBus.Connect(self, self.entityId)
@@ -71,7 +70,7 @@ function ScriptDialogueComponent:Setup()
 	)
 end
 
-function ScriptDialogueComponent:Shutdown()
+function ScriptDialogueComponent:DeactivateConversationScript()
 	Debug.Log("Shutdown")
 	-- Deactivation Code
 	if self.dialogueComponentNotificationHandler ~= nil then
@@ -123,11 +122,11 @@ function ScriptDialogueComponent:CheckCondition(conditionId)
 	return false
 end
 
-function ScriptDialogueComponent:IsAvailable(conditionId)
-	Debug.Log("IsAvailable called in lua script: conditionid [" .. conditionId .. "]")
+function ScriptDialogueComponent:IsAvailable(nodeId)
+	Debug.Log("IsAvailable called in lua script: nodeId [" .. nodeId .. "]")
 
-	if type(self.conditions[conditionId]) == "function" then
-		return self.conditions[conditionId]()
+	if type(self.conditions[nodeId]) == "function" then
+		return self.conditions[nodeId]()
 	end
 
 	-- We return true if no condition function was found because dialogues are available by default.

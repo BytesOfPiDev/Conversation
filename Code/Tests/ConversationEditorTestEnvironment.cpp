@@ -1,26 +1,29 @@
-#include "ConversationTestEnvironment.h"
+#include "ConversationEditorTestEnvironment.h"
 
 #include "AzCore/Asset/AssetManagerComponent.h"
-#include "AzCore/Component/ComponentApplication.h"
 #include "AzCore/IO/Streamer/StreamerComponent.h"
 #include "AzCore/Jobs/JobManagerComponent.h"
-#include "AzCore/RTTI/RTTIMacros.h"
 #include "AzFramework/Application/Application.h"
 #include "AzFramework/Asset/AssetCatalogComponent.h"
 #include "AzFramework/Asset/AssetSystemComponent.h"
 #include "AzFramework/Entity/GameEntityContextComponent.h"
-#include "Conversation/DialogueComponent.h"
-#include "ConversationSystemComponent.h"
 
-namespace ConversationTest
+#include "Conversation/DialogueComponent.h"
+#include "ConversationEditorSystemComponent.h"
+
+namespace ConversationEditorTest
 {
-    class ConversationTestApplication : public AzFramework::Application
+
+    class ConversationEditorTestApplication : public AzFramework::Application
     {
     public:
+        AZ_DISABLE_COPY_MOVE(ConversationEditorTestApplication); // NOLINT
+
+        ConversationEditorTestApplication() = default;
+        ~ConversationEditorTestApplication() override = default;
+
         auto GetRequiredSystemComponents() const -> AZ::ComponentTypeList override
         {
-            using namespace Conversation;
-
             AZ::ComponentTypeList components = AzFramework::Application::GetRequiredSystemComponents();
 
             components.insert(
@@ -39,21 +42,18 @@ namespace ConversationTest
         }
     };
 
-    void ConversationTestEnvironment::AddGemsAndComponents()
+    void ConversationEditorTestEnvironment::AddGemsAndComponents()
     {
-        using namespace Conversation;
-
         AddDynamicModulePaths({ "LmbrCentral" });
 
-        AddComponentDescriptors({ ConversationSystemComponent::CreateDescriptor() });
-        AddComponentDescriptors({ DialogueComponent::CreateDescriptor() });
+        AddComponentDescriptors({ ConversationEditor::ConversationEditorSystemComponent::CreateDescriptor() });
+        AddComponentDescriptors({ Conversation::DialogueComponent::CreateDescriptor() });
 
-        AddRequiredComponents({ azrtti_typeid<ConversationSystemComponent>() });
+        AddRequiredComponents({ azrtti_typeid<ConversationEditor::ConversationEditorSystemComponent>() });
     }
 
-    auto ConversationTestEnvironment::CreateApplicationInstance() -> AZ::ComponentApplication*
+    auto ConversationEditorTestEnvironment::CreateApplicationInstance() -> AZ::ComponentApplication*
     {
-        return aznew ConversationTestApplication;
+        return aznew ConversationEditorTestApplication;
     }
-
-} // namespace ConversationTest
+} // namespace ConversationEditorTest

@@ -2,19 +2,18 @@
 -- This is a generated file. You shouldn't edit it manually, as it will be overwritten.
 require("conversation.core")
 
-local conditionFunction = function()
-    local result = false;
-    -- It is expected that the ConversationCanvas app will fill in the generated instructions below.
-    -- BOP_GENERATED_INSTRUCTIONS_BEGIN: outValue
+return function()
+	local result = false
 
-    -- result needs to be assigned to a boolean expression.
+	-- It is expected that the ConversationCanvas app will fill in the generated instructions below.
+	-- BOP_GENERATED_INSTRUCTIONS_BEGIN: outValue
 
-    -- BOP_GENERATED_INSTRUCTIONS_END
+	-- result needs to be assigned to a boolean expression.
 
-    if (result ~= true or result ~= false) then
-        Debug.Log("Unexpected result from a conversation condition script function. It should be true or false.")
-        return result;
-    end
+	-- BOP_GENERATED_INSTRUCTIONS_END
+
+	if result ~= true or result ~= false then
+		Debug.Log("Unexpected result from a conversation condition script function. It should be true or false.")
+		return result
+	end
 end
-
-return conditionFunction;

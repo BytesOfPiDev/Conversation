@@ -18,7 +18,6 @@
 #include "AzCore/Script/ScriptAsset.h"
 #include "Conversation/DialogueData.h"
 #include "Editor/Framework/Configuration.h"
-#include "GraphModel/Integration/NodePalette/StandardNodePaletteItem.h"
 #include "GraphModel/Model/DataType.h"
 
 #include "Conditions/ConditionFunction.h"
@@ -27,12 +26,7 @@
 #include "Tools/DataTypes.h"
 #include "Tools/Document/ConversationGraphCompiler.h"
 #include "Tools/EditorActorText.h"
-#include "Tools/VariableNodePaletteTreeItemTypes.h"
 #include "Tools/Window/ConversationCanvasMainWindow.h"
-#include "Tools/Window/Nodes/ActorDialogue.h"
-#include "Tools/Window/Nodes/Condition.h"
-#include "Tools/Window/Nodes/RootNode.h"
-#include "Tools/Window/Nodes/Waypoint.h"
 
 #include "QLabel"
 
@@ -85,11 +79,6 @@ namespace ConversationEditor
         ConversationGraphCompiler::Reflect(context);
         EditorActorText::Reflect(context);
 
-        GraphModelIntegration::ReflectAndCreateNodeMimeEvent<ConversationEditor::Nodes::ActorDialogue>(context);
-        GraphModelIntegration::ReflectAndCreateNodeMimeEvent<ConversationEditor::Nodes::ConditionNode>(context);
-        GraphModelIntegration::ReflectAndCreateNodeMimeEvent<ConversationEditor::Nodes::RootNode>(context);
-        GraphModelIntegration::ReflectAndCreateNodeMimeEvent<ConversationEditor::Nodes::WaypointNode>(context);
-
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->RegisterGenericType<AZStd::array<AZ::Vector2, 2>>();
@@ -128,7 +117,7 @@ namespace ConversationEditor
     void ConversationCanvasApplication::Destroy()
     {
         // Save all of the graph view configuration settings to the settings registry.
-        AtomToolsFramework::SetSettingsObject(ConversationCanvasGraphViewSettings, m_graphViewSettingsPtr);
+        AtomToolsFramework::SetSettingsObject(ConversationCanvasGraphViewSettingsKey, m_graphViewSettingsPtr);
 
         m_graphViewSettingsPtr.reset();
         m_window.reset();
@@ -248,7 +237,8 @@ namespace ConversationEditor
         editData = {};
         editData.m_elementId = AZ_CRC_CE("StringFilePath");
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
-        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "lua", "dlgcondition" });
+        AtomToolsFramework::AddEditDataAttribute(
+            editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "lua", "dlgcondition", "conversationtemplate" });
         m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
 
         editData = {};
@@ -270,7 +260,7 @@ namespace ConversationEditor
     {
         // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
         m_graphViewSettingsPtr = AtomToolsFramework::GetSettingsObject(
-            ConversationCanvasGraphViewSettings, AZStd::make_shared<AtomToolsFramework::GraphViewSettings>());
+            ConversationCanvasGraphViewSettingsKey, AZStd::make_shared<AtomToolsFramework::GraphViewSettings>());
 
         // Initialize the application specific graph view settings that are not serialized.
         m_graphViewSettingsPtr->m_translationPath = "@products@/conversationcanvas/translation/conversationcanvas_en_us.qm";
@@ -282,15 +272,6 @@ namespace ConversationEditor
             GraphCanvas::GraphCanvasTreeItem* rootTreeItem = {};
             AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
                 rootTreeItem, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::CreateNodePaletteTree);
-
-            auto coreNode = rootTreeItem->CreateChildNode<ConversationEditor::VariableCategoryNodePaletteTreeItem>("Core");
-            coreNode->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<ConversationEditor::Nodes::RootNode>>("Root", toolId);
-            coreNode->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<ConversationEditor::Nodes::ActorDialogue>>(
-                "Dialogue", toolId);
-            coreNode->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<ConversationEditor::Nodes::WaypointNode>>(
-                "Waypoint", toolId);
-            coreNode->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<ConversationEditor::Nodes::ConditionNode>>(
-                "Condition", toolId);
 
             return rootTreeItem;
         };
@@ -357,13 +338,17 @@ namespace ConversationEditor
     }
     void ConversationCanvasApplication::InitDefaultDocument()
     {
-        AZ::Uuid documentId = AZ::Uuid::CreateNull();
-        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
-            documentId, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
-            "Conversation Graph");
+        // Create an untitled, empty graph document as soon as the application starts so the user can begin creating immediately.
+        if (AtomToolsFramework::GetSettingsValue(ConversationCanvasSettingsCreateDefaultDocumentOnStartKey, true))
+        {
+            AZ::Uuid documentId = AZ::Uuid::CreateNull();
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
+                documentId, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
+                "Conversation Graph");
 
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::OnDocumentOpened, documentId);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::OnDocumentOpened, documentId);
+        }
     }
 
 } // namespace ConversationEditor

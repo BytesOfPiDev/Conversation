@@ -23,7 +23,7 @@ namespace ConversationEditor
         AZ_CLASS_ALLOCATOR(ConversationCanvasApplication, AZ::SystemAllocator); // NOLINT
         AZ_RTTI( // NOLINT
             ConversationCanvasApplication,
-            "8417F15F-B290-47A4-9996-1954F3D153EB",
+            "{8417F15F-B290-47A4-9996-1954F3D153EB}",
             AtomToolsFramework::AtomToolsDocumentApplication); // NOLINT
         AZ_DISABLE_COPY_MOVE(ConversationCanvasApplication); // NOLINT
 

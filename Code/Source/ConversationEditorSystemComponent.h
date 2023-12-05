@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "Conversation/ConversationTypeIds.h"
 #include <ConversationSystemComponent.h>
 
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
@@ -16,7 +17,9 @@ namespace ConversationEditor
         using BaseSystemComponent = ConversationSystemComponent;
 
     public:
-        AZ_COMPONENT(ConversationEditorSystemComponent, "{bcd6e4b7-5632-46b4-ba76-b3c4e0b98310}", BaseSystemComponent); // NOLINT
+        AZ_COMPONENT(ConversationEditorSystemComponent, ConversationEditorSystemComponentTypeId, BaseSystemComponent); // NOLINT
+        AZ_DISABLE_COPY_MOVE(ConversationEditorSystemComponent); // NOLINT
+
         static void Reflect(AZ::ReflectContext* context);
 
         ConversationEditorSystemComponent();

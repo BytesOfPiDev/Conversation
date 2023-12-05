@@ -23,11 +23,12 @@ namespace Conversation
         ConversationAsset() = default;
         ~ConversationAsset() override = default;
 
-        static constexpr const char* ProductExtension = "conversationasset";
-        static constexpr const char* ProductExtensionPattern = "*.conversationasset";
+        static constexpr char const* ProductExtension = "conversationasset";
+        static constexpr char const* ProductDotExtension = ".conversationasset";
+        static constexpr char const* ProductExtensionPattern = "*.conversationasset";
 
-        static constexpr const char* SourceExtension = "conversation";
-        static constexpr const char* SourceExtensionPattern = "*.conversation";
+        static constexpr char const* SourceExtension = "conversation";
+        static constexpr char const* SourceExtensionPattern = "*.conversation";
 
         [[nodiscard]] auto CountStartingIds() const -> size_t override
         {
@@ -39,18 +40,18 @@ namespace Conversation
             return m_dialogues.size();
         }
 
-        [[nodiscard]] auto GetStartingIds() const -> const AZStd::vector<DialogueId>& override
+        [[nodiscard]] auto GetStartingIds() const -> AZStd::vector<DialogueId> const& override
         {
             return m_startingIds;
         }
 
-        [[nodiscard]] auto GetDialogues() const -> const DialogueDataContainer& override
+        [[nodiscard]] auto GetDialogues() const -> DialogueDataContainer const& override
         {
             return m_dialogues;
         }
 
-        void AddStartingId(const DialogueId& newStartingId) override;
-        void AddDialogue(const DialogueData& newDialogueData) override;
+        void AddStartingId(DialogueId const& newStartingId) override;
+        void AddDialogue(DialogueData const& newDialogueData) override;
         /**
          * @brief Add a dialogue as a response to another dialogue
          *
@@ -59,11 +60,13 @@ namespace Conversation
          * asset with matching DialogueIds.
          *
          * @param responseData The response to add.
+         *
+         * @note Not currently implemented.
          */
 
         void AddResponse(ResponseData const& responseData) override;
-        auto GetDialogueById(const DialogueId& dialogueId) -> AZ::Outcome<DialogueData> override;
-        [[nodiscard]] auto CheckDialogueExists(const DialogueId& dialogueId) -> bool override
+        auto GetDialogueById(DialogueId const& dialogueId) -> AZ::Outcome<DialogueData> override;
+        [[nodiscard]] auto CheckDialogueExists(DialogueId const& dialogueId) -> bool override
         {
             return m_dialogues.contains(DialogueData(dialogueId));
         }
@@ -81,6 +84,16 @@ namespace Conversation
         [[nodiscard]] auto GetResponses() const -> AZStd::vector<ResponseData> const& override
         {
             return m_responses;
+        }
+
+        [[nodiscard]] auto GetMainScript() const -> AZ::Data::Asset<ConversationAsset>
+        {
+            return m_mainScript;
+        }
+
+        void SetMainScript(AZ::Data::Asset<ConversationAsset> const& asset)
+        {
+            m_mainScript = asset;
         }
 
     private:

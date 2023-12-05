@@ -7,11 +7,12 @@
 #include "AzCore/Script/ScriptContextAttributes.h"
 #include "AzCore/Serialization/EditContext.h"
 #include "Conversation/Constants.h"
+#include "Conversation/ConversationTypeIds.h"
 #include "Conversation/DialogueData_incl.h"
 
 namespace Conversation
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(ConversationAsset, "ConversationAsset", "{C2B4E407-B74E-4E48-8B8A-ADD5BCC894D1}"); // NOLINT
+    AZ_TYPE_INFO_WITH_NAME_IMPL(ConversationAsset, "ConversationAsset", ConversationAssetTypeId); // NOLINT
     AZ_RTTI_NO_TYPE_INFO_IMPL(ConversationAsset, AZ::Data::AssetData); // NOLINT
     AZ_CLASS_ALLOCATOR_IMPL(ConversationAsset, AZ::SystemAllocator, 0); // NOLINT
 
@@ -46,7 +47,7 @@ namespace Conversation
         }
     }
 
-    void ConversationAsset::AddStartingId(const DialogueId& newStartingId)
+    void ConversationAsset::AddStartingId(DialogueId const& newStartingId)
     {
         if (!IsValid(newStartingId))
         {
@@ -57,7 +58,7 @@ namespace Conversation
         // Check if it's already in the container.
         auto const iterFoundStartingId = AZStd::find_if(
             m_startingIds.begin(), m_startingIds.end(),
-            [&newStartingId](const DialogueId& existingId)
+            [&newStartingId](DialogueId const& existingId)
             {
                 return existingId == newStartingId;
             });
@@ -122,7 +123,7 @@ namespace Conversation
         AddDialogueResponseId(*iter, responseData);
     }
 
-    auto ConversationAsset::GetDialogueById(const DialogueId& dialogueId) -> AZ::Outcome<DialogueData>
+    auto ConversationAsset::GetDialogueById(DialogueId const& dialogueId) -> AZ::Outcome<DialogueData>
     {
         auto iter = m_dialogues.find(DialogueData(dialogueId));
         return iter != m_dialogues.end() ? AZ::Success(*iter) : AZ::Outcome<DialogueData>(AZ::Failure());

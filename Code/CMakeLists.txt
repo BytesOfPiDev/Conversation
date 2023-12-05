@@ -34,7 +34,6 @@ ly_add_target(
             Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static
             Gem::Conversation.Editor
-            Gem::ScriptCanvas.Editor
     RUNTIME_DEPENDENCIES
         AZ::AzCore
         AZ::AzFramework
@@ -238,6 +237,17 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
             NAME Gem::Conversation.Tests
         )
+
+    list(APPEND convTestTargets Conversation.Tests)
+
+    ly_add_target_files(
+        TARGETS
+            ${convTestTargets}
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/whatever.txt
+        OUTPUT_SUBDIRECTORY
+            Test.Assets/Gems/Conversation
+    )
   endif()
 
   # If we are a host platform we want to add tools test like editor tests here
@@ -249,8 +259,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
       ly_add_target(
                 NAME Conversation.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
                 NAMESPACE Gem
+                AUTOMOC
+                AUTORCC
                 FILES_CMAKE
                     conversation_editor_tests_files.cmake
+                    conversationcanvas_files.cmake
                 INCLUDE_DIRECTORIES
                     PRIVATE
                         Tests
@@ -259,12 +272,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     PRIVATE
                         AZ::AzTest
                         Gem::Conversation.Static
+                        AZ::AzFramework
+                        AZ::AzToolsFramework
+                        Gem::AtomLyIntegration_CommonFeatures.Static
+                        Gem::AtomToolsFramework.Editor
+                        Gem::AtomToolsFramework.Static
+                        Gem::Conversation.Editor
             )
 
       # Add Conversation.Editor.Tests to googletest
       ly_add_googletest(
                 NAME Gem::Conversation.Editor.Tests
             )
+
     endif()
   endif()
 endif()

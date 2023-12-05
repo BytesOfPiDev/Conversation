@@ -1,14 +1,16 @@
-#include <ConversationSystemComponent.h>
+#include "ConversationSystemComponent.h"
 
 #include "AzCore/RTTI/BehaviorContext.h"
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
 #include "AzCore/Serialization/SerializeContext.h"
+
 #include "Conditions/ConditionFunction.h"
 #include "Conversation/AvailabilityBus.h"
 #include "Conversation/ConversationAsset.h"
 #include "Conversation/ConversationBus.h"
-#include "Conversation/DialogueComponent.h"
+#include "Conversation/DialogueComponentBus.h"
+#include "Conversation/DialogueData.h"
 #include "Conversation/DialogueScript.h"
 
 namespace Conversation
@@ -65,7 +67,6 @@ namespace Conversation
                 ->Attribute(AZ::Script::Attributes::Category, "Dialogue System");
 
             behaviorContext->EBus<AvailabilityRequestBus>("AvailabilityRequestBus")->Handler<BehaviorAvailabilityRequestBusHandler>();
-            behaviorContext->EBus<ConditionalRequestBus>("ConditionalRequestBus")->Handler<BehaviorConditionalRequestBusHandler>();
 
             behaviorContext->EBus<DialogueScriptRequestBus>("DialogueScriptRequestBus")->Handler<BehaviorDialogueScriptRequestBusHandler>();
         }

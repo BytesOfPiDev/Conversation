@@ -79,7 +79,9 @@
                 "defaultDataType": "dialogue_chunk",
                 "defaultValue": {
                     "$type": "DialogueChunk"
-                }
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
             }
         ],
         "inputSlots": [

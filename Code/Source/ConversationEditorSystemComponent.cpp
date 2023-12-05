@@ -1,4 +1,3 @@
-#include "Tools/EditorActorText.h"
 #include <ConversationEditorSystemComponent.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>

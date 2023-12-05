@@ -1,4 +1,3 @@
-
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 #include <ConversationSystemComponent.h>
@@ -10,8 +9,8 @@ namespace Conversation
     class ConversationModuleInterface : public AZ::Module
     {
     public:
-        AZ_RTTI(ConversationModuleInterface, "{abf1988a-779a-458a-b8d3-71864f4c66fc}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ConversationModuleInterface, AZ::SystemAllocator, 0);
+        AZ_RTTI(ConversationModuleInterface, "{ABF1988A-779A-458A-B8D3-71864F4C66FC}", AZ::Module); // NOLINT
+        AZ_CLASS_ALLOCATOR(ConversationModuleInterface, AZ::SystemAllocator, 0); // NOLINT
 
         ConversationModuleInterface()
         {
@@ -29,7 +28,7 @@ namespace Conversation
         /**
          * Add required SystemComponents to the SystemEntity.
          */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        [[nodiscard]] auto GetRequiredSystemComponents() const -> AZ::ComponentTypeList override
         {
             return AZ::ComponentTypeList{
                 azrtti_typeid<ConversationSystemComponent>(),

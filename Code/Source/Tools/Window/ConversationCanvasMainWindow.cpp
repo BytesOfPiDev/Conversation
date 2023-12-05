@@ -1,4 +1,7 @@
+#include "AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h"
 #include "Conversation/Constants.h"
+#include "GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h"
+#include "GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h"
 #include <Tools/Window/ConversationCanvasMainWindow.h>
 
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
@@ -15,6 +18,8 @@
 
 namespace ConversationEditor
 {
+    using GraphCanvas::NodePaletteConfig;
+
     ConversationCanvasMainWindow::ConversationCanvasMainWindow(
         AZ::Crc32 const& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent)
         : Base(toolId, "ConversationCanvasMainWindow", parent)
@@ -24,7 +29,7 @@ namespace ConversationEditor
         // m_assetBrowser->SetFileTypeFilters("", "Conversation", true);
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this); // NOLINT
-        m_documentInspector->SetDocumentSettingsPrefix("O3DE/Atom/ConversationCanvas/DocumentInspector");
+        m_documentInspector->SetDocumentSettingsPrefix(ConversationCanvasSettingsDocumentInspectorKey);
         AddDockWidget("Inspector", m_documentInspector, Qt::RightDockWidgetArea);
 
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this); // NOLINT
@@ -45,8 +50,8 @@ namespace ConversationEditor
 
         m_conversationViewport->Init(entityContext, viewportScene, viewportContent, viewportController);
 
-        auto viewPortAndToolbar = new QWidget(this);
-        viewPortAndToolbar->setLayout(new QVBoxLayout(viewPortAndToolbar));
+        auto* viewPortAndToolbar = new QWidget(this); // NOLINT
+        viewPortAndToolbar->setLayout(new QVBoxLayout(viewPortAndToolbar)); // NOLINT
         viewPortAndToolbar->layout()->setContentsMargins(0, 0, 0, 0);
         viewPortAndToolbar->layout()->setMargin(0);
         viewPortAndToolbar->layout()->setSpacing(0);
@@ -66,7 +71,7 @@ namespace ConversationEditor
         AddDockWidget("MiniMap", aznew GraphCanvas::MiniMapDockWidget(m_toolId, this), Qt::BottomDockWidgetArea);
         SetDockWidgetVisible("MiniMap", false);
 
-        GraphCanvas::NodePaletteConfig nodePaletteConfig;
+        NodePaletteConfig nodePaletteConfig;
         nodePaletteConfig.m_rootTreeItem = m_graphViewSettingsPtr->m_createNodeTreeItemsFn(m_toolId);
         nodePaletteConfig.m_editorId = m_toolId;
         nodePaletteConfig.m_mimeType = m_graphViewSettingsPtr->m_nodeMimeType.c_str();
@@ -140,12 +145,19 @@ namespace ConversationEditor
         m_conversationCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
             "Conversation Canvas Settings", "Conversation Canvas Settings",
             { AtomToolsFramework::CreateSettingsPropertyValue(
-                "/O3DE/Atom/ConversationCanvas/EnablePreview", "Enable Preview Functionality", "Just testing.", false) });
+                ConversationCanvasSettingsEnablePreviewKey, "Enable Preview Functionality", "Just testing.", false) });
+
+        inspector->AddGroup(
+            m_conversationCanvasCompileSettingsGroup->m_name, m_conversationCanvasCompileSettingsGroup->m_displayName,
+            m_conversationCanvasCompileSettingsGroup->m_description,
+            aznew AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_conversationCanvasCompileSettingsGroup.get(), m_conversationCanvasCompileSettingsGroup.get(),
+                azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>()));
 
         inspector->AddGroup(
             "Graph View Settings", "Graph View Settings",
             "Configuration settings for the graph view interaction, animation, and other behavior.",
-            new AtomToolsFramework::InspectorPropertyGroupWidget(
+            aznew AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
 
         Base::PopulateSettingsInspector(inspector);
@@ -153,7 +165,7 @@ namespace ConversationEditor
 
     void ConversationCanvasMainWindow::OnSettingsDialogClosed()
     {
-        AtomToolsFramework::SetSettingsObject(ConversationCanvasGraphViewSettings, m_graphViewSettingsPtr);
+        AtomToolsFramework::SetSettingsObject(ConversationCanvasGraphViewSettingsKey, m_graphViewSettingsPtr);
         Base::OnSettingsDialogClosed();
     }
 

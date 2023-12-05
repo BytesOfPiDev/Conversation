@@ -7,22 +7,6 @@ namespace Conversation
 {
     constexpr auto MaxParameters = 5;
 
-    class ConditionalRequests : public AZ::EBusTraits
-    {
-    public:
-        AZ_DISABLE_COPY_MOVE(ConditionalRequests); // NOLINT
-
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::EntityId;
-
-        ConditionalRequests() = default;
-        virtual ~ConditionalRequests() = default;
-
-        virtual auto ExecuteConditional(AZStd::array<AZStd::any, MaxParameters>, AZStd::any) -> bool = 0;
-    };
-
-    using ConditionalRequestBus = AZ::EBus<ConditionalRequests>;
-
     class AvailabilityRequests : public AZ::EBusTraits
     {
     public:
@@ -57,25 +41,6 @@ namespace Conversation
             bool result{};
             CallResult(result, FN_IsAvailable, availabilityId);
             return result;
-        }
-    };
-
-    class BehaviorConditionalRequestBusHandler
-        : public ConditionalRequestBus::Handler
-        , public AZ::BehaviorEBusHandler
-    {
-    public:
-        AZ_EBUS_BEHAVIOR_BINDER( // NOLINT
-            BehaviorConditionalRequestBusHandler,
-            "88DD9D5E-9870-4761-A459-90320C04BEE6",
-            AZ::SystemAllocator,
-            ExecuteConditional);
-
-        auto ExecuteConditional(AZStd::array<AZStd::any, MaxParameters> conditionParameters, AZStd::any conditionResult) -> bool override
-        {
-            bool executionResult{};
-            CallResult(executionResult, FN_ExecuteConditional, conditionParameters, conditionResult);
-            return executionResult;
         }
     };
 } // namespace Conversation

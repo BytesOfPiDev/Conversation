@@ -1,19 +1,15 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AtomToolsFramework/Document/AtomToolsDocumentInspector.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h>
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
-#include <AtomToolsFramework/Graph/GraphViewSettings.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
-#include <GraphCanvas/Styling/StyleManager.h>
-#include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
-#include <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.h>
-#include <GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h>
-#include <GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h>
-#include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
+#include "AtomToolsFramework/Document/AtomToolsDocumentInspector.h"
+#include "AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h"
+#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h"
+#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h"
+#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h"
+#include "AtomToolsFramework/Graph/GraphViewSettings.h"
+#include "GraphCanvas/Styling/StyleManager.h"
+#include "GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h"
+#include "GraphCanvas/Widgets/NodePalette/NodePaletteDockWidget.h"
 
 #include <QTranslator>
 #endif
@@ -22,13 +18,13 @@ namespace ConversationEditor
 {
     class ConversationCanvasMainWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
-        Q_OBJECT
+        Q_OBJECT // NOLINT
 
-    public:
-        AZ_RTTI( // NOLINT
-            ConversationCanvasMainWindow,
-            "F9E792DF-2A04-42A7-B277-FCBA722A05F9",
-            AtomToolsFramework::AtomToolsDocumentMainWindow);
+            public
+            : AZ_RTTI( // NOLINT
+                  ConversationCanvasMainWindow,
+                  "{F9E792DF-2A04-42A7-B277-FCBA722A05F9}",
+                  AtomToolsFramework::AtomToolsDocumentMainWindow);
         AZ_CLASS_ALLOCATOR(ConversationCanvasMainWindow, AZ::SystemAllocator); // NOLINT
         AZ_DISABLE_COPY_MOVE(ConversationCanvasMainWindow); // NOLINT
 

@@ -29,6 +29,7 @@ namespace ConversationEditor
             {
                 return "An actor's dialogue.";
             }
+
             auto GetTitle() const -> const char* override
             {
                 return "Actor Dialogue";

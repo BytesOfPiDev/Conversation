@@ -6,6 +6,11 @@
         "id": "{360591F1-858B-4EFA-8738-DCB10953C8AB}",
         "category": "Scripting",
         "title": "Lua Script (Snippet)",
+        "settings": {
+            "templatePaths": [
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConversationGraphName_ConversationGraphConditionNode_condition.lua"
+            ]
+        },
         "propertySlots": [
             {
                 "name": "inValue",
@@ -14,7 +19,7 @@
                 "defaultDataType": "string",
                 "defaultValue": {
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
+                    "Value": "result = true;"
                 },
                 "visibleOnNode": false,
                 "editableOnNode": false
@@ -32,7 +37,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "    local SLOTNAME =  function ()\n        SLOTVALUE(inValue)\n    end"
+                        {}
                     ]
                 }
             }
