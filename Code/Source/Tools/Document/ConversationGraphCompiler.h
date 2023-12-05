@@ -183,17 +183,21 @@ namespace ConversationEditor
 
         GraphModel::ConstNodePtr m_currentNode{};
 
+        /**
+         * These are a list of files we've generated so far during a compilation. Keeping track of them allows us to see what's been
+         * generated and perform specific tasks based on what has been generated.
+         */
         AZStd::vector<AZStd::string> m_generatedFiles;
+        // Not currently implemented.
         AZStd::set<AZStd::string> m_includePaths{};
+        // Not currently implemented.
         AZStd::vector<AZStd::string> m_classDefinitions{};
+        // Not currently implemented.
         AZStd::vector<AZStd::string> m_functionDefinitions{};
-        AZStd::vector<AZStd::string> m_conditionInstructions;
         SlotValueTable m_slotValueTable{};
         SlotDialogueTable m_slotDialogueTable{};
-        SlotConditionTable m_slotConditionTable{};
         StartingIdContainer m_startingIds{};
         AZStd::map<GraphModel::ConstNodePtr, NodeData> m_nodeDataTable{};
-        AZStd::map<GraphModel::ConstNodePtr, ConversationNodeData> m_tempNodeDataTableDoNotUse{};
         AZStd::list<AtomToolsFramework::GraphTemplateFileData> m_templateFileDataVecForCurrentNode{};
         AtomToolsFramework::GraphTemplateFileData m_conversationAssetFileDataVecForCurrentCompile{};
         AZStd::set<AZStd::string> m_templatePathsForCurrentNode{};

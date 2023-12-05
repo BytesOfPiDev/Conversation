@@ -17,13 +17,13 @@
 
 namespace ConversationEditor
 {
-    static constexpr const char* const COMPILEKEY = "Compile Conversation";
+    constexpr auto const CompileKey = "Compile Conversation";
 
     ConversationAssetBuilderWorker::ConversationAssetBuilderWorker() = default;
     ConversationAssetBuilderWorker::~ConversationAssetBuilderWorker() = default;
 
     void ConversationAssetBuilderWorker::CreateJobs(
-        const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+        AssetBuilderSDK::CreateJobsRequest const& request, AssetBuilderSDK::CreateJobsResponse& response)
     {
         if (m_isShuttingDown)
         {
@@ -35,51 +35,22 @@ namespace ConversationEditor
         AzFramework::StringFunc::Path::GetExtension(request.m_sourceFile.c_str(), ext, false);
         // Ensure that it matches the extension we're looking for.
 
-        AssetBuilderSDK::SourceFileDependency sourceFileDependencyInfo;
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);
         AZStd::string relPath = request.m_sourceFile;
 
-        if (AzFramework::StringFunc::Equal(ext.c_str(), Conversation::ConversationAsset::ProductExtension))
-        {
-            AzFramework::StringFunc::Path::ReplaceExtension(relPath, Conversation::ConversationAsset::SourceExtension);
-            // Declare and add the dependency on the *.dialoguedoc file:
-            sourceFileDependencyInfo.m_sourceFileDependencyPath = relPath;
-            response.m_sourceFileDependencyList.push_back(sourceFileDependencyInfo);
-
-            // Since we're a source file, we also add a job to do the actual compilation (for each enabled platform)
-            for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
-            {
-                AssetBuilderSDK::JobDescriptor descriptor;
-                descriptor.m_jobKey = COMPILEKEY;
-                descriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
-
-                AssetBuilderSDK::JobDependency jobDependency(
-                    COMPILEKEY, platformInfo.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Fingerprint,
-                    sourceFileDependencyInfo);
-                descriptor.m_jobDependencyList.push_back(jobDependency);
-
-                // you can also place whatever parameters you want to save for later into this map:
-                descriptor.m_jobParameters[AZ_CRC("hello", 0x3610a686)] = "World";
-                response.m_createJobOutputs.push_back(descriptor);
-            }
-
-            response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-            return;
-        }
-
         AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Checking for: %s. \n", Conversation::ConversationAsset::SourceExtension); // NOLINT
 
-        // Create a job when for dialogue documents.
+        // Create a job when receiving a source conversation file.
         if (AzFramework::StringFunc::Equal(ext.c_str(), Conversation::ConversationAsset::SourceExtension))
         {
             // Create a job for each platform that is enabled/supported.
-            for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
+            for (AssetBuilderSDK::PlatformInfo const& platformInfo : request.m_enabledPlatforms)
             {
                 // We create a simple job here which only contains the identifying job key and the platform to process the file on
                 AssetBuilderSDK::JobDescriptor descriptor;
-                descriptor.m_jobKey = COMPILEKEY;
+                descriptor.m_jobKey = CompileKey;
                 descriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
 
                 // Note that there are additional parameters for the JobDescriptor which may be beneficial in your use case.
@@ -96,7 +67,7 @@ namespace ConversationEditor
     }
 
     void ConversationAssetBuilderWorker::ProcessJob(
-        const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+        AssetBuilderSDK::ProcessJobRequest const& request, AssetBuilderSDK::ProcessJobResponse& response)
     {
         // This is the most basic example of handling for cancellation requests.
         // If possible, you should listen for cancellation requests and then cancel processing work to facilitate faster shutdown of the
@@ -115,10 +86,11 @@ namespace ConversationEditor
         // The assets extension; e.g. "assetextension"
         AZStd::string ext;
         AzFramework::StringFunc::Path::GetExtension(request.m_sourceFile.c_str(), ext, false);
+        //
         // Perform work based on extension type
         if (AzFramework::StringFunc::Equal(ext.c_str(), Conversation::ConversationAsset::SourceExtension))
         {
-            if (AzFramework::StringFunc::Equal(request.m_jobDescription.m_jobKey.c_str(), COMPILEKEY))
+            if (AzFramework::StringFunc::Equal(request.m_jobDescription.m_jobKey.c_str(), CompileKey))
             {
                 // Change the extension to what will be present in the shipped product.
                 AzFramework::StringFunc::Path::ReplaceExtension(fileName, Conversation::ConversationAsset::ProductExtension);
@@ -164,7 +136,7 @@ namespace ConversationEditor
         }
 
         // Save the asset to the temp destination path.
-        bool success = AZ::Utils::SaveObjectToFile<Conversation::ConversationAsset>(
+        bool const success = AZ::Utils::SaveObjectToFile<Conversation::ConversationAsset>(
             destPath.c_str(), AZ::DataStream::ST_JSON, conversationAsset.get());
 
         if (!success)

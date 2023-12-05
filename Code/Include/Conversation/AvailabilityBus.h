@@ -5,8 +5,6 @@
 
 namespace Conversation
 {
-    constexpr auto MaxParameters = 5;
-
     class AvailabilityRequests : public AZ::EBusTraits
     {
     public:

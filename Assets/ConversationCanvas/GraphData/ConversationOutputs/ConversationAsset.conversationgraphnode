@@ -9,7 +9,7 @@
         "subTitle": "Conversation Asset",
         "settings": {
             "templatePaths": [
-                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConversationGraphName_scriptComponent.lua",
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/ConversationGraphName.lua",
                 "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/ConversationGraphName.conversationtemplate"
             ]
         },

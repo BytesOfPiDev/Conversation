@@ -220,7 +220,6 @@ namespace ConversationEditor
                             AtomToolsFramework::CollectDynamicNodeSettings(settings, "includePaths", m_includePaths);
                             AtomToolsFramework::CollectDynamicNodeSettings(settings, "classDefinitions", m_classDefinitions);
                             AtomToolsFramework::CollectDynamicNodeSettings(settings, "functionDefinitions", m_functionDefinitions);
-                            AtomToolsFramework::CollectDynamicNodeSettings(settings, "conditionInstructions", m_conditionInstructions);
                         });
                 }
             }
@@ -567,21 +566,25 @@ namespace ConversationEditor
             }
         }
 
-        auto mainScriptAsset = []() -> AZ::Data::Asset<Conversation::ConversationAsset>
+        auto mainScriptAsset = [this]() -> AZ::Data::Asset<Conversation::ConversationAsset>
         {
             AZ::Data::AssetId mainScriptAssetId{};
+            // NOTE: The main script should have the exact same name as the conversation asset, but with a ".lua" extension.
+            AZStd::string mainScriptPath = m_conversationAssetFileDataVecForCurrentCompile.GetPath();
+            AZ::StringFunc::Path::ReplaceExtension(mainScriptPath, "lua");
 
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                mainScriptAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, "path",
+                mainScriptAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, mainScriptPath.c_str(),
                 AZ::AzTypeInfo<Conversation::ConversationAsset>::Uuid(), false);
 
             return AZ::Data::AssetManager::Instance().GetAsset<Conversation::ConversationAsset>(
                 mainScriptAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
         }();
 
+        // Setting this should cause the asset processor to list the script as a dependency.
         conversationAsset->SetMainScript(mainScriptAsset);
 
-        // Save the conversation asset to a string instead of to the desk.
+        // Save the conversation asset to a string instead of to the desk so that we can place it inside the relevant template.
         AZStd::string const conversationAssetData = [&conversationAsset]() -> AZStd::string
         {
             AZStd::vector<AZ::u8> dstData;
@@ -592,7 +595,7 @@ namespace ConversationEditor
             return { dstData.begin(), dstData.end() };
         }();
 
-        // We weplace the symbol with the stringified asset. It's done this way to stick with using templates instead of saving the file to
+        // We replace the symbol with the stringified asset. It's done this way to stick with using templates instead of saving the file to
         // disk ourselves.
         //
         // TODO: Right now, the template only has this symbol inside it, with its extension as something other than '.conversation' in order
@@ -607,7 +610,7 @@ namespace ConversationEditor
         auto conversationAssetTemplateOutputPath = GetOutputPathFromTemplatePath(conversationAssetTemplateInputPath);
 
         // Since the template may not have the correct extension, we change it to the correct one.
-        AZ::StringFunc::Path::ReplaceExtension(conversationAssetTemplateOutputPath, Conversation::ConversationAsset::ProductDotExtension);
+        AZ::StringFunc::Path::ReplaceExtension(conversationAssetTemplateOutputPath, Conversation::ConversationAsset::ProductExtension);
 
         if (!m_conversationAssetFileDataVecForCurrentCompile.Save(conversationAssetTemplateOutputPath))
         {
@@ -733,7 +736,6 @@ namespace ConversationEditor
             {
             case AZ_CRC_CE("actor_text"):
                 m_nodeDataTable[currentNode].m_dialogue->m_actorText = AZStd::any_cast<AZStd::string>(value);
-                m_chunks.insert(DialogueChunk{ m_nodeDataTable[currentNode].m_dialogue->m_actorText });
                 break;
             case AZ_CRC_CE("speaker_tag"):
                 m_nodeDataTable[currentNode].m_dialogue->m_speaker = AZStd::any_cast<AZStd::string>(value);
@@ -874,20 +876,14 @@ namespace ConversationEditor
     [[nodiscard]] auto ConversationGraphCompiler::GetOutputPathFromTemplatePath(AZStd::string const& templateInputPath) const
         -> AZStd::string
     {
-        AZStd::string templateInputFileName;
-        AZ::StringFunc::Path::GetFullFileName(templateInputPath.c_str(), templateInputFileName);
+        AZStd::string const templateInputFileName = [&templateInputPath]() -> AZStd::string
+        {
+            AZStd::string result{};
+            AZ::StringFunc::Path::GetFullFileName(templateInputPath.c_str(), result);
+            return result;
+        }();
 
         AZStd::string templateOutputPath = GetGraphPath();
-
-        if (templateInputFileName.ends_with(".lua"))
-        {
-            // "some/template/file.lua" -> "some/template"
-            AZ::StringFunc::Path::StripFullName(templateOutputPath);
-            // "some/template" -> "some/template/scripts"
-            AZ::StringFunc::Path::Join(templateOutputPath.c_str(), "scripts", templateOutputPath);
-            // "some/template/scripts" -> "some/template/scripts/file.lua"
-            AZ::StringFunc::Path::Join(templateOutputPath.c_str(), templateInputFileName.c_str(), templateOutputPath);
-        }
 
         AZ::StringFunc::Path::ReplaceFullName(templateOutputPath, templateInputFileName.c_str());
 
@@ -969,14 +965,6 @@ namespace ConversationEditor
                     {
                         return m_functionDefinitions;
                     });
-
-                // Inject function definitions found while traversing the graph.
-                templateFileData.ReplaceLinesInBlock(
-                    "BOP_GENERATED_CONDITION_BEGIN", "BOP_GENERATED_CONDITION_END",
-                    [&]([[maybe_unused]] const AZStd::string& blockHeader)
-                    {
-                        return m_conditionInstructions;
-                    });
             });
     }
 
@@ -1020,10 +1008,8 @@ namespace ConversationEditor
         m_includePaths.clear();
         m_classDefinitions.clear();
         m_functionDefinitions.clear();
-        m_conditionInstructions.clear();
         m_slotValueTable.clear();
         m_slotDialogueTable.clear();
-        m_slotConditionTable.clear();
         m_startingIds.clear();
         m_nodeDataTable.clear();
         m_templateFileDataVecForCurrentNode.clear();

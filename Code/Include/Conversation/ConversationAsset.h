@@ -24,11 +24,12 @@ namespace Conversation
         ~ConversationAsset() override = default;
 
         static constexpr char const* ProductExtension = "conversationasset";
-        static constexpr char const* ProductDotExtension = ".conversationasset";
         static constexpr char const* ProductExtensionPattern = "*.conversationasset";
+        static constexpr char const* ProductDotExtension = ".conversationasset";
 
         static constexpr char const* SourceExtension = "conversation";
         static constexpr char const* SourceExtensionPattern = "*.conversation";
+        static constexpr char const* SourceDotExtension = ".conversation";
 
         [[nodiscard]] auto CountStartingIds() const -> size_t override
         {
