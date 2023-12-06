@@ -4,10 +4,11 @@ namespace Conversation
 {
     // clang-format off
     inline constexpr auto ConversationAssetTypeId             = "{C2B4E407-B74E-4E48-8B8A-ADD5BCC894D1}";
+    inline constexpr auto ConversationSystemComponentTypeId   = "{30f94275-e830-466f-b1c6-140156911232}";
     inline constexpr auto DialogueComponentConfigTypeId       = "{88CFED66-271F-4CC7-A573-E7E0C9456ECD}";
     inline constexpr auto DialogueComponentTypeId             = "{C7AFDF51-ECCC-4BD3-8A56-0763ED87CB5B}";
     inline constexpr auto DialogueDataTypeId                  = "{6BF81F0F-0013-4877-80EB-4DC579005DDE}";
-    inline constexpr auto ConversationSystemComponentTypeId   = "{30f94275-e830-466f-b1c6-140156911232}";
+    inline constexpr auto ResponseDataTypeId                  = "{AEC51FC7-A91F-40D6-8EBA-59D0EADBAA4C}";
     // clang-format on
 } // namespace Conversation
 

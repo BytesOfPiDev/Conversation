@@ -37,15 +37,15 @@ namespace Conversation
     [[nodiscard]] inline constexpr auto GetDialogueSpeaker(DialogueData const& dialogueData) -> AZStd::string_view;
     [[nodiscard]] inline constexpr auto GetDialogueResponseIds(DialogueData const& dialogueData) -> AZStd::vector<DialogueId> const&;
     [[nodiscard]] inline constexpr auto ModifyDialogueResponseIds(DialogueData& dialogueData) -> AZStd::vector<DialogueId>&;
-    [[nodiscard]] inline constexpr auto GetDialogueScriptIds(DialogueData const& dialogueData) -> const AZStd::vector<AZStd::string>&;
+    [[nodiscard]] inline constexpr auto GetDialogueScriptIds(DialogueData const& dialogueData) -> AZStd::vector<AZStd::string> const&;
     [[nodiscard]] inline auto GetDialogueAvailabilityId(DialogueData const& dialogueData) -> AZ::Name;
 
-    inline constexpr void SetDialogueActorText(DialogueData& dialogueData, const AZStd::string& actorText);
+    inline constexpr void SetDialogueActorText(DialogueData& dialogueData, AZStd::string const& actorText);
     inline constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZ::Name const& newAvailabilityId);
     inline constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZStd::string const& newAvailabilityId);
     inline constexpr void SetDialogueComment(DialogueData& dialogueData, AZStd::string_view comment);
-    inline constexpr void SetDialogueSpeaker(DialogueData& dialogueData, const AZStd::string& speaker);
-    inline constexpr void SetDialogueAudioTrigger(DialogueData& dialogueData, const AZStd::string& audioTrigger);
+    inline constexpr void SetDialogueSpeaker(DialogueData& dialogueData, AZStd::string const& speaker);
+    inline constexpr void SetDialogueAudioTrigger(DialogueData& dialogueData, AZStd::string const& audioTrigger);
     inline constexpr void SetDialogueEntryDelay(DialogueData& dialogueData, float entryDelay);
     inline constexpr void SetDialogueComment(DialogueData& dialogueData, AZStd::string& comment);
 
@@ -169,7 +169,7 @@ namespace Conversation
      **/
     struct ResponseData
     {
-        AZ_TYPE_INFO(ResponseData, "AEC51FC7-A91F-40D6-8EBA-59D0EADBAA4C"); // NOLINT
+        AZ_TYPE_INFO(ResponseData, ResponseDataTypeId); // NOLINT
         static void Reflect(AZ::ReflectContext* context);
 
         // The Id of the dialogue to create a response to.
@@ -205,34 +205,34 @@ namespace Conversation
         DialogueData(DialogueId const id, AZStd::string actorText, AZStd::string speaker = {}, AZStd::vector<DialogueId> responses = {});
         ~DialogueData() = default;
 
-        constexpr auto operator==(const DialogueData& other) const -> bool
+        constexpr auto operator==(DialogueData const& other) const -> bool
         {
             return this->m_id == other.m_id;
         }
 
         void OnResetId();
 
-        constexpr auto operator==(const DialogueId& dialogueId) const -> bool
+        constexpr auto operator==(DialogueId const& dialogueId) const -> bool
         {
             return m_id == dialogueId;
         }
 
-        constexpr auto operator<(const DialogueData& other) const -> bool
+        constexpr auto operator<(DialogueData const& other) const -> bool
         {
             return m_id < other.m_id;
         }
 
-        constexpr auto operator>(const DialogueData& other) const -> bool
+        constexpr auto operator>(DialogueData const& other) const -> bool
         {
             return m_id > other.m_id;
         }
 
-        constexpr auto operator<=(const DialogueData& other) const -> bool
+        constexpr auto operator<=(DialogueData const& other) const -> bool
         {
             return !(m_id > other.m_id);
         }
 
-        constexpr auto operator>=(const DialogueData& other) const -> bool
+        constexpr auto operator>=(DialogueData const& other) const -> bool
         {
             return !(m_id < other.m_id);
         }
