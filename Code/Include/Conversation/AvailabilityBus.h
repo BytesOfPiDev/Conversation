@@ -1,7 +1,7 @@
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/RTTI/BehaviorContext.h>
+#include "AzCore/EBus/EBus.h"
+#include "AzCore/RTTI/BehaviorContext.h"
 
 namespace Conversation
 {

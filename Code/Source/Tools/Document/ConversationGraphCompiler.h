@@ -4,17 +4,14 @@
 #include "AtomToolsFramework/Graph/GraphCompiler.h"
 #include "AtomToolsFramework/Graph/GraphTemplateFileData.h"
 #include "AzCore/RTTI/RTTIMacros.h"
-#include "AzCore/std/containers/array.h"
 #include "AzCore/std/utility/expected.h"
-#include "Conditions/ConditionFunction.h"
 #include "GraphModel/Model/Common.h"
 
+#include "Conditions/ConditionFunction.h"
 #include "Conversation/DialogueData.h"
 
 namespace ConversationEditor
 {
-    class ConversationGraphCompiler;
-
     using StartingIdContainer = AZStd::set<Conversation::DialogueId>;
     using SlotValueTable = AZStd::map<GraphModel::ConstSlotPtr, AZStd::any>;
     using SlotDialogueTable = AZStd::map<GraphModel::ConstSlotPtr, Conversation::DialogueData>;
@@ -22,7 +19,6 @@ namespace ConversationEditor
 
     AZ_ENUM( // NOLINT
         CompilationErrorCode,
-        OneOrMoreBadParametersReceived,
         NullGraphPointer,
         FailedToSaveConversationTemplate,
         ExpectedDialogueNodeButGotNullptr,
@@ -37,8 +33,9 @@ namespace ConversationEditor
     class ConversationGraphCompiler : public AtomToolsFramework::GraphCompiler
     {
     public:
-        AZ_RTTI(ConversationGraphCompiler, "{F57500CA-5B13-4833-988A-DDA6ACF238A0}", AtomToolsFramework::GraphCompiler); // NOLINT
-        AZ_CLASS_ALLOCATOR(ConversationGraphCompiler, AZ::SystemAllocator); // NOLINT
+        AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
+        AZ_TYPE_INFO_WITH_NAME_DECL(ConversationGraphCompiler); // NOLINT
+        AZ_CLASS_ALLOCATOR_DECL; // NOLINT
         AZ_DISABLE_COPY_MOVE(ConversationGraphCompiler); // NOLINT
 
         ConversationGraphCompiler() = default;
@@ -162,22 +159,6 @@ namespace ConversationEditor
             AZStd::vector<AZ::Name> m_conditions;
             AZStd::vector<Conversation::DialogueId> m_responseIds;
         };
-
-        struct DialogueNodeData
-        {
-            Conversation::DialogueData m_dialogue;
-            AZStd::vector<AZ::Name> m_conditions;
-            AZStd::vector<Conversation::DialogueId> m_responseIds;
-        };
-
-        struct ConditionNodeData
-        {
-        };
-        struct ScriptNodeData
-        {
-        };
-
-        using ConversationNodeData = AZStd::variant<DialogueNodeData, ConditionNodeData, ScriptNodeData>;
 
         AZStd::mutex m_instructionNodesForCurrentNodeMutex;
 

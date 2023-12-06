@@ -1,19 +1,11 @@
+#include "Builder/ConversationAssetBuilderWorker.h"
+
 #include "AssetBuilderSDK/AssetBuilderSDK.h"
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Debug/Trace.h"
-#include <Builder/ConversationAssetBuilderWorker.h>
+#include "AzCore/Serialization/Utils.h"
 
-#include <algorithm>
-
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/Serialization/Utils.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
-
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include <Conversation/ConversationAsset.h>
+#include "Conversation/ConversationAsset.h"
 
 namespace ConversationEditor
 {

@@ -23,16 +23,22 @@
 #include "AzCore/std/string/regex.h"
 #include "AzFramework/Asset/AssetSystemBus.h"
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
-#include "Conversation/Constants.h"
 #include "GraphModel/Model/Common.h"
 #include "GraphModel/Model/Node.h"
 #include "GraphModel/Model/Slot.h"
 
+#include "Conversation/Constants.h"
 #include "Conversation/ConversationAsset.h"
+#include "Conversation/ConversationTypeIds.h"
 #include "Tools/DataTypes.h"
 
 namespace ConversationEditor
 {
+
+    AZ_RTTI_NO_TYPE_INFO_IMPL(ConversationGraphCompiler, AtomToolsFramework::GraphCompiler); // NOLINT
+    AZ_TYPE_INFO_WITH_NAME_IMPL(ConversationGraphCompiler, "ConversationGraphCompiler", ConversationGraphCompilerTypeId); // NOLINT
+    AZ_CLASS_ALLOCATOR_IMPL(ConversationGraphCompiler, AZ::SystemAllocator); // NOLINT
+
     ConversationGraphCompiler::ConversationGraphCompiler(AZ::Crc32 const& toolId)
         : AtomToolsFramework::GraphCompiler(toolId)
     {
@@ -71,9 +77,9 @@ namespace ConversationEditor
             m_currentNode = currentNode;
             if (!m_currentNode)
             {
-                AZLOG_FATAL("Current node is null!"); // NOLINT
-
-                continue;
+                AZ_Error("ConversationGraphCompiler", false, "Current node is null!"); // NOLINT
+                SetState(AtomToolsFramework::GraphCompiler::State::Failed);
+                return false;
             }
 
             // Search this node for any template path settings that describe files that need to be generated from the graph.
@@ -560,8 +566,6 @@ namespace ConversationEditor
                         nodeData.m_dialogue->m_responseIds.push_back(responseId);
                     });
 
-                AZ_Info("ConversationGraphCompiler", "Adding... %s'.\n", ToString(*nodeData.m_dialogue).c_str());
-
                 conversationAsset->AddDialogue(*nodeData.m_dialogue);
             }
         }
@@ -841,9 +845,6 @@ namespace ConversationEditor
 
         for (auto const& templatePath : m_templatePathsForCurrentNode)
         {
-            AZLOG_INFO( // NOLINT
-                "Template path: %s.\n", templatePath.data());
-
             bool const isLuaTemplate = templatePath.ends_with(".lua");
             bool const isConversationTemplate = templatePath.ends_with(".conversationtemplate");
 
