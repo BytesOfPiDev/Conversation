@@ -22,8 +22,11 @@ namespace ConversationEditor
         ~ConversationAssetBuilderWorker() override;
 
         //! Asset Builder Callback Functions
-        void CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response);
-        void ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response);
+        void CreateJobs(AssetBuilderSDK::CreateJobsRequest const& request, AssetBuilderSDK::CreateJobsResponse& response);
+        void ProcessJob(AssetBuilderSDK::ProcessJobRequest const& request, AssetBuilderSDK::ProcessJobResponse& response);
+
+        void HandleCompileKey(AssetBuilderSDK::ProcessJobRequest const& request, AssetBuilderSDK::ProcessJobResponse& response);
+        void HandleCopyKey(AssetBuilderSDK::ProcessJobRequest const& request, AssetBuilderSDK::ProcessJobResponse& response);
 
         //////////////////////////////////////////////////////////////////////////
         //! AssetBuilderSDK::AssetBuilderCommandBus interface

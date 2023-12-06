@@ -23,13 +23,15 @@ namespace Conversation
         ConversationAsset() = default;
         ~ConversationAsset() override = default;
 
-        static constexpr char const* ProductExtension = "conversationasset";
-        static constexpr char const* ProductExtensionPattern = "*.conversationasset";
-        static constexpr char const* ProductDotExtension = ".conversationasset";
+        static constexpr auto ProductExtension = "conversationasset";
+        static constexpr auto ProductExtensionPattern = "*.conversationasset";
+        static constexpr auto ProductDotExtension = ".conversationasset";
 
-        static constexpr char const* SourceExtension = "conversation";
-        static constexpr char const* SourceExtensionPattern = "*.conversation";
-        static constexpr char const* SourceDotExtension = ".conversation";
+        static constexpr auto SourceExtension = "conversation";
+        static constexpr auto SourceExtensionPattern = "*.conversation";
+        static constexpr auto SourceDotExtension = ".conversation";
+
+        static constexpr auto ProductAssetSubId = 1;
 
         [[nodiscard]] auto CountStartingIds() const -> size_t override
         {

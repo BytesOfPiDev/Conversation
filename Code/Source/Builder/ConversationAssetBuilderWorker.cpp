@@ -3,13 +3,16 @@
 #include "AssetBuilderSDK/AssetBuilderSDK.h"
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Debug/Trace.h"
+#include "AzCore/Script/ScriptAsset.h"
 #include "AzCore/Serialization/Utils.h"
 
+#include "AzCore/StringFunc/StringFunc.h"
 #include "Conversation/ConversationAsset.h"
 
 namespace ConversationEditor
 {
     constexpr auto const CompileKey = "Compile Conversation";
+    constexpr auto const CopyKey = "Copy Conversation Asset";
 
     ConversationAssetBuilderWorker::ConversationAssetBuilderWorker() = default;
     ConversationAssetBuilderWorker::~ConversationAssetBuilderWorker() = default;
@@ -32,35 +35,39 @@ namespace ConversationEditor
         AzFramework::StringFunc::Path::Normalize(fullPath);
         AZStd::string relPath = request.m_sourceFile;
 
-        AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Checking for: %s. \n", Conversation::ConversationAsset::SourceExtension); // NOLINT
-
-        // Create a job when receiving a source conversation file.
-        if (AzFramework::StringFunc::Equal(ext.c_str(), Conversation::ConversationAsset::SourceExtension))
+        // Handle assets that have already been processed outside of this worker.
+        if (AzFramework::StringFunc::Equal(ext.c_str(), Conversation::ConversationAsset::ProductExtension))
         {
-            // Create a job for each platform that is enabled/supported.
+            AZ_TracePrintf(
+                AssetBuilderSDK::InfoWindow, "Handling extension: %s. \n", Conversation::ConversationAsset::ProductExtension); // NOLINT
+
             for (AssetBuilderSDK::PlatformInfo const& platformInfo : request.m_enabledPlatforms)
             {
-                // We create a simple job here which only contains the identifying job key and the platform to process the file on
                 AssetBuilderSDK::JobDescriptor descriptor;
-                descriptor.m_jobKey = CompileKey;
+                descriptor.m_jobKey = CopyKey;
                 descriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
 
-                // Note that there are additional parameters for the JobDescriptor which may be beneficial in your use case.
-                // Notable ones include:
-                //   * m_critical - a boolean that flags this job as one which must complete before the Editor will start up.
-                //   * m_priority - an integer where larger values signify that the job should be processed with higher priority than those
-                //   with lower values.
-                // Please see the JobDescriptor for the full complement of configuration parameters.
                 response.m_createJobOutputs.push_back(descriptor);
             }
+
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
             return;
         }
+
+        // Extension not handled. Currently, there's no need to handle a source asset since the editor is taking care of that for now with
+        // ConversationGraphCompiler.
+        response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
     }
 
     void ConversationAssetBuilderWorker::ProcessJob(
         AssetBuilderSDK::ProcessJobRequest const& request, AssetBuilderSDK::ProcessJobResponse& response)
     {
+        if (!AZ::StringFunc::Equal(request.m_jobDescription.m_jobKey, CopyKey))
+        {
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+            AZ_TracePrintf(
+                AssetBuilderSDK::ErrorWindow, "Job failed. Unsupported job key: '%s'\n", request.m_jobDescription.m_jobKey.c_str());
+        }
         // This is the most basic example of handling for cancellation requests.
         // If possible, you should listen for cancellation requests and then cancel processing work to facilitate faster shutdown of the
         // Asset Processor If you need to do more things such as signal a semaphore or other threading work, derive from the Job Cancel
@@ -78,7 +85,7 @@ namespace ConversationEditor
         // The assets extension; e.g. "assetextension"
         AZStd::string ext;
         AzFramework::StringFunc::Path::GetExtension(request.m_sourceFile.c_str(), ext, false);
-        //
+
         // Perform work based on extension type
         if (AzFramework::StringFunc::Equal(ext.c_str(), Conversation::ConversationAsset::SourceExtension))
         {
@@ -144,8 +151,16 @@ namespace ConversationEditor
         AssetBuilderSDK::JobProduct jobProduct(fileName);
 
         jobProduct.m_productAssetType = AZ::AzTypeInfo<Conversation::ConversationAsset>::Uuid();
-        jobProduct.m_productSubID = 0;
+        jobProduct.m_productSubID = Conversation::ConversationAsset::ProductAssetSubId;
         jobProduct.m_dependenciesHandled = true;
+
+        if (AZ::Data::AssetId mainScriptAssetId = conversationAsset->GetMainScriptAsset().GetId(); mainScriptAssetId.IsValid())
+        {
+            // Add a dependency to the compiled main script.
+            AssetBuilderSDK::ProductDependency mainScriptProductDependency{};
+            mainScriptProductDependency.m_dependencyId = mainScriptAssetId;
+            jobProduct.m_dependencies.push_back(mainScriptProductDependency);
+        }
 
         // once you've filled up the details of the product in jobProduct, add it to the result list:
         response.m_outputProducts.push_back(jobProduct);
@@ -161,4 +176,13 @@ namespace ConversationEditor
     {
         m_isShuttingDown = true;
     }
+
+    void ConversationAssetBuilderWorker::HandleCompileKey(AssetBuilderSDK::ProcessJobRequest const&, AssetBuilderSDK::ProcessJobResponse&)
+    {
+    }
+
+    void ConversationAssetBuilderWorker::HandleCopyKey(AssetBuilderSDK::ProcessJobRequest const&, AssetBuilderSDK::ProcessJobResponse&)
+    {
+    }
+
 } // namespace ConversationEditor
