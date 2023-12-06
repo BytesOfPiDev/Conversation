@@ -14,14 +14,7 @@ namespace ConversationTest
 
         void AddGemsAndComponents() override;
         auto CreateApplicationInstance() -> AZ::ComponentApplication* override;
-        /*
-            void SetupEnvironment() override;
-
-            void TeardownEnvironment() override;
-        */
 
     private:
-        //        AZ::ComponentApplication* m_application{};
-        //       AZ::Entity* m_systemEntity{};
     };
 } // namespace ConversationTest

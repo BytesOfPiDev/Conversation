@@ -11,17 +11,10 @@
 #include "Conversation/DialogueData.h"
 #include "Conversation/DialogueData_incl.h"
 #include "ConversationTestEnvironment.h"
-#include <gtest/gtest.h>
 
-// NOLINTBEGIN
 namespace ConversationTest
 {
-
-    [[maybe_unused]] constexpr auto TestActorText = "Testing Dr. Tester!";
-
-    [[maybe_unused]] constexpr Conversation::DialogueId const InvalidDialogueId{};
-
-    [[maybe_unused]] constexpr AZ::Uuid TestConversationAssetId{ "3EBCCFAF-4574-4C56-BDD3-09EDC9CB8405" };
+    constexpr AZ::Uuid TestConversationAssetId{ "3EBCCFAF-4574-4C56-BDD3-09EDC9CB8405" };
     static constexpr AZ::TypeId TagComponentType{ "{0F16A377-EAA0-47D2-8472-9EAAA680B169}" };
     static constexpr AZ::TypeId DialogueComponentType{ Conversation::DialogueComponentTypeId };
 
@@ -276,6 +269,5 @@ namespace ConversationTest
     }
 
 } // namespace ConversationTest
-// NOLINTEND
 
 AZ_UNIT_TEST_HOOK(new ConversationTest::ConversationTestEnvironment) // NOLINT
