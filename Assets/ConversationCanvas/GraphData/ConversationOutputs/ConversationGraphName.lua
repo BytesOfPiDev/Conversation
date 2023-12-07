@@ -2,7 +2,7 @@
 
 require("conversation.core")
 
-local ConversationScriptComponent = ScriptDialogueComponent:new(nil, "Brah", "Tato")
+local ConversationScriptComponent = ScriptDialogueComponent:new(nil)
 
 function ConversationScriptComponent:InitConversationScript()
 	-- BOP_GENERATED_INSTRUCTIONS_BEGIN: in_branch1, in_branch2, in_branch3, in_branch4

@@ -41,12 +41,6 @@ function ConditionScript:IsAvailable()
 end
 
 ScriptDialogueComponent = {
-	Properties = {
-		-- Property definitions
-		FirstName = { default = "Janet" },
-		LastName = { default = "Doet" },
-		SpeakerTag = { default = "" },
-	},
 	conditions = {},
 	dialogues = {},
 	dialogueComponentNotificationHandler = nil,
@@ -145,12 +139,12 @@ function ScriptDialogueComponent:AddCondition(conditionId, conditionFunction)
 	self.conditions[conditionId] = conditionFunction
 end
 
-function ScriptDialogueComponent:new(o, firstName, lastName)
+function ScriptDialogueComponent:new(o)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
-	self.Properties.FirstName = firstName or ""
-	self.Properties.LastName = lastName or ""
+
+	Debug.Log("ScriptDialogueComponent:new")
 	return o
 end
 

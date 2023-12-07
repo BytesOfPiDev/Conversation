@@ -1,7 +1,0 @@
--- 
-
-require("conversation.core")
-
--- CONDITIONAL_BEGIN
-
--- CONDITIONAL_END
