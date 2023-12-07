@@ -64,7 +64,7 @@ namespace Conversation
             return m_dialogues;
         }
 
-        [[nodiscard]] auto FindDialogue(const DialogueId& dialogueId) const -> DialogueData override
+        [[nodiscard]] auto FindDialogue(DialogueId const& dialogueId) const -> DialogueData override
         {
             auto foundIter = m_dialogues.find(DialogueData(dialogueId));
 
@@ -86,7 +86,7 @@ namespace Conversation
          *
          * @return A string error message on failure, and nothing otherwise.
          */
-        auto TryToStartConversation(const AZ::EntityId& initiatingEntityId) -> AZStd::optional<AZStd::string> override;
+        auto TryToStartConversation(const AZ::EntityId& initiatingEntityId) -> bool override;
         void AbortConversation() override;
         void EndConversation() override;
         /**
@@ -99,7 +99,7 @@ namespace Conversation
          * @param dialogueToSelect The dialogue that will be sent out.
          *
          */
-        void SelectDialogue(const DialogueData& dialogueToSelect) override;
+        void SelectDialogue(DialogueData const& dialogueToSelect) override;
         /**
          * Processes and sends out a dialogue matching the given DialogueId.
          *
@@ -108,7 +108,7 @@ namespace Conversation
          * @param dialogueId The ID of a dialogue contained in one of the assets attached to the parent entity.
          *
          */
-        void SelectDialogue(const DialogueId dialogueId) override;
+        void SelectDialogue(DialogueId const dialogueId) override;
         /**
          * Processes and sends out the index matching an available dialogue choice.
          *
@@ -160,7 +160,7 @@ namespace Conversation
 
         [[nodiscard]] auto CheckAvailability(DialogueData const& dialogueData) -> bool override;
         [[nodiscard]] auto CheckAvailability(DialogueId const& dialogueIdToCheck) -> bool override;
-        [[nodiscard]] auto CheckIfDialogueIdExists(const DialogueId& /*dialogueId*/) const -> bool override;
+        [[nodiscard]] auto CheckIfDialogueIdExists(DialogueId const& /*dialogueId*/) const -> bool override;
 
     private:
         DialogueComponentConfig m_config;

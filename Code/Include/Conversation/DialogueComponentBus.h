@@ -33,12 +33,12 @@ namespace Conversation
     public: // Requests
         [[nodiscard]] virtual auto GetStartingIds() const -> AZStd::vector<DialogueId> const& = 0;
         [[nodiscard]] virtual auto GetDialogues() const -> AZStd::unordered_set<DialogueData> const& = 0;
-        [[nodiscard]] virtual auto FindDialogue(const DialogueId& /*dialogueIdToFind*/) const -> DialogueData = 0;
-        [[nodiscard]] virtual auto CheckIfDialogueIdExists(const DialogueId& /*dialogueId*/) const -> bool = 0;
+        [[nodiscard]] virtual auto FindDialogue(DialogueId const& /*dialogueIdToFind*/) const -> DialogueData = 0;
+        [[nodiscard]] virtual auto CheckIfDialogueIdExists(DialogueId const& /*dialogueId*/) const -> bool = 0;
         [[nodiscard]] virtual auto GetConversationAssets() const -> ConversationAssetContainer const& = 0;
         [[nodiscard]] virtual auto GetSpeakerTag() const -> AZStd::string = 0;
 
-        virtual auto TryToStartConversation(const AZ::EntityId& /*initiatingEntityId*/) -> AZStd::optional<AZStd::string> = 0;
+        virtual auto TryToStartConversation(const AZ::EntityId& /*initiatingEntityId*/) -> bool = 0;
         /**
          * Sends out the given DialogueData, making it the active dialogue.
          *
@@ -48,22 +48,22 @@ namespace Conversation
          * exist in the assets attached to this component. Potentially, this
          * may allow injecting a dialogue if desired.
          */
-        virtual void SelectDialogue(const DialogueData& /*dialogueToSelect*/) = 0;
+        virtual void SelectDialogue(DialogueData const& /*dialogueToSelect*/) = 0;
 
         /**
          * Attempts to find and send out a DialogueData using its DialogueId.
          *
          * Does nothing if it could not find one.
          */
-        virtual void SelectDialogue(const DialogueId dialogueIdToFindAndSelect) = 0;
+        virtual void SelectDialogue(DialogueId const dialogueIdToFindAndSelect) = 0;
 
         virtual void SelectAvailableResponse(int const availableResponseIndex) = 0;
         virtual void AbortConversation() = 0;
         virtual void EndConversation() = 0;
         virtual void ContinueConversation() = 0;
 
-        [[nodiscard]] virtual auto CheckAvailability(const DialogueData& dialogueToCheck) -> bool = 0;
-        [[nodiscard]] virtual auto CheckAvailability(const DialogueId& dialogueIdToCheck) -> bool = 0;
+        [[nodiscard]] virtual auto CheckAvailability(DialogueData const& dialogueToCheck) -> bool = 0;
+        [[nodiscard]] virtual auto CheckAvailability(DialogueId const& dialogueIdToCheck) -> bool = 0;
         [[nodiscard]] virtual auto GetDisplayName() const -> AZStd::string = 0;
         [[nodiscard]] virtual auto GetAvailableResponses() const -> AZStd::vector<DialogueData> = 0;
         [[nodiscard]] virtual auto GetActiveDialogue() const -> DialogueData = 0;
@@ -82,7 +82,7 @@ namespace Conversation
          * @param potentialResponses (Pending removal) A list of responses that may be sent out.
          */
         virtual void OnDialogue(
-            [[maybe_unused]] const DialogueData& dialogue, [[maybe_unused]] const AZStd::vector<DialogueData>& potentialResponses)
+            [[maybe_unused]] DialogueData const& dialogue, [[maybe_unused]] AZStd::vector<DialogueData> const& potentialResponses)
         {
         }
         virtual void OnConversationStarted([[maybe_unused]] const AZ::EntityId initiatingEntityId)
@@ -102,7 +102,7 @@ namespace Conversation
          *
          * @note A response can be for any entity in the game - both the player and NPCs.
          */
-        virtual void OnResponseAvailable([[maybe_unused]] const DialogueData& availableDialogue)
+        virtual void OnResponseAvailable([[maybe_unused]] DialogueData const& availableDialogue)
         {
         }
     };

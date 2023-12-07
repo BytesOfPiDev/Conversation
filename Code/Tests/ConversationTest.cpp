@@ -198,16 +198,16 @@ namespace ConversationTest
 
         AZ::EntityId const someOtherEntityId{ AZ::Entity::MakeId() };
 
-        AZStd::optional<AZStd::string> errorMessage{};
+        bool success{ false };
         DialogueComponentRequestBus::EventResult(
-            errorMessage, m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, someOtherEntityId);
+            success, m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, someOtherEntityId);
 
         DialogueState dialogueCurrentState{ DialogueState::Invalid };
         DialogueComponentRequestBus::EventResult(
             dialogueCurrentState, m_dialogueEntity->GetId(), &DialogueComponentRequests::GetCurrentState);
 
-        EXPECT_EQ(dialogueCurrentState, Conversation::DialogueState::Active) << errorMessage->c_str();
-        EXPECT_FALSE(errorMessage.has_value());
+        EXPECT_EQ(dialogueCurrentState, Conversation::DialogueState::Active);
+        EXPECT_TRUE(success);
     }
 
     TEST_F(DialogueComponentTests, TryStartConversation_OnFailure_ReturnsError)
@@ -218,11 +218,11 @@ namespace ConversationTest
 
         AZ::EntityId const someOtherEntityId{ AZ::Entity::MakeId() };
 
-        AZStd::optional<AZStd::string> errorMessage{};
+        bool success{ false };
         DialogueComponentRequestBus::EventResult(
-            errorMessage, m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, someOtherEntityId);
+            success, m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, someOtherEntityId);
 
-        EXPECT_TRUE(errorMessage.has_value());
+        EXPECT_FALSE(success);
     }
 
     TEST_F(DialogueComponentTests, TryStartConversation_CallWithValidData_SucceedsWithValidDialogueState)
@@ -241,17 +241,19 @@ namespace ConversationTest
 
         AZ::EntityId someOtherEntityId{ AZ::Entity::MakeId() };
 
-        AZStd::optional<AZStd::string> errorMessage{};
+        bool success{ false };
         DialogueComponentRequestBus::EventResult(
-            errorMessage, m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, someOtherEntityId);
+            success, m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, someOtherEntityId);
+
+        EXPECT_TRUE(success);
 
         DialogueState dialogueCurrentState{ DialogueState::Invalid };
         DialogueComponentRequestBus::EventResult(
             dialogueCurrentState, m_dialogueEntity->GetId(), &DialogueComponentRequests::GetCurrentState);
-        EXPECT_EQ(dialogueCurrentState, Conversation::DialogueState::Active) << errorMessage->c_str();
+        EXPECT_EQ(dialogueCurrentState, Conversation::DialogueState::Active);
     }
 
-    TEST_F(DialogueComponentTests, TryStartConversation_CallWithInvalidData_FailsWithInvalidDialogueState)
+    TEST_F(DialogueComponentTests, TryStartConversation_CallWithInvalidData_FailsWithInactiveDialogueState)
     {
         AZ::Component* const dialogueComponent = m_dialogueEntity->FindComponent(AZ::TypeId{ Conversation::DialogueComponentTypeId });
 
@@ -263,8 +265,7 @@ namespace ConversationTest
         auto* dialogueComponentRequests = Conversation::DialogueComponentRequestBus::FindFirstHandler(m_dialogueEntity->GetId());
         EXPECT_NE(dialogueComponentRequests, nullptr);
 
-        auto const tryToStartConversationErrorMessage = dialogueComponentRequests->TryToStartConversation(AZ::Entity::MakeId());
-        EXPECT_TRUE(tryToStartConversationErrorMessage.has_value());
+        EXPECT_FALSE(dialogueComponentRequests->TryToStartConversation(AZ::Entity::MakeId()));
         EXPECT_EQ(dialogueComponentRequests->GetCurrentState(), Conversation::DialogueState::Inactive);
     }
 
