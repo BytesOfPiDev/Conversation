@@ -14,9 +14,9 @@
 
 namespace ConversationTest
 {
-    constexpr AZ::Uuid TestConversationAssetId{ "3EBCCFAF-4574-4C56-BDD3-09EDC9CB8405" };
-    static constexpr AZ::TypeId TagComponentType{ "{0F16A377-EAA0-47D2-8472-9EAAA680B169}" };
-    static constexpr AZ::TypeId DialogueComponentType{ Conversation::DialogueComponentTypeId };
+    inline constexpr AZ::Uuid TestConversationAssetId{ "{3EBCCFAF-4574-4C56-BDD3-09EDC9CB8405}" };
+    inline constexpr AZ::TypeId TagComponentType{ "{0F16A377-EAA0-47D2-8472-9EAAA680B169}" };
+    inline constexpr AZ::TypeId DialogueComponentType{ Conversation::DialogueComponentTypeId };
 
     static Conversation::DialogueId const ValidDialogueId = Conversation::DialogueId{ "ValidDialogueId" };
 
