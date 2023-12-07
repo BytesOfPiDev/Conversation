@@ -6,6 +6,7 @@
 #include "AzCore/Serialization/EditContextConstants.inl"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/std/ranges/ranges_algorithm.h"
+#include "AzFramework/Script/ScriptComponent.h"
 #include "AzToolsFramework/Entity/EditorEntityContextBus.h"
 #include "ToolsComponents/EditorComponentBase.h"
 #include "cstdlib"
@@ -41,8 +42,8 @@ namespace ConversationEditor
         if (!m_editorEntityContextRequests)
         {
             AZLOG_FATAL( // NOLINT
-                "Unable to retrieve the editor entity context bus handler! Crashing!\n");
-            exit(EXIT_FAILURE);
+                "Unable to retrieve the editor entity context bus handler! Deactivating EditorDialogueComponent.\n");
+            Deactivate();
         }
     }
 
@@ -87,14 +88,34 @@ namespace ConversationEditor
         AZ_Assert( // NOLINT
             gameEntity, "The game entity should not be null!");
 
+        auto* dialogueComponent = gameEntity->CreateComponent<Conversation::DialogueComponent>();
+
+        if (!dialogueComponent)
+        {
+            AZLOG_FATAL(
+                "An EditorDialogueComponent is unable to build a game entity because it could not create a Dialogue Component instance.");
+            return;
+        }
+
+        dialogueComponent->SetConfiguration(m_config);
+
         AZStd::ranges::for_each(
             m_config.m_assets,
-            [](AZ::Data::Asset<Conversation::ConversationAsset> const&) -> void
+            [&gameEntity](AZ::Data::Asset<Conversation::ConversationAsset> const& conversationAsset) -> void
             {
-            });
+                auto* scriptComponent =
+                    azrtti_cast<AzFramework::ScriptComponent*>(gameEntity->CreateComponent<AzFramework::ScriptComponent>());
 
-        auto dialogueComponent = gameEntity->CreateComponent<Conversation::DialogueComponent>();
-        dialogueComponent->SetConfiguration(m_config);
+                if (!scriptComponent)
+                {
+                    AZLOG_FATAL( // NOLINT
+                        "An EditorDialogueComponent failed to finish building a game entity because it could not create a "
+                        "ScriptComponent.");
+                    return;
+                }
+
+                scriptComponent->SetScript(conversationAsset->GetMainScriptAsset());
+            });
     }
 
 } // namespace ConversationEditor

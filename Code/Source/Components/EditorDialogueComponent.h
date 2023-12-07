@@ -48,8 +48,6 @@ namespace ConversationEditor
         // Turn an editor component into a runtime component.
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
-        void Build(AZ::Data::Asset<Conversation::ConversationAsset> const& conversationAsset, AZ::Entity& gameEntity);
-
     private:
         Conversation::DialogueComponentConfig m_config;
         AzToolsFramework::EditorEntityContextRequests* m_editorEntityContextRequests{};
