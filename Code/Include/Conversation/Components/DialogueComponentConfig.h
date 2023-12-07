@@ -19,8 +19,9 @@ namespace Conversation
     struct DialogueComponentConfig : public AZ::ComponentConfig
     {
     public:
-        AZ_RTTI(DialogueComponentConfig, DialogueComponentConfigTypeId, AZ::ComponentConfig); // NOLINT
-        AZ_CLASS_ALLOCATOR(DialogueComponentConfig, AZ::SystemAllocator, 0); // NOLINT
+        AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
+        AZ_TYPE_INFO_WITH_NAME_DECL(DialogueComponentConfig);
+        AZ_CLASS_ALLOCATOR_DECL; // NOLINT
         AZ_DEFAULT_COPY_MOVE(DialogueComponentConfig); // NOLINT
 
         DialogueComponentConfig() = default;

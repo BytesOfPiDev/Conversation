@@ -1,15 +1,21 @@
 #include "Conversation/Components/DialogueComponentConfig.h"
-#include "AzCore/Component/ComponentBus.h"
-#include "AzCore/Serialization/EditContextConstants.inl"
 
-#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include "Atom/RPI.Reflect/Image/StreamingImageAsset.h"
+#include "AzCore/Asset/AssetSerializer.h"
+#include "AzCore/Component/ComponentBus.h"
+#include "AzCore/Memory/SystemAllocator.h"
+#include "AzCore/RTTI/ReflectContext.h"
+#include "AzCore/Serialization/EditContext.h"
+#include "AzCore/Serialization/EditContextConstants.inl"
+#include "AzCore/Serialization/SerializeContext.h"
 
 namespace Conversation
 {
+
+    AZ_RTTI_NO_TYPE_INFO_IMPL(DialogueComponentConfig, AZ::ComponentConfig); // NOLINT
+    AZ_TYPE_INFO_WITH_NAME_IMPL(DialogueComponentConfig, "DialogueComponentConfig", DialogueComponentConfigTypeId);
+    AZ_CLASS_ALLOCATOR_IMPL(DialogueComponentConfig, AZ::SystemAllocator);
+
     void DialogueComponentConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))

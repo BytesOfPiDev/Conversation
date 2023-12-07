@@ -8,11 +8,6 @@
 #include "Conversation/ConversationAsset.h"
 #include "Conversation/ConversationTypeIds.h"
 
-namespace AzToolsFramework
-{
-    class EditorEntityContextRequests;
-}
-
 namespace ConversationEditor
 {
     class EditorDialogueComponent
@@ -50,6 +45,5 @@ namespace ConversationEditor
 
     private:
         Conversation::DialogueComponentConfig m_config;
-        AzToolsFramework::EditorEntityContextRequests* m_editorEntityContextRequests{};
     };
 } // namespace ConversationEditor

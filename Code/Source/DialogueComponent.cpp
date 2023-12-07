@@ -1,6 +1,7 @@
 #include "Conversation/DialogueComponent.h"
 
 #include "AzCore/Asset/AssetSerializer.h"
+#include "AzCore/Component/Component.h"
 #include "AzCore/Console/IConsole.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/Debug/Trace.h"
@@ -202,11 +203,19 @@ namespace Conversation
 
     void DialogueComponent::Init()
     {
+        if (!GetEntity()->FindComponent(AZ::TypeId{ TagComponentTypeId }))
+        {
+            AZLOG_ERROR(
+                "Dialogue component [EntityName: %s | EntityId: %s] does not have a TagComponent, which is required! The request bus for "
+                "this entity will be disconnected.\n",
+                GetNamedEntityId().GetName().data(), GetEntityId().ToString().c_str());
+
+            DialogueComponentRequestBus::Handler::BusDisconnect();
+        }
     }
 
     void DialogueComponent::Activate()
     {
-        AZ_Trace("DialogueComponent", "TestTraceActivate");
         // Combine the starting IDs and dialogues into one container.
         for (AZ::Data::Asset<ConversationAsset>& asset : m_config.m_assets)
         {
@@ -214,7 +223,7 @@ namespace Conversation
             m_dialogues.insert(asset->GetDialogues().begin(), asset->GetDialogues().end());
         }
 
-        // The TagComponent is used to communicate with speakers, so we add it as a tag upon activation.
+        // The TagComponent is used to communicate with speakers, so we add our tag to it upon activation.
         // It will need to be removed upon deactivation.
         LmbrCentral::TagComponentRequestBus::Event(
             GetEntityId(), &LmbrCentral::TagComponentRequestBus::Events::AddTag, AZ::Crc32(m_speakerTag));

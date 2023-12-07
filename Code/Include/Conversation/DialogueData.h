@@ -151,12 +151,12 @@ namespace Conversation
             return m_id < other.m_id;
         }
 
-        auto operator<=(DialogueId const& other) const -> bool
+        [[nodiscard]] auto operator<=(DialogueId const& other) const -> bool
         {
             return (m_id <= other.m_id);
         }
 
-        auto operator>=(DialogueId const& other) const -> bool
+        [[nodiscard]] auto operator>=(DialogueId const& other) const -> bool
         {
             return (m_id >= other.m_id);
         }

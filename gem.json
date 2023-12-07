@@ -1,21 +1,26 @@
 {
     "gem_name": "Conversation",
     "display_name": "Conversation",
-    "license": "What license Conversation uses goes here: i.e. Apache-2.0 or MIT",
-    "license_url": "Link to the license web site goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
-    "origin": "The name of the originator goes here. i.e. XYZ Inc.",
+    "license": "Apache-2.0",
+    "license_url": "https://github.com/BytesOfPiDev/Conversation/blob/main/LICENSE",
+    "origin": "Andre Mitchell",
     "origin_url": "The primary repo for Conversation goes here: i.e. http://www.mydomain.com",
     "type": "Code",
-    "summary": "A short description of Conversation goes here.",
+    "summary": "A conversation system for O3DE",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [
         "Conversation"
     ],
-    "icon_path": "preview.png",
-    "requirements": "Notice of any requirements Conversation has goes here. i.e. This requires X other gem",
-    "documentation_url": "Link to any documentation of Conversation goes here: i.e. https://o3de.org/docs/user-guide/gems/reference/design/white-box/",
+    "icon_path": "",
+    "requirements": "",
+    "documentation_url": "https://github.com/BytesOfPiDev/Conversation",
     "dependencies": [],
-    "restricted": "Conversation"
+    "restricted": "Conversation",
+    "repo_uri": "https://github.com/BytesOfPiDev/Conversation.git",
+    "platforms": [
+        "Linux",
+        "Windows"
+    ]
 }

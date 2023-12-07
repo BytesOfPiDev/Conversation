@@ -38,13 +38,6 @@ namespace ConversationEditor
 
     void EditorDialogueComponent::Init()
     {
-        m_editorEntityContextRequests = AzToolsFramework::EditorEntityContextRequestBus::FindFirstHandler();
-        if (!m_editorEntityContextRequests)
-        {
-            AZLOG_FATAL( // NOLINT
-                "Unable to retrieve the editor entity context bus handler! Deactivating EditorDialogueComponent.\n");
-            Deactivate();
-        }
     }
 
     void EditorDialogueComponent::Activate()
