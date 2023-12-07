@@ -34,7 +34,6 @@
 
 namespace ConversationEditor
 {
-
     AZ_RTTI_NO_TYPE_INFO_IMPL(ConversationGraphCompiler, AtomToolsFramework::GraphCompiler); // NOLINT
     AZ_TYPE_INFO_WITH_NAME_IMPL(ConversationGraphCompiler, "ConversationGraphCompiler", ConversationGraphCompilerTypeId); // NOLINT
     AZ_CLASS_ALLOCATOR_IMPL(ConversationGraphCompiler, AZ::SystemAllocator); // NOLINT
@@ -55,10 +54,19 @@ namespace ConversationEditor
     auto ConversationGraphCompiler::CompileGraph(GraphModel::GraphPtr graph, AZStd::string const& graphName, AZStd::string const& graphPath)
         -> bool
     {
+        if (IsCompileLoggingEnabled())
+        {
+            AZLOG_INFO("Compiling conversation graph '%s'...", graphName.c_str()); // NOLINT
+        }
+
         ClearData();
 
         if (!AtomToolsFramework::GraphCompiler::CompileGraph(graph, graphName, graphPath))
         {
+            if (IsCompileLoggingEnabled())
+            {
+                AZLOG_INFO("Base graph compilation failed."); // NOLINT
+            }
             return false;
         }
 
