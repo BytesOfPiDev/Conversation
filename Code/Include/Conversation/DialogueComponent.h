@@ -166,7 +166,6 @@ namespace Conversation
     private:
         DialogueComponentConfig m_config;
         ConversationAsset m_memoryConversationAsset;
-        AZStd::vector<DialogueId> m_dialogueIds;
         DialogueState m_currentState = DialogueState::Inactive;
         AZStd::optional<DialogueData> m_activeDialogue;
         AZStd::vector<DialogueData> m_availableResponses;
