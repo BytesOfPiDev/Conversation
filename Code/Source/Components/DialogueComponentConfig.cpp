@@ -13,16 +13,16 @@ namespace Conversation
 {
 
     AZ_RTTI_NO_TYPE_INFO_IMPL(DialogueComponentConfig, AZ::ComponentConfig); // NOLINT
-    AZ_TYPE_INFO_WITH_NAME_IMPL(DialogueComponentConfig, "DialogueComponentConfig", DialogueComponentConfigTypeId);
-    AZ_CLASS_ALLOCATOR_IMPL(DialogueComponentConfig, AZ::SystemAllocator);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(DialogueComponentConfig, "DialogueComponentConfig", DialogueComponentConfigTypeId); // NOLINT
+    AZ_CLASS_ALLOCATOR_IMPL(DialogueComponentConfig, AZ::SystemAllocator); // NOLINT
 
     void DialogueComponentConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<DialogueComponentConfig, AZ::ComponentConfig>()
-                ->Version(2)
-                ->Field("Conversation Assets", &DialogueComponentConfig::m_assets)
+                ->Version(3)
+                ->Field("Conversation Assets", &DialogueComponentConfig::m_asset)
                 ->Field("Display Name", &DialogueComponentConfig::m_displayName)
                 ->Field("Speaker Icon", &DialogueComponentConfig::m_speakerIconPath)
                 ->Field("Speaker Tag", &DialogueComponentConfig::m_speakerTag);
@@ -33,9 +33,11 @@ namespace Conversation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "BoP/Conversation")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DialogueComponentConfig::m_assets, "Assets", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DialogueComponentConfig::m_asset, "Asset", "")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DialogueComponentConfig::m_speakerTag, "Speaker Tag",
+                        AZ::Edit::UIHandlers::Default,
+                        &DialogueComponentConfig::m_speakerTag,
+                        "Speaker Tag",
                         "Identifies this entity as the owner of any dialogue containing this speaker tag.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DialogueComponentConfig::m_displayName, "Display Name", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DialogueComponentConfig::m_speakerIconPath, "SpeakerIconPath", "")

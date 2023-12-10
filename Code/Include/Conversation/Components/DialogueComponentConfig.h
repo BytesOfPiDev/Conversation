@@ -20,7 +20,7 @@ namespace Conversation
     {
     public:
         AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
-        AZ_TYPE_INFO_WITH_NAME_DECL(DialogueComponentConfig);
+        AZ_TYPE_INFO_WITH_NAME_DECL(DialogueComponentConfig); // NOLINT
         AZ_CLASS_ALLOCATOR_DECL; // NOLINT
         AZ_DEFAULT_COPY_MOVE(DialogueComponentConfig); // NOLINT
 
@@ -29,7 +29,7 @@ namespace Conversation
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZStd::vector<AZ::Data::Asset<Conversation::ConversationAsset>> m_assets{};
+        AZ::Data::Asset<Conversation::ConversationAsset> m_asset{};
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_speakerIconPath{};
         AZStd::string m_speakerTag{};
         AZStd::string m_displayName{};

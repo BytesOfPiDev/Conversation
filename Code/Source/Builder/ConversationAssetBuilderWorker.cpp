@@ -154,21 +154,15 @@ namespace ConversationEditor
         jobProduct.m_productSubID = Conversation::ConversationAsset::ProductAssetSubId;
         jobProduct.m_dependenciesHandled = true;
 
-        if (AZ::Data::AssetId mainScriptAssetId = conversationAsset->GetMainScriptAsset().GetId(); mainScriptAssetId.IsValid())
-        {
-            // Add a dependency to the compiled main script.
-            AssetBuilderSDK::ProductDependency mainScriptProductDependency{};
-            mainScriptProductDependency.m_dependencyId = mainScriptAssetId;
-            jobProduct.m_dependencies.push_back(mainScriptProductDependency);
-        }
-
         // once you've filled up the details of the product in jobProduct, add it to the result list:
         response.m_outputProducts.push_back(jobProduct);
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
 
         AZ_TracePrintf(
-            AssetBuilderSDK::InfoWindow, "Job completed. Asset has %i starting IDs and %i dialogues.",
-            conversationAsset->GetStartingIds().size(), conversationAsset->GetDialogues().size());
+            AssetBuilderSDK::InfoWindow,
+            "Job completed. Asset has %i starting IDs and %i dialogues.",
+            conversationAsset->GetStartingIds().size(),
+            conversationAsset->GetDialogues().size());
         return;
     }
 

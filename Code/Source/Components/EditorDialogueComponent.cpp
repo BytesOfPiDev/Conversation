@@ -42,13 +42,6 @@ namespace ConversationEditor
 
     void EditorDialogueComponent::Activate()
     {
-        AZStd::ranges::for_each(
-            m_config.m_assets,
-            [](auto& asset) -> void
-            {
-                asset.QueueLoad();
-                asset.BlockUntilLoadComplete();
-            });
     }
 
     void EditorDialogueComponent::Deactivate()
@@ -63,6 +56,7 @@ namespace ConversationEditor
     void EditorDialogueComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("EditorDialogueService"));
+        provided.push_back(AZ_CRC_CE("DialogueService"));
     }
     void EditorDialogueComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
     {
@@ -74,41 +68,24 @@ namespace ConversationEditor
     void EditorDialogueComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("EditorDialogueService"));
+        incompatible.push_back(AZ_CRC_CE("DialogueService"));
     }
 
     void EditorDialogueComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         AZ_Assert( // NOLINT
-            gameEntity, "The game entity should not be null!");
+            gameEntity,
+            "The game entity should not be null!");
 
         auto* dialogueComponent = gameEntity->CreateComponent<Conversation::DialogueComponent>();
-
         if (!dialogueComponent)
         {
-            AZLOG_FATAL(
+            AZLOG_FATAL( // NOLINT
                 "An EditorDialogueComponent is unable to build a game entity because it could not create a Dialogue Component instance.");
             return;
         }
 
         dialogueComponent->SetConfiguration(m_config);
-
-        AZStd::ranges::for_each(
-            m_config.m_assets,
-            [&gameEntity](AZ::Data::Asset<Conversation::ConversationAsset> const& conversationAsset) -> void
-            {
-                auto* scriptComponent =
-                    azrtti_cast<AzFramework::ScriptComponent*>(gameEntity->CreateComponent<AzFramework::ScriptComponent>());
-
-                if (!scriptComponent)
-                {
-                    AZLOG_FATAL( // NOLINT
-                        "An EditorDialogueComponent failed to finish building a game entity because it could not create a "
-                        "ScriptComponent.");
-                    return;
-                }
-
-                scriptComponent->SetScript(conversationAsset->GetMainScriptAsset());
-            });
     }
 
 } // namespace ConversationEditor

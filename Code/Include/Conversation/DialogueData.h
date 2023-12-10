@@ -8,6 +8,7 @@
 #include "Conversation/ConversationTypeIds.h"
 
 #include "Conversation/Util.h"
+#include "ScriptEvents/ScriptEventsAsset.h"
 
 namespace AZ
 {
@@ -121,16 +122,6 @@ namespace Conversation
 
         static void Reflect(AZ::ReflectContext* context);
 
-        /**
-         * Determine if this dialogue's ID is equal to another dialogue ID.
-         *
-         * This is useful for keeping DialogueId's instead of entire DialogueData objects
-         * and then subsequently using the ID to find a matching DialogueData.
-         *
-         * @param left The first DialogueId to compare.
-         * @param right The second DialogueId to compare to.
-         * @return Whether left and right are equivalent.
-         */
         [[nodiscard]] auto operator==(DialogueId const& other) const -> bool
         {
             return m_id == other.m_id;
@@ -249,6 +240,8 @@ namespace Conversation
         // Contains script IDs that should be executed upon dialogue selection.
         AZStd::vector<AZStd::string> m_scriptIds{};
         AZStd::vector<AZ::Name> m_conditionIds{};
+        // A script that is run when this dialogue is activated.
+        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> m_script{};
         AZ::Name m_availabilityId{};
         AZStd::array<size_t, ChunkArraySize> m_chunkIds{};
     };

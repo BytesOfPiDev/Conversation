@@ -6,9 +6,11 @@
 #include "AzCore/RTTI/BehaviorContext.h"
 #include "AzCore/Script/ScriptContextAttributes.h"
 #include "AzCore/Serialization/EditContext.h"
+#include "AzCore/Serialization/EditContextConstants.inl"
 #include "Conversation/Constants.h"
 #include "Conversation/ConversationTypeIds.h"
 #include "Conversation/DialogueData_incl.h"
+#include "Conversation/IConversationAsset.h"
 
 namespace Conversation
 {
@@ -20,7 +22,8 @@ namespace Conversation
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ConversationAsset, AZ::Data::AssetData>()
+            serializeContext->Class<IConversationAsset>()->Version(0);
+            serializeContext->Class<ConversationAsset, AZ::Data::AssetData, IConversationAsset>()
                 ->Version(1)
                 ->Field("Chunks", &ConversationAsset::m_chunks)
                 ->Field("Comment", &ConversationAsset::m_comment)
@@ -33,7 +36,8 @@ namespace Conversation
             {
                 editContext
                     ->Class<ConversationAsset>("ConversationAsset", "Stores dialogue and other information needed to start a conversation.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "");
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, DialogueSystemCategory);
             }
         }
 
@@ -57,7 +61,8 @@ namespace Conversation
 
         // Check if it's already in the container.
         auto const iterFoundStartingId = AZStd::find_if(
-            m_startingIds.begin(), m_startingIds.end(),
+            m_startingIds.begin(),
+            m_startingIds.end(),
             [&newStartingId](DialogueId const& existingId)
             {
                 return existingId == newStartingId;
@@ -78,7 +83,8 @@ namespace Conversation
         if (!IsValid(newDialogueData))
         {
             AZ_Warning( // NOLINT
-                "ConversationAsset", false,
+                "ConversationAsset",
+                false,
                 "Unable to add dialogue because the ID is invalid! It must be set to a valid ID before being added.\n");
             return;
         }
@@ -86,7 +92,9 @@ namespace Conversation
         if (m_dialogues.contains(newDialogueData))
         {
             AZ_Warning( // NOLINT
-                "ConversationAsset", false, "Unable to add dialogue because there is already a dialogue with the same ID.\n");
+                "ConversationAsset",
+                false,
+                "Unable to add dialogue because there is already a dialogue with the same ID.\n");
             return;
         }
 

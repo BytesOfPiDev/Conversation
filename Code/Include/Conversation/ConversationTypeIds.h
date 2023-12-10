@@ -3,13 +3,17 @@
 namespace Conversation
 {
     // clang-format off
+    inline constexpr auto ConversationAssetRefComponentTypeId { "{2A4DACCE-2AEA-4007-93C5-8F5EF1110DA8}" };
+    inline constexpr auto ConversationAssetInterfaceTypeId    { "{E055BA9A-31A0-48B5-B5B8-CD758771B151}" };
     inline constexpr auto ConversationAssetTypeId             { "{C2B4E407-B74E-4E48-8B8A-ADD5BCC894D1}" };
     inline constexpr auto ConversationSystemComponentTypeId   { "{30f94275-e830-466f-b1c6-140156911232}" };
+    inline constexpr auto ConversationVMTypeId                { "{8D316C6D-7EDC-4C11-A885-0C10CF41BA52}" };
     inline constexpr auto DialogueComponentConfigTypeId       { "{88CFED66-271F-4CC7-A573-E7E0C9456ECD}" };
     inline constexpr auto DialogueComponentTypeId             { "{C7AFDF51-ECCC-4BD3-8A56-0763ED87CB5B}" };
     inline constexpr auto DialogueDataTypeId                  { "{6BF81F0F-0013-4877-80EB-4DC579005DDE}" };
     inline constexpr auto ResponseDataTypeId                  { "{AEC51FC7-A91F-40D6-8EBA-59D0EADBAA4C}" };
     inline constexpr auto TagComponentTypeId                  { "{0F16A377-EAA0-47D2-8472-9EAAA680B169}" };
+    inline constexpr auto VMValueTypeId                       { "{ED542FA7-A789-4E54-95D7-E2330FFD6768}" };
     // clang-format on
 } // namespace Conversation
 

@@ -156,24 +156,6 @@ namespace ConversationTest
         EXPECT_EQ(asset.CountDialogues(), 2);
     }
 
-    TEST_F(ConversationAssetTests, DefaultConstructed_AddingInvalidResponseIsRejected)
-    {
-        Conversation::ConversationAsset asset{};
-        Conversation::ResponseData const invalidResponseData{};
-        asset.AddResponse(invalidResponseData);
-        EXPECT_EQ(asset.GetResponses().size(), 0);
-    }
-
-    TEST_F(ConversationAssetTests, ConversationAsset_DefaultConstructed_AddingValidResponseIsAccepted)
-    {
-        using namespace Conversation;
-
-        Conversation::ConversationAsset asset{};
-        Conversation::ResponseData const validResponseData{ CreateRandomDialogueId(), CreateRandomDialogueId() };
-        asset.AddResponse(validResponseData);
-        EXPECT_EQ(asset.GetResponses().size(), 1);
-    }
-
     TEST_F(DialogueComponentTests, Fixture_SanityCheck)
     {
         ASSERT_NE(m_dialogueEntity, nullptr);
@@ -189,7 +171,7 @@ namespace ConversationTest
         auto asset = CreateStartableAsset();
 
         Conversation::DialogueComponentConfig dialogueComponentConfig{};
-        dialogueComponentConfig.m_assets.push_back(asset);
+        dialogueComponentConfig.m_asset = asset;
 
         AZ::Component* const dialogueComponent = m_dialogueEntity->FindComponent(DialogueComponentType);
         dialogueComponent->SetConfiguration(dialogueComponentConfig);
@@ -232,7 +214,7 @@ namespace ConversationTest
         auto asset = CreateStartableAsset();
 
         Conversation::DialogueComponentConfig dialogueComponentConfig{};
-        dialogueComponentConfig.m_assets.push_back(asset);
+        dialogueComponentConfig.m_asset = asset;
 
         AZ::Component* const dialogueComponent = m_dialogueEntity->FindComponent(AZ::TypeId{ Conversation::DialogueComponentTypeId });
         dialogueComponent->SetConfiguration(dialogueComponentConfig);

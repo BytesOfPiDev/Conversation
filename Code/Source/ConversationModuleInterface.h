@@ -1,8 +1,9 @@
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Module/Module.h>
-#include <ConversationSystemComponent.h>
+#include "AzCore/Memory/SystemAllocator.h"
+#include "AzCore/Module/Module.h"
 
-#include <Conversation/DialogueComponent.h>
+#include "Components/ConversationAssetRefComponent.h"
+#include "Conversation/DialogueComponent.h"
+#include "ConversationSystemComponent.h"
 
 namespace Conversation
 {
@@ -19,10 +20,10 @@ namespace Conversation
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and
             // EditContext. This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(
-                m_descriptors.end(), { ConversationSystemComponent::CreateDescriptor(), DialogueComponent::CreateDescriptor() });
-
-            AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors;
-            m_descriptors.insert(m_descriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+                m_descriptors.end(),
+                { ConversationSystemComponent::CreateDescriptor(),
+                  DialogueComponent::CreateDescriptor(),
+                  ConversationAssetRefComponent::CreateDescriptor() });
         }
 
         /**

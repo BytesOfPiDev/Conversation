@@ -5,6 +5,8 @@
 #include "AzCore/Component/EntityBus.h"
 
 #include "Conversation/Components/DialogueComponentConfig.h"
+#include "Conversation/ConversationAsset.h"
+#include "Conversation/ConversationTypeIds.h"
 #include "Conversation/DialogueComponentBus.h"
 #include "Conversation/IConversationAsset.h"
 
@@ -21,11 +23,10 @@ namespace Conversation
      */
     class DialogueComponent
         : public AZ::Component
-        , public AZ::EntityBus::Handler
         , public DialogueComponentRequestBus::Handler
     {
     public:
-        AZ_COMPONENT_DECL(DialogueComponent); // NOLINT
+        AZ_COMPONENT(DialogueComponent, DialogueComponentTypeId); // NOLINT
         // AZ_COMPONENT(DialogueComponent, DialogueComponentTypeId); // NOLINT
         AZ_DISABLE_COPY_MOVE(DialogueComponent); // NOLINT
 
@@ -56,29 +57,29 @@ namespace Conversation
          */
         [[nodiscard]] auto GetStartingIds() const -> AZStd::vector<DialogueId> const& override
         {
-            return m_startingIds;
+            return m_config.m_asset->GetStartingIds();
         }
 
         [[nodiscard]] auto GetDialogues() const -> DialogueDataContainer const& override
         {
-            return m_dialogues;
+            return m_config.m_asset->GetDialogues();
         }
 
         [[nodiscard]] auto FindDialogue(DialogueId const& dialogueId) const -> DialogueData override
         {
-            auto foundIter = m_dialogues.find(DialogueData(dialogueId));
+            auto foundIter = m_config.m_asset->GetDialogues().find(DialogueData(dialogueId));
 
             // We return a default created object if we didn't find one with the given ID.
             // It's up to the caller to check that the ID is non-null to confirm that a
             // valid DialogueData was found.
             // @todo Implement either an overload or another function that shows failure, such
             // as a function that returns AZ::Outcome
-            return foundIter != m_dialogues.end() ? *foundIter : DialogueData();
+            return foundIter != m_config.m_asset->GetDialogues().end() ? *foundIter : DialogueData();
         }
 
-        [[nodiscard]] auto GetConversationAssets() const -> ConversationAssetContainer const& override
+        [[nodiscard]] auto GetConversationAsset() const -> AZ::Data::Asset<ConversationAsset> override
         {
-            return m_config.m_assets;
+            return m_config.m_asset;
         };
 
         /**
@@ -135,7 +136,7 @@ namespace Conversation
 
         [[nodiscard]] auto GetDisplayName() const -> AZStd::string override
         {
-            return m_displayName;
+            return m_config.m_displayName;
         }
 
         [[nodiscard]] auto GetActiveDialogue() const -> DialogueData override
@@ -150,7 +151,7 @@ namespace Conversation
 
         [[nodiscard]] auto GetSpeakerTag() const -> AZStd::string override
         {
-            return m_speakerTag;
+            return m_config.m_speakerTag;
         }
 
         [[nodiscard]] auto GetCurrentState() const -> DialogueState override
@@ -165,18 +166,7 @@ namespace Conversation
     private:
         DialogueComponentConfig m_config;
         ConversationAsset m_memoryConversationAsset;
-        AZStd::vector<DialogueId> m_startingIds;
         AZStd::vector<DialogueId> m_dialogueIds;
-        AZStd::unordered_set<DialogueData> m_dialogues;
-        /**
-         * An entity's speaker tag.
-         *
-         * Each entity that is part of a conversation should have a speaker tag. This helps
-         * associate an entity with a DialogueData that has this value as its speaker.
-         */
-        AZStd::string m_speakerTag;
-        AZStd::string m_displayName;
-        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_speakerIconPath;
         DialogueState m_currentState = DialogueState::Inactive;
         AZStd::optional<DialogueData> m_activeDialogue;
         AZStd::vector<DialogueData> m_availableResponses;

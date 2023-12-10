@@ -48,7 +48,17 @@ namespace Conversation
             return m_startingIds;
         }
 
+        [[nodiscard]] auto CopyStartingIds() const -> AZStd::vector<DialogueId> override
+        {
+            return m_startingIds;
+        }
+
         [[nodiscard]] auto GetDialogues() const -> DialogueDataContainer const& override
+        {
+            return m_dialogues;
+        }
+
+        [[nodiscard]] auto CopyDialogues() const -> DialogueDataContainer override
         {
             return m_dialogues;
         }
@@ -68,7 +78,9 @@ namespace Conversation
          */
 
         void AddResponse(ResponseData const& responseData) override;
+
         auto GetDialogueById(DialogueId const& dialogueId) -> AZ::Outcome<DialogueData> override;
+
         [[nodiscard]] auto CheckDialogueExists(DialogueId const& dialogueId) -> bool override
         {
             return m_dialogues.contains(DialogueData(dialogueId));
@@ -82,11 +94,6 @@ namespace Conversation
         void AddChunk(DialogueChunk const& dialogueChunk) override
         {
             m_chunks.insert(dialogueChunk);
-        }
-
-        [[nodiscard]] auto GetResponses() const -> AZStd::vector<ResponseData> const& override
-        {
-            return m_responses;
         }
 
         [[nodiscard]] auto GetMainScript() const -> AZ::Data::Asset<ConversationAsset>

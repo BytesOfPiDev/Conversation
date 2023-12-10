@@ -11,4 +11,7 @@ set(FILES
     Include/Conversation/DialogueScript.h
     Include/Conversation/IConversationAsset.h
     Include/Conversation/Util.h
+
+
+    Include/Conversation/Components/ConversationAssetRefComponentBus.h
 )

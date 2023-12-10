@@ -35,7 +35,7 @@ namespace Conversation
         [[nodiscard]] virtual auto GetDialogues() const -> AZStd::unordered_set<DialogueData> const& = 0;
         [[nodiscard]] virtual auto FindDialogue(DialogueId const& /*dialogueIdToFind*/) const -> DialogueData = 0;
         [[nodiscard]] virtual auto CheckIfDialogueIdExists(DialogueId const& /*dialogueId*/) const -> bool = 0;
-        [[nodiscard]] virtual auto GetConversationAssets() const -> ConversationAssetContainer const& = 0;
+        [[nodiscard]] virtual auto GetConversationAsset() const -> AZ::Data::Asset<ConversationAsset> = 0;
         [[nodiscard]] virtual auto GetSpeakerTag() const -> AZStd::string = 0;
 
         virtual auto TryToStartConversation(const AZ::EntityId& /*initiatingEntityId*/) -> bool = 0;

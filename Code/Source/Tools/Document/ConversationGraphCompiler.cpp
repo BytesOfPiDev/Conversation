@@ -137,7 +137,8 @@ namespace ConversationEditor
         if (!ReportGeneratedFileStatus())
         {
             AZ_Error( // NOLINT
-                "ConversationGraphCompiler", false,
+                "ConversationGraphCompiler",
+                false,
                 "Compilation failed because the generated files were not successfully processed by the O3DE Asset Processor."); // NOLINT
             SetState(AtomToolsFramework::GraphCompiler::State::Failed);
             return false;
@@ -261,9 +262,11 @@ namespace ConversationEditor
                     for (auto const& connection : slot->GetConnections())
                     {
                         AZ_Assert( // NOLINT
-                            connection->GetSourceNode() != outputNode, "This should never be the source node on an input connection.");
+                            connection->GetSourceNode() != outputNode,
+                            "This should never be the source node on an input connection.");
                         AZ_Assert( // NOLINT
-                            connection->GetTargetNode() == outputNode, "This should always be the target node on an input connection.");
+                            connection->GetTargetNode() == outputNode,
+                            "This should always be the target node on an input connection.");
                         if (connection->GetSourceNode() == inputNode || connection->GetSourceNode()->HasInputConnectionFromNode(inputNode))
                         {
                             return true;
@@ -528,11 +531,13 @@ namespace ConversationEditor
         ClearInstructionsForCurrentNodeAndReserveSize(m_graph->GetNodeCount());
 
         AZ::parallel_for_each(
-            m_templateFileDataVecForCurrentNode.begin(), m_templateFileDataVecForCurrentNode.end(),
+            m_templateFileDataVecForCurrentNode.begin(),
+            m_templateFileDataVecForCurrentNode.end(),
             [&](auto& templateFileData)
             {
                 templateFileData.ReplaceLinesInBlock(
-                    "BOP_GENERATED_INSTRUCTIONS_BEGIN", "BOP_GENERATED_INSTRUCTIONS_END",
+                    "BOP_GENERATED_INSTRUCTIONS_BEGIN",
+                    "BOP_GENERATED_INSTRUCTIONS_END",
                     [&]([[maybe_unused]] AZStd::string const& blockHeader)
                     {
                         AZStd::vector<AZStd::string> inputSlotNames;
@@ -577,24 +582,6 @@ namespace ConversationEditor
                 conversationAsset->AddDialogue(*nodeData.m_dialogue);
             }
         }
-
-        auto mainScriptAsset = [this]() -> AZ::Data::Asset<Conversation::ConversationAsset>
-        {
-            AZ::Data::AssetId mainScriptAssetId{};
-            // NOTE: The main script should have the exact same name as the conversation asset, but with a ".lua" extension.
-            AZStd::string mainScriptPath = m_conversationAssetFileDataVecForCurrentCompile.GetPath();
-            AZ::StringFunc::Path::ReplaceExtension(mainScriptPath, "lua");
-
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                mainScriptAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, mainScriptPath.c_str(),
-                AZ::AzTypeInfo<Conversation::ConversationAsset>::Uuid(), false);
-
-            return AZ::Data::AssetManager::Instance().GetAsset<Conversation::ConversationAsset>(
-                mainScriptAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-        }();
-
-        // Setting this should cause the asset processor to list the script as a dependency.
-        conversationAsset->SetMainScript(mainScriptAsset);
 
         // Save the conversation asset to a string instead of to the desk so that we can place it inside the relevant template.
         AZStd::string const conversationAssetData = [&conversationAsset]() -> AZStd::string
@@ -735,7 +722,8 @@ namespace ConversationEditor
         auto& nodeDataDialogue = m_nodeDataTable[currentNode].m_dialogue;
 
         AZ_Error( // NOLINT
-            "ConversationGraphCompiler", currentNodeDialogueId == nodeDataDialogue->m_id,
+            "ConversationGraphCompiler",
+            currentNodeDialogueId == nodeDataDialogue->m_id,
             "The Id we generated and the one stored in the dialogue should be the same!");
 
         nodeDataDialogue->m_availabilityId = AZ::Name{ GetSymbolNameFromNode(currentNode) };
@@ -785,7 +773,8 @@ namespace ConversationEditor
                 if (connections.size() != 1)
                 {
                     AZLOG_ERROR( // NOLINT
-                        "There should be exactly one connection on the current node's parent input. We found: %lu.", connections.size());
+                        "There should be exactly one connection on the current node's parent input. We found: %lu.",
+                        connections.size());
                     return nullptr;
                 }
 
@@ -862,7 +851,9 @@ namespace ConversationEditor
                 // code generation.
                 AtomToolsFramework::GraphTemplateFileData templateFileData;
                 AtomToolsFramework::GraphTemplateFileDataCacheRequestBus::EventResult(
-                    templateFileData, m_toolId, &AtomToolsFramework::GraphTemplateFileDataCacheRequestBus::Events::Load,
+                    templateFileData,
+                    m_toolId,
+                    &AtomToolsFramework::GraphTemplateFileDataCacheRequestBus::Events::Load,
                     AtomToolsFramework::GetPathWithoutAlias(templatePath));
 
                 if (!templateFileData.IsLoaded())
@@ -908,7 +899,8 @@ namespace ConversationEditor
             AZLOG_INFO( // NOLINT
                 "Deleting generated files.\n");
             AZ::parallel_for_each(
-                ModifyTemplateDataForCurrentNode().begin(), ModifyTemplateDataForCurrentNode().end(),
+                ModifyTemplateDataForCurrentNode().begin(),
+                ModifyTemplateDataForCurrentNode().end(),
                 [this](auto const& templateFileData)
                 {
                     auto const& templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templateFileData.GetPath());
@@ -926,7 +918,8 @@ namespace ConversationEditor
     void ConversationGraphCompiler::PreprocessTemplatesForCurrentNode()
     {
         AZ::parallel_for_each(
-            ModifyTemplateDataForCurrentNode().begin(), ModifyTemplateDataForCurrentNode().end(),
+            ModifyTemplateDataForCurrentNode().begin(),
+            ModifyTemplateDataForCurrentNode().end(),
             [&](auto& templateFileData)
             {
                 // Substitute all references to the placeholder graph name with one generated from the document name
@@ -934,7 +927,8 @@ namespace ConversationEditor
 
                 // Inject include files found while traversing the graph into any include file blocks in the template.
                 templateFileData.ReplaceLinesInBlock(
-                    "BOP_GENERATED_INCLUDES_BEGIN", "BOP_GENERATED_INCLUDES_END",
+                    "BOP_GENERATED_INCLUDES_BEGIN",
+                    "BOP_GENERATED_INCLUDES_END",
                     [&, this]([[maybe_unused]] const AZStd::string& blockHeader)
                     {
                         // Include file paths will need to be converted to include statements.
@@ -948,8 +942,11 @@ namespace ConversationEditor
                             AZStd::string relativePathFolder;
 
                             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                                relativePathFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath,
-                                AtomToolsFramework::GetPathWithoutAlias(path), relativePath, relativePathFolder);
+                                relativePathFound,
+                                &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath,
+                                AtomToolsFramework::GetPathWithoutAlias(path),
+                                relativePath,
+                                relativePathFolder);
 
                             if (relativePathFound)
                             {
@@ -961,7 +958,8 @@ namespace ConversationEditor
 
                 // Inject class definitions found while traversing the graph.
                 templateFileData.ReplaceLinesInBlock(
-                    "BOP_GENERATED_CLASSES_BEGIN", "BOP_GENERATED_CLASSES_END",
+                    "BOP_GENERATED_CLASSES_BEGIN",
+                    "BOP_GENERATED_CLASSES_END",
                     [&]([[maybe_unused]] const AZStd::string& blockHeader)
                     {
                         return m_classDefinitions;
@@ -969,7 +967,8 @@ namespace ConversationEditor
 
                 // Inject function definitions found while traversing the graph.
                 templateFileData.ReplaceLinesInBlock(
-                    "BOP_GENERATED_FUNCTIONS_BEGIN", "BOP_GENERATED_FUNCTIONS_END",
+                    "BOP_GENERATED_FUNCTIONS_BEGIN",
+                    "BOP_GENERATED_FUNCTIONS_END",
                     [&]([[maybe_unused]] const AZStd::string& blockHeader)
                     {
                         return m_functionDefinitions;
