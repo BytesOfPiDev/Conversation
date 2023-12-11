@@ -1,0 +1,8 @@
+{
+    "diagnostics.globals": [
+        "GameEntityContextRequestBus",
+        "Crc32",
+        "Debug",
+        "EntityId"
+    ]
+}
