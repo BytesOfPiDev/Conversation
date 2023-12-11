@@ -56,8 +56,8 @@ namespace ConversationEditor
         InitConversationCanvasResources();
 
         QApplication::setOrganizationName("Bytes of Pi");
-        QApplication::setApplicationName("O3DE Conversation Canvas (alpha)");
-        QApplication::setWindowIcon(QIcon(":/Tools/Window/Icons/application.svg"));
+        QApplication::setApplicationName("O3DE Conversation Canvas (prototype)");
+        QApplication::setWindowIcon(QIcon(":/ConversationCanvas/toolbar_icon.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
         AZ::RHI::FactoryManagerNotificationBus::Handler::BusConnect();
@@ -165,13 +165,15 @@ namespace ConversationEditor
                 "float3x3"),
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("float4x3"),
-                AZStd::array<AZ::Vector4, 3>{ AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f),
-                                              AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f) },
+                AZStd::array<AZ::Vector4, 3>{
+                    AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f) },
                 "float4x3"),
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("float4x4"),
-                AZStd::array<AZ::Vector4, 4>{ AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f), AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f),
-                                              AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f), AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f) },
+                AZStd::array<AZ::Vector4, 4>{ AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+                                              AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+                                              AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+                                              AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f) },
                 "float4x4"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE(StringDataTypeName), AZStd::string{}, StringDataTypeName),
@@ -285,7 +287,9 @@ namespace ConversationEditor
 
         // Acquiring default Conversation Canvas document type info so that it can be customized before registration
         auto documentTypeInfo = AtomToolsFramework::GraphDocument::BuildDocumentTypeInfo(
-            "Conversation Graph", { "conversationgraph" }, { "conversationgraphtemplate" },
+            "Conversation Graph",
+            { "conversationgraph" },
+            { "conversationgraphtemplate" },
             AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/ConversationCanvas/DefaultConversationGraphTemplate",
                 "@gemroot:ConversationCanvas@/Assets/ConversationCanvas/GraphData/blank_graph.conversationgraphtemplate")),
@@ -312,7 +316,9 @@ namespace ConversationEditor
         // Register document type for editing Conversation Canvas node configurations. This document type does not have a central view
         // widget and will show a label directing users to the inspector.
         auto documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
-            "Conversation Graph Node Config", { "conversationgraphnode" }, { "conversationgraphnodetemplate" },
+            "Conversation Graph Node Config",
+            { "conversationgraphnode" },
+            { "conversationgraphnodetemplate" },
             AZStd::any(AtomToolsFramework::DynamicNodeConfig()),
             AZ::Uuid::CreateNull()); // Null ID because JSON file contains type info and can be loaded directly into AZStd::any
 
@@ -343,7 +349,9 @@ namespace ConversationEditor
         {
             AZ::Uuid documentId = AZ::Uuid::CreateNull();
             AtomToolsFramework::AtomToolsDocumentSystemRequestBus::EventResult(
-                documentId, m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
+                documentId,
+                m_toolId,
+                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromTypeName,
                 "Conversation Graph");
 
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(

@@ -36,10 +36,12 @@ namespace Conversation
 
     void ConversationAssetRefComponent::Activate()
     {
+        ConversationAssetRefComponentRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ConversationAssetRefComponent::Deactivate()
     {
+        ConversationAssetRefComponentRequestBus::Handler::BusDisconnect();
     }
 
     void ConversationAssetRefComponent::GetProvidedServices [[maybe_unused]] (AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -49,11 +51,12 @@ namespace Conversation
 
     void ConversationAssetRefComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
+        // Multiple asset references are allowed on a single entity, for now. As a result, we don't add our provided service to the
+        // incompatible list.
     }
 
     void ConversationAssetRefComponent::GetRequiredServices [[maybe_unused]] (AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC_CE("DialogueService"));
     }
 
     void ConversationAssetRefComponent::GetDependentServices [[maybe_unused]] (AZ::ComponentDescriptor::DependencyArrayType& dependent)

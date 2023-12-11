@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
-    <qresource prefix="/">
-        <file>Tools/Window/Icons/application.svg</file>
+    <qresource prefix="/ConversationCanvas">
+        <file alias="toolbar_icon.svg">toolbar_icon.svg</file>
     </qresource>
 </RCC>

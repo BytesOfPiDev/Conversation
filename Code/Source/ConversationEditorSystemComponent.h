@@ -2,17 +2,22 @@
 #pragma once
 
 #include "Conversation/ConversationTypeIds.h"
-#include <ConversationSystemComponent.h>
+#include "ConversationSystemComponent.h"
 
-#include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <ScriptEvents/ScriptEvent.h>
+#include "Atom/RPI.Reflect/Model/ModelAsset.h"
+#include "Atom/RPI.Reflect/System/AnyAsset.h"
+#include "AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h"
+#include "AzCore/Asset/AssetCommon.h"
+#include "AzCore/Component/Component.h"
+#include "AzToolsFramework/API/ToolsApplicationAPI.h"
+#include "AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h"
 
 namespace ConversationEditor
 {
     class ConversationEditorSystemComponent
         : public Conversation::ConversationSystemComponent
         , private AzToolsFramework::EditorEvents::Bus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
         using BaseSystemComponent = ConversationSystemComponent;
 
@@ -35,6 +40,10 @@ namespace ConversationEditor
         void Init() override;
         void Activate() override;
         void Deactivate() override;
+
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
+        void OpenConversationCanvas(AZStd::string const& sourcePath);
 
     private:
         AtomToolsFramework::DynamicNodeManager m_conversationEditorNodeManager;

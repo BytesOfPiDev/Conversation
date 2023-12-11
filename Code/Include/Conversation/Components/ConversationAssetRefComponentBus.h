@@ -1,11 +1,6 @@
 #pragma once
 
-#include "AzCore/Component/Component.h"
-
 #include "AzCore/Component/ComponentBus.h"
-#include "AzCore/Outcome/Outcome.h"
-#include "Conversation/ConversationTypeIds.h"
-#include "Conversation/DialogueData.h"
 #include "Conversation/IConversationAsset.h"
 
 namespace Conversation

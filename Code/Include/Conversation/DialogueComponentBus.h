@@ -31,12 +31,8 @@ namespace Conversation
         ~DialogueComponentRequests() override = default;
 
     public: // Requests
-        [[nodiscard]] virtual auto GetStartingIds() const -> AZStd::vector<DialogueId> const& = 0;
-        [[nodiscard]] virtual auto GetDialogues() const -> AZStd::unordered_set<DialogueData> const& = 0;
-        [[nodiscard]] virtual auto FindDialogue(DialogueId const& /*dialogueIdToFind*/) const -> DialogueData = 0;
         [[nodiscard]] virtual auto CheckIfDialogueIdExists(DialogueId const& /*dialogueId*/) const -> bool = 0;
         [[nodiscard]] virtual auto GetConversationAsset() const -> AZ::Data::Asset<ConversationAsset> = 0;
-        [[nodiscard]] virtual auto GetSpeakerTag() const -> AZStd::string = 0;
 
         virtual auto TryToStartConversation(const AZ::EntityId& /*initiatingEntityId*/) -> bool = 0;
         /**
@@ -64,7 +60,6 @@ namespace Conversation
 
         [[nodiscard]] virtual auto CheckAvailability(DialogueData const& dialogueToCheck) -> bool = 0;
         [[nodiscard]] virtual auto CheckAvailability(DialogueId const& dialogueIdToCheck) -> bool = 0;
-        [[nodiscard]] virtual auto GetDisplayName() const -> AZStd::string = 0;
         [[nodiscard]] virtual auto GetAvailableResponses() const -> AZStd::vector<DialogueData> = 0;
         [[nodiscard]] virtual auto GetActiveDialogue() const -> DialogueData = 0;
         [[nodiscard]] virtual auto GetCurrentState() const -> DialogueState = 0;

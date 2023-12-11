@@ -1,0 +1,16 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "O3DELua",
+            "request": "attach",
+            "name": "Default O3DE Lua Debugger configuration",
+            "gameProjectPath": "/home/dinkleberg/o3de-projects/Dinkleberg",
+            "tcpListenPort": 0,
+            "trace": true
+        }
+    ]
+}

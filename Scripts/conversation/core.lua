@@ -30,9 +30,12 @@ function ConditionScript:New(o, conditionFunction)
 	setmetatable(o, self)
 	self.__index = self
 	self.owningEntityId = owningEntityId or EntityId()
-	self.conditionFunction = conditionFunction or function()
-		return false
-	end
+
+	self.conditionFunction = (type(conditionFunction) == "function")
+		or function()
+			Debug.Log("Non-function was passed to ConditionScript:New. This condition will always return false.")
+			return false
+		end
 	return 0
 end
 
@@ -131,12 +134,18 @@ end
 
 function ScriptDialogueComponent:AddCondition(conditionId, conditionFunction)
 	Debug.Log("AddCondition called in lua script.")
-	if conditionFunction == nil then
+
+	if conditionId == nil then
 		Debug.Log("Condition function '" .. conditionId .. "' is nil.\n")
 		return
 	end
 
-	self.conditions[conditionId] = conditionFunction
+	-- Currently, we only accept function types
+	if type(conditionFunction) == "function" then
+		--self.conditions[conditionId] = conditionFunction
+		self.conditions[conditionId] = ConditionScript:New(nil, conditionFunction)
+		return
+	end
 end
 
 function ScriptDialogueComponent:new(o)

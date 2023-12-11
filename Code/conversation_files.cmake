@@ -10,6 +10,7 @@ set(FILES
     Source/DialogueComponent.cpp
     Source/DialogueData.cpp
     Source/DialogueData_incl.cpp
+    Source/Logging.h
 
     Source/Components/DialogueComponentConfig.cpp
     Source/Components/ConversationAssetRefComponent.cpp

@@ -117,7 +117,7 @@ namespace Conversation
         explicit DialogueId(AZ::Uuid uuid)
             : m_id(uuid){};
 
-        AZ_TYPE_INFO(DialogueId, "68AE77C6-9865-47DE-8BFE-D6D67663C5DC"); // NOLINT
+        AZ_TYPE_INFO(DialogueId, DialogueIdTypeId); // NOLINT
         AZ_CLASS_ALLOCATOR(DialogueId, AZ::SystemAllocator, 0); // NOLINT
 
         static void Reflect(AZ::ReflectContext* context);
