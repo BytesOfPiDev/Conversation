@@ -1,5 +1,6 @@
 -- ConversationGraphName script component
 
+require("conversation.core")
 local dcLib = require("conversation.dialogue_component")
 
 local ConversationScriptComponent = dcLib.ScriptDialogueComponent:New()
