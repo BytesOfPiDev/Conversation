@@ -1,8 +1,8 @@
 -- ConversationGraphName script component
 
-require("conversation.core")
+local dcLib = require("conversation.dialogue_component")
 
-local ConversationScriptComponent = ScriptDialogueComponent:new(nil)
+local ConversationScriptComponent = dcLib.ScriptDialogueComponent:New()
 
 function ConversationScriptComponent:InitConversationScript()
 	-- BOP_GENERATED_INSTRUCTIONS_BEGIN: in_branch1, in_branch2, in_branch3, in_branch4
@@ -12,10 +12,22 @@ end
 
 function ConversationScriptComponent:OnActivate()
 	self:ActivateConversationScript() -- Required since defining OnActivate in the metaclass doesn't seem to work.
+
+	Debug.Log(
+		"[ConversationGraphName] ScriptComponent activated on entity: '"
+			.. GameEntityContextRequestBus.Broadcast.GetEntityName(self.entityId)
+			.. "'"
+	)
 end
 
 function ConversationScriptComponent:OnDeactivate()
 	self:DeactivateConversationScript() -- Required since defining OnActivate in the metaclass doesn't seem to work.
+
+	Debug.Log(
+		"[ConversationGraphName] ScriptComponent deactivated on entity: '"
+			.. GameEntityContextRequestBus.Broadcast.GetEntityName(self.entityId)
+			.. "'"
+	)
 end
 
 return ConversationScriptComponent

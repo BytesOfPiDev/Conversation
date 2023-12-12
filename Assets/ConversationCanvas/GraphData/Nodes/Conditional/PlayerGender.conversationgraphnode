@@ -39,7 +39,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "-- Begin NODEID|SLOTNAME\n    local SLOTNAME = function()\n        local result = GameActorRequestBus.Event.GetGender(GetEntityByTag(\"player\"));\n        return result == \"SLOTVALUE(inGender)\";\n    end\n-- End NODEID|SLOTNAME"
+                        "-- Begin NODEID|SLOTNAME\n    local SLOTNAME = function()\n        local result = GameActorRequestBus.Event.GetGender(GetEntityByTag(\"player\"));\n        return result == Crc32(\"SLOTVALUE(inGender)\");\n    end\n-- End NODEID|SLOTNAME"
                     ]
                 }
             }
