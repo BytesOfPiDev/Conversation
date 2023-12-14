@@ -20,12 +20,4 @@ set(FILES
     Source/Conditions/ComparisonOp.h
     Source/Conditions/ConditionFunction.cpp
     Source/Conditions/ConditionFunction.h
-
-    Source/VirtualMachine/ConversationVM.cpp
-    Source/VirtualMachine/ConversationVM.h
-    Source/VirtualMachine/Value.cpp
-    Source/VirtualMachine/Value.h
-
-    Source/StateMachine/ConversationSM.cpp
-    Source/StateMachine/ConversationSM.h
 )
