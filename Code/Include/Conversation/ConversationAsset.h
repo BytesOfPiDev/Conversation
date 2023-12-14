@@ -43,19 +43,9 @@ namespace Conversation
             return m_dialogues.size();
         }
 
-        [[nodiscard]] auto GetStartingIds() const -> AZStd::vector<DialogueId> const& override
-        {
-            return m_startingIds;
-        }
-
         [[nodiscard]] auto CopyStartingIds() const -> AZStd::vector<DialogueId> override
         {
             return m_startingIds;
-        }
-
-        [[nodiscard]] auto GetDialogues() const -> DialogueDataContainer const& override
-        {
-            return m_dialogues;
         }
 
         [[nodiscard]] auto CopyDialogues() const -> DialogueDataContainer override

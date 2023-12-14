@@ -140,7 +140,10 @@ namespace ConversationEditor
 
         if (!success)
         {
-            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Job failed. Could not save to temporary folder.\n");
+            AZ_TracePrintf( // NOLINT
+                AssetBuilderSDK::ErrorWindow,
+                "Job failed. Could not save to temporary folder.\n");
+
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
             return;
         }
@@ -158,11 +161,11 @@ namespace ConversationEditor
         response.m_outputProducts.push_back(jobProduct);
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
 
-        AZ_TracePrintf(
+        AZ_TracePrintf( // NOLINT
             AssetBuilderSDK::InfoWindow,
             "Job completed. Asset has %i starting IDs and %i dialogues.",
-            conversationAsset->GetStartingIds().size(),
-            conversationAsset->GetDialogues().size());
+            conversationAsset->CountStartingIds(),
+            conversationAsset->CountDialogues());
         return;
     }
 

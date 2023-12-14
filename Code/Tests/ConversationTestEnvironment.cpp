@@ -9,6 +9,7 @@
 #include "AzFramework/Asset/AssetCatalogComponent.h"
 #include "AzFramework/Asset/AssetSystemComponent.h"
 #include "AzFramework/Entity/GameEntityContextComponent.h"
+#include "Components/ConversationAssetRefComponent.h"
 #include "Conversation/DialogueComponent.h"
 #include "ConversationSystemComponent.h"
 
@@ -47,6 +48,7 @@ namespace ConversationTest
 
         AddComponentDescriptors({ ConversationSystemComponent::CreateDescriptor() });
         AddComponentDescriptors({ DialogueComponent::CreateDescriptor() });
+        AddComponentDescriptors({ ConversationAssetRefComponent::CreateDescriptor() });
 
         AddRequiredComponents({ azrtti_typeid<ConversationSystemComponent>() });
     }

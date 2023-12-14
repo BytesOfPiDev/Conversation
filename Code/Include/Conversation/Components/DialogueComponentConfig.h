@@ -29,7 +29,6 @@ namespace Conversation
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Data::Asset<Conversation::ConversationAsset> m_asset{};
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_speakerIconPath{};
         AZStd::string m_speakerTag{};
         AZStd::string m_displayName{};

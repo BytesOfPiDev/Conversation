@@ -4,6 +4,7 @@
 #include "AzCore/Component/Component.h"
 #include "AzCore/std/string/conversions.h"
 #include "AzTest/AzTest.h"
+#include "Conversation/Components/ConversationAssetRefComponentBus.h"
 #include "Conversation/Components/DialogueComponentConfig.h"
 #include "Conversation/ConversationAsset.h"
 #include "Conversation/ConversationTypeIds.h"
@@ -14,9 +15,10 @@
 
 namespace ConversationTest
 {
-    inline constexpr AZ::Uuid TestConversationAssetId{ "{3EBCCFAF-4574-4C56-BDD3-09EDC9CB8405}" };
-    inline constexpr AZ::TypeId TagComponentType{ AZ::TypeId{ Conversation::TagComponentTypeId } };
-    inline constexpr AZ::TypeId DialogueComponentType{ Conversation::DialogueComponentTypeId };
+    constexpr AZ::TypeId TestConversationAssetId{ "{3EBCCFAF-4574-4C56-BDD3-09EDC9CB8405}" };
+    constexpr AZ::TypeId TagComponentType{ AZ::TypeId{ Conversation::TagComponentTypeId } };
+    constexpr AZ::TypeId ConversationAssetRefComponentType{ AZ::TypeId{ Conversation::ConversationAssetRefComponentTypeId } };
+    constexpr AZ::TypeId DialogueComponentType{ Conversation::DialogueComponentTypeId };
 
     static Conversation::DialogueId const ValidDialogueId = Conversation::DialogueId{ "ValidDialogueId" };
 
@@ -50,6 +52,7 @@ namespace ConversationTest
             m_dialogueEntity->Init();
 
             m_dialogueEntity->CreateComponent(TagComponentType);
+            m_dialogueEntity->CreateComponent(ConversationAssetRefComponentType);
             m_dialogueEntity->CreateComponent(DialogueComponentType);
         }
 
@@ -171,11 +174,15 @@ namespace ConversationTest
         auto asset = CreateStartableAsset();
 
         Conversation::DialogueComponentConfig dialogueComponentConfig{};
-        dialogueComponentConfig.m_asset = asset;
+
+        bool successfullyAssignedAsset{};
+        ConversationAssetRefComponentRequestBus::EventResult(
+            successfullyAssignedAsset, m_dialogueEntity->GetId(), &ConversationAssetRefComponentRequests::SetConversationAsset, asset);
+
+        EXPECT_TRUE(successfullyAssignedAsset);
 
         AZ::Component* const dialogueComponent = m_dialogueEntity->FindComponent(DialogueComponentType);
         dialogueComponent->SetConfiguration(dialogueComponentConfig);
-
         m_dialogueEntity->Activate();
 
         AZ::EntityId const someOtherEntityId{ AZ::Entity::MakeId() };
@@ -214,7 +221,12 @@ namespace ConversationTest
         auto asset = CreateStartableAsset();
 
         Conversation::DialogueComponentConfig dialogueComponentConfig{};
-        dialogueComponentConfig.m_asset = asset;
+
+        bool successfullyAssignedAsset{};
+        ConversationAssetRefComponentRequestBus::EventResult(
+            successfullyAssignedAsset, m_dialogueEntity->GetId(), &ConversationAssetRefComponentRequests::SetConversationAsset, asset);
+
+        EXPECT_TRUE(successfullyAssignedAsset);
 
         AZ::Component* const dialogueComponent = m_dialogueEntity->FindComponent(AZ::TypeId{ Conversation::DialogueComponentTypeId });
         dialogueComponent->SetConfiguration(dialogueComponentConfig);

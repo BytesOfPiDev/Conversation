@@ -44,7 +44,7 @@ namespace Conversation
         /*
          * @brief Returns a reference to the DialogueIds that can potentially be used to start a conversation.
          */
-        [[nodiscard]] virtual auto GetStartingIds() const -> AZStd::vector<DialogueId> const& = 0;
+        [[nodiscard]] virtual auto GetStartingIds() const -> AZStd::vector<DialogueId> const& = delete;
         /*
          * @brief Returns a copy of the DialogueIds that can potentially be used to start a conversation.
          */
@@ -53,7 +53,7 @@ namespace Conversation
         /*
          * @brief Returns a reference to the DialogueData objects within the asset.
          */
-        [[nodiscard]] virtual auto GetDialogues() const -> AZStd::unordered_set<DialogueData> const& = 0;
+        [[nodiscard]] virtual auto GetDialogues() const -> AZStd::unordered_set<DialogueData> const& = delete;
         /*
          * @brief Returns a copy of the DialogueData objects within the asset.
          */

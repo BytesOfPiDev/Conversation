@@ -21,8 +21,7 @@ namespace Conversation
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<DialogueComponentConfig, AZ::ComponentConfig>()
-                ->Version(3)
-                ->Field("Conversation Assets", &DialogueComponentConfig::m_asset)
+                ->Version(4)
                 ->Field("Display Name", &DialogueComponentConfig::m_displayName)
                 ->Field("Speaker Icon", &DialogueComponentConfig::m_speakerIconPath)
                 ->Field("Speaker Tag", &DialogueComponentConfig::m_speakerTag);
@@ -33,7 +32,6 @@ namespace Conversation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "BoP/Conversation")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DialogueComponentConfig::m_asset, "Asset", "")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &DialogueComponentConfig::m_speakerTag,

@@ -33,14 +33,14 @@ namespace Conversation
         void Activate() override;
         void Deactivate() override;
 
+        auto SetConversationAsset(AZ::Data::Asset<ConversationAsset> replacementAsset) -> bool override;
+
         [[nodiscard]] auto CountStartingIds() const -> size_t override;
 
         [[nodiscard]] auto CountDialogues() const -> size_t override;
 
-        [[nodiscard]] auto GetStartingIds() const -> AZStd::vector<DialogueId> const& override;
         [[nodiscard]] auto CopyStartingIds() const -> AZStd::vector<DialogueId> override;
 
-        [[nodiscard]] auto GetDialogues() const -> AZStd::unordered_set<DialogueData> const& override;
         [[nodiscard]] auto CopyDialogues() const -> AZStd::unordered_set<DialogueData> override;
 
         void AddStartingId(DialogueId const& newStartingId) override;

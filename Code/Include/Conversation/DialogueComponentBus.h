@@ -31,9 +31,6 @@ namespace Conversation
         ~DialogueComponentRequests() override = default;
 
     public: // Requests
-        [[nodiscard]] virtual auto CheckIfDialogueIdExists(DialogueId const& /*dialogueId*/) const -> bool = 0;
-        [[nodiscard]] virtual auto GetConversationAsset() const -> AZ::Data::Asset<ConversationAsset> = 0;
-
         virtual auto TryToStartConversation(const AZ::EntityId& /*initiatingEntityId*/) -> bool = 0;
         /**
          * Sends out the given DialogueData, making it the active dialogue.
@@ -51,7 +48,7 @@ namespace Conversation
          *
          * Does nothing if it could not find one.
          */
-        virtual void SelectDialogue(DialogueId const dialogueIdToFindAndSelect) = 0;
+        virtual auto TryToSelectDialogue(DialogueId const dialogueIdToFindAndSelect) -> bool = 0;
 
         virtual void SelectAvailableResponse(int const availableResponseIndex) = 0;
         virtual void AbortConversation() = 0;

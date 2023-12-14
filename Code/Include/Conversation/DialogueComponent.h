@@ -16,10 +16,8 @@ namespace Conversation
      * @brief Allows an entity to use the conversation system.
      *
      * @note It is not necessary to have any dialogue assets assigned to the
-     * component.
-     *
-     * @note Any entity that wants to be part of a conversation will need
-     * an instance of this component.
+     * component. It provides the basic information about the entity, such as
+     * name, speaker tag, etc.
      */
     class DialogueComponent
         : public AZ::Component
@@ -40,7 +38,6 @@ namespace Conversation
         void Deactivate() override;
 
         auto ReadInConfig(AZ::ComponentConfig const* config) -> bool override;
-
         auto WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const -> bool override;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -48,39 +45,38 @@ namespace Conversation
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        [[nodiscard]] auto GetConversationAsset() const -> AZ::Data::Asset<ConversationAsset> override
-        {
-            return m_config.m_asset;
-        };
-
         /**
          * @brief Tries to start a conversation if possible.
          *
-         * @return A string error message on failure, and nothing otherwise.
+         * @return True if it was successfully started, false otherwise.
          */
         auto TryToStartConversation(const AZ::EntityId& initiatingEntityId) -> bool override;
+        /**
+         * Forces the conversation to end. Triggers abort scripts.
+         *
+         * Intended for situations where an event takes place that must cancel the conversation.
+         */
         void AbortConversation() override;
+        /**
+         * Ends the conversation normally. Triggers end scripts.
+         */
         void EndConversation() override;
         /**
-         * Processes and sends out a dialogue.
+         * Makes the given dialogue the active dialogue.
          *
-         * Does nothing if the dialogue isn't valid (null ID). The dialogue does not have to exist as
-         * part of a dialogue asset - it can be created in memory, but be careful not to try to jump
-         * back to it if it isn't part of an attached asset.
+         * The given dialogue does not have to be a part of the asset.
          *
-         * @param dialogueToSelect The dialogue that will be sent out.
-         *
+         * @param dialogueToSelect The dialogue that will be made active.
          */
         void SelectDialogue(DialogueData const& dialogueToSelect) override;
         /**
-         * Processes and sends out a dialogue matching the given DialogueId.
+         * Attempts to find a dialogue matching the given ID and makes it active.
          *
          * Does nothing if no matching ID is found.
          *
-         * @param dialogueId The ID of a dialogue contained in one of the assets attached to the parent entity.
-         *
+         * @param dialogueId The ID of a dialogue contained in an attached ConversationAssetRefComponent.
          */
-        void SelectDialogue(DialogueId const dialogueId) override;
+        auto TryToSelectDialogue(DialogueId const dialogueId) -> bool override;
         /**
          * Processes and sends out the index matching an available dialogue choice.
          *
@@ -122,7 +118,6 @@ namespace Conversation
 
         [[nodiscard]] auto CheckAvailability(DialogueData const& dialogueData) -> bool override;
         [[nodiscard]] auto CheckAvailability(DialogueId const& dialogueIdToCheck) -> bool override;
-        [[nodiscard]] auto CheckIfDialogueIdExists(DialogueId const& /*dialogueId*/) const -> bool override;
 
     private:
         ConversationAssetRefComponentRequests* m_conversationAssetRequests{};

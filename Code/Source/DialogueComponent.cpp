@@ -26,9 +26,13 @@
 namespace Conversation
 {
     // An entity with this tag is an entity currently in the middle of a conversation.
-    constexpr auto ActiveConversationTag = AZ_CRC_CE("active_conversation");
+    constexpr auto ActiveConversationTag{ AZ_CRC_CE("active_conversation") };
     // The entity with this tag is the entity the player is in a conversation with.
-    constexpr auto PlayerConversationTag = AZ_CRC_CE("player_conversation");
+    constexpr auto PlayerConversationTag{ AZ_CRC_CE("player_conversation") };
+    constexpr auto PlayerSpeakerTag{ "player" };
+
+    // When given a list of responses to a dialogue, what number do we associate with the first response?
+    constexpr auto FirstResponseNumber = 1;
 
     class BehaviorDialogueComponentNotificationBusHandler
         : public DialogueComponentNotificationBus::Handler
@@ -153,19 +157,14 @@ namespace Conversation
                     "TryToStartConversation",
                     &DialogueComponentRequestBus::Events::TryToStartConversation,
                     { { { "Initiator", "The entity starting the conversation." } } })
-                ->EventWithBus<DialogueComponentRequestBus>(
-                    "DoesDialogueWithIdExist", &DialogueComponentRequestBus::Events::CheckIfDialogueIdExists, { { { "DialogueId", "" } } })
-                ->EventWithBus<DialogueComponentRequestBus>(
-                    "GetConversationAssets", &DialogueComponentRequestBus::Events::GetConversationAsset)
                 // Specifying the specific overloaded SelectDialogue function that takes DialogueData as a parameter.
                 ->EventWithBus<DialogueComponentRequestBus, void (DialogueComponentRequestBus::Events::*)(DialogueData const&)>(
                     "SelectDialogue",
                     &DialogueComponentRequestBus::Events::SelectDialogue,
                     { { { "DialogueData", "The dialogue to make active." } } })
-                // Specifying the specific overloaded SelectDialogue function that takes DialogueId as a parameter.
-                ->EventWithBus<DialogueComponentRequestBus, void (DialogueComponentRequestBus::Events::*)(DialogueId const)>(
-                    "SelectDialogueById",
-                    &DialogueComponentRequestBus::Events::SelectDialogue,
+                ->EventWithBus<DialogueComponentRequestBus>(
+                    "TrySelectDialogueById",
+                    &DialogueComponentRequestBus::Events::TryToSelectDialogue,
                     { { { "DialogueId", "The ID of the dialogue to look for and make active." } } });
 
             behaviorContext->EBus<DialogueComponentNotificationBus>("DialogueComponentNotificationBus")
@@ -208,9 +207,6 @@ namespace Conversation
             // Activating without one is fine, if intentional.
             LOG_EntityComponent("LOG_DialogueComponent", *this, "Activated without a ConversationAssetRefComponent.\n");
         }
-
-        m_config.m_asset.QueueLoad();
-        m_config.m_asset.BlockUntilLoadComplete();
 
         // The TagComponent is used to communicate with speakers, so we add our tag to it upon activation.
         // It will need to be removed upon deactivation.
@@ -307,7 +303,7 @@ namespace Conversation
             return false;
         }
 
-        if (m_conversationAssetRequests->GetDialogues().empty())
+        if (m_conversationAssetRequests->CountDialogues() == 0)
         {
             AZ_Warning( // NOLINT
                 "DialogueComponent",
@@ -317,7 +313,7 @@ namespace Conversation
             return false;
         }
 
-        if (m_conversationAssetRequests->GetStartingIds().empty())
+        if (m_conversationAssetRequests->CountStartingIds() == 0)
         {
             AZ_Warning( // NOLINT
                 "DialogueComponent",
@@ -334,18 +330,21 @@ namespace Conversation
             "[Entity: '%s'] Entered starting state. Now checking for available starting dialogues.\n",
             GetNamedEntityId().GetName().data());
 
+        auto const startingIds{ m_conversationAssetRequests->CopyStartingIds() };
+        auto const dialogues{ m_conversationAssetRequests->CopyDialogues() };
+
         // We find the first available starting ID and use it to start the conversation.
-        for (DialogueId const& startingId : m_conversationAssetRequests->GetStartingIds())
+        for (DialogueId const& startingId : startingIds)
         {
             // DialogueData and DialogueId are different types. We need to search a
             // list of DialogueData for one matching the current DialogueId. To do so,
             // I create a new instance of DialogueData based on the current DialogueId.
             // DialogueData objects are always equal only if they have matching IDs.
             // This allows me to use AZStd::find to search the container of dialogues.
-            auto const startingDialogueIter = m_conversationAssetRequests->GetDialogues().find(DialogueData(startingId));
+            auto const startingDialogueIter = dialogues.find(DialogueData(startingId));
 
             // Verify we found one. This should never fail, but just in case.
-            if (startingDialogueIter == m_conversationAssetRequests->GetDialogues().end() || !IsValid(*startingDialogueIter))
+            if (startingDialogueIter == dialogues.end() || !IsValid(*startingDialogueIter))
             {
                 m_currentState = DialogueState::Inactive;
 
@@ -504,20 +503,52 @@ namespace Conversation
             });
     }
 
-    void DialogueComponent::SelectDialogue(DialogueId const dialogueId)
+    auto DialogueComponent::TryToSelectDialogue(DialogueId const dialogueId) -> bool
     {
-        auto dialogueIter = m_conversationAssetRequests->GetDialogues().find(DialogueData(dialogueId));
-        SelectDialogue(dialogueIter != m_conversationAssetRequests->GetDialogues().end() ? *dialogueIter : DialogueData());
+        auto const getDialogueOutcome = m_conversationAssetRequests->GetDialogueById(dialogueId);
+        if (!getDialogueOutcome.IsSuccess())
+        {
+            LOG_EntityComponent("LOG_FollowConversation", *this, "Failed to select a dialogue using the given DialogueId.");
+            return false;
+        }
+
+        SelectDialogue(getDialogueOutcome.GetValue());
+        return true;
     }
 
     void DialogueComponent::SelectAvailableResponse(int const responseNumber)
     {
-        if (responseNumber < 1 || responseNumber > m_availableResponses.size())
+        // responseNumber must begin with the chosen first number (0 or 1)
+        if (!(responseNumber >= FirstResponseNumber))
         {
             return;
         }
+        // Technically, FirstResponseNumber could be set to anything, such as
+        // 15, then choice 15 would be index 0 in our response container.
+        // That is obviously ridiculous, so we limit the choice to zero or one.
+        // We set the static assert here, instead of at the declaration, so
+        // that it is not instinctively changed when changing the constant.
+        static_assert(FirstResponseNumber >= 0 && FirstResponseNumber <= 1, "FirstResponseNumber *MUST* be zero or one.");
 
-        SelectDialogue(m_availableResponses[responseNumber - 1]);
+        if constexpr (FirstResponseNumber == 0)
+        {
+            // Check 0-based choice is less than the upper bound [0, containerSize - 1].
+            if (responseNumber < m_availableResponses.size())
+            {
+                return;
+            }
+        }
+        else if constexpr (FirstResponseNumber == 1)
+        {
+            // Check 1-based choice is less than the upper bounds [0, containerSize].
+            if (responseNumber <= m_availableResponses.size())
+            {
+                return;
+            }
+        }
+
+        // This is why we care if the choice is 0-based or 1-based. We have to adjust our index accordingly.
+        SelectDialogue(m_availableResponses[responseNumber - FirstResponseNumber]);
     }
 
     void DialogueComponent::ContinueConversation()
@@ -540,12 +571,13 @@ namespace Conversation
             return;
         }
 
-        // If the active dialogue's speaker is the player, we automatically choose an NPC response.
+        // FIXME: If the active dialogue's speaker is the player, we automatically choose an NPC response.
         // This is just a workaround until proper NPC response handling is implemented.
-        if (GetDialogueSpeaker(*m_activeDialogue) == "player") // @todo make "player" a constant
+        if (GetDialogueSpeaker(*m_activeDialogue) == PlayerSpeakerTag) // @todo make "player" a constant
         {
             auto const firstAvailableResponseIter = m_availableResponses.begin();
-            if (firstAvailableResponseIter != m_availableResponses.end() && GetDialogueSpeaker(*firstAvailableResponseIter) != "player")
+            if (firstAvailableResponseIter != m_availableResponses.end() &&
+                GetDialogueSpeaker(*firstAvailableResponseIter) != PlayerSpeakerTag)
             {
                 SelectDialogue(*firstAvailableResponseIter);
             }
@@ -569,15 +601,8 @@ namespace Conversation
 
     auto DialogueComponent::CheckAvailability(DialogueId const& dialogueId) -> bool
     {
-        return CheckIfDialogueIdExists(dialogueId)
-            ? CheckAvailability(*m_conversationAssetRequests->GetDialogues().find(DialogueData{ dialogueId }))
-            : false;
-    }
-
-    auto DialogueComponent::CheckIfDialogueIdExists(DialogueId const& dialogueId) const -> bool
-    {
-        return m_conversationAssetRequests->GetDialogues().find(DialogueData{ dialogueId }) !=
-            m_conversationAssetRequests->GetDialogues().end();
+        auto const getDialogueOutcome = m_conversationAssetRequests->GetDialogueById(dialogueId);
+        return getDialogueOutcome.IsSuccess() ? CheckAvailability(getDialogueOutcome.GetValue()) : false;
     }
 
 } // namespace Conversation
