@@ -573,7 +573,7 @@ namespace Conversation
 
         // FIXME: If the active dialogue's speaker is the player, we automatically choose an NPC response.
         // This is just a workaround until proper NPC response handling is implemented.
-        if (GetDialogueSpeaker(*m_activeDialogue) == PlayerSpeakerTag) // @todo make "player" a constant
+        if (GetDialogueSpeaker(*m_activeDialogue) == PlayerSpeakerTag)
         {
             auto const firstAvailableResponseIter = m_availableResponses.begin();
             if (firstAvailableResponseIter != m_availableResponses.end() &&
