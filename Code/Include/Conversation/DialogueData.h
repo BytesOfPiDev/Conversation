@@ -7,7 +7,6 @@
 #include "AzCore/std/string/string.h"
 #include "Conversation/ConversationTypeIds.h"
 
-#include "Conversation/Util.h"
 #include "ScriptEvents/ScriptEventsAsset.h"
 
 namespace AZ
@@ -27,31 +26,33 @@ namespace Conversation
     [[nodiscard]] inline auto ToString(DialogueId const& dialogueId) -> AZStd::string;
     [[nodiscard]] inline auto ToString(DialogueData const&) -> AZStd::string;
 
-    [[nodiscard]] inline constexpr auto IsValid(DialogueId const& dialogueId) -> bool;
-    [[nodiscard]] inline constexpr auto IsValid(DialogueData const& dialogueData) -> bool;
-    [[nodiscard]] inline constexpr auto IsValid(ResponseData const& responseData) -> bool;
+    [[nodiscard]] constexpr auto IsValid(DialogueId const& dialogueId) -> bool;
+    [[nodiscard]] constexpr auto IsValid(DialogueData const& dialogueData) -> bool;
+    [[nodiscard]] constexpr auto IsValid(ResponseData const& responseData) -> bool;
 
-    [[nodiscard]] inline constexpr auto GetDialogueActorText(DialogueData const& dialogueData) -> AZStd::string_view;
-    [[nodiscard]] inline constexpr auto GetDialogueAudioTrigger(DialogueData const& dialogueData) -> AZStd::string_view;
-    [[nodiscard]] inline constexpr auto GetDialogueComment(DialogueData const& dialogueData) -> AZStd::string_view;
-    [[nodiscard]] inline constexpr auto GetDialogueId(DialogueData const& dialogueData) -> DialogueId;
-    [[nodiscard]] inline constexpr auto GetDialogueSpeaker(DialogueData const& dialogueData) -> AZStd::string_view;
-    [[nodiscard]] inline constexpr auto GetDialogueResponseIds(DialogueData const& dialogueData) -> AZStd::vector<DialogueId> const&;
-    [[nodiscard]] inline constexpr auto ModifyDialogueResponseIds(DialogueData& dialogueData) -> AZStd::vector<DialogueId>&;
-    [[nodiscard]] inline constexpr auto GetDialogueScriptIds(DialogueData const& dialogueData) -> AZStd::vector<AZStd::string> const&;
+    [[nodiscard]] constexpr auto CountDialogueResponseIds(DialogueData const& dialogueData) -> size_t;
+
+    [[nodiscard]] constexpr auto GetDialogueActorText(DialogueData const& dialogueData) -> AZStd::string_view;
+    [[nodiscard]] constexpr auto GetDialogueAudioTrigger(DialogueData const& dialogueData) -> AZStd::string_view;
+    [[nodiscard]] constexpr auto GetDialogueComment(DialogueData const& dialogueData) -> AZStd::string_view;
+    [[nodiscard]] constexpr auto GetDialogueId(DialogueData const& dialogueData) -> DialogueId;
+    [[nodiscard]] constexpr auto GetDialogueSpeaker(DialogueData const& dialogueData) -> AZStd::string_view;
+    [[nodiscard]] constexpr auto GetDialogueResponseIds(DialogueData const& dialogueData) -> AZStd::vector<DialogueId> const&;
+    [[nodiscard]] constexpr auto ModifyDialogueResponseIds(DialogueData& dialogueData) -> AZStd::vector<DialogueId>&;
+    [[nodiscard]] constexpr auto GetDialogueScriptIds(DialogueData const& dialogueData) -> AZStd::vector<AZStd::string> const&;
     [[nodiscard]] inline auto GetDialogueAvailabilityId(DialogueData const& dialogueData) -> AZ::Name;
 
-    inline constexpr void SetDialogueActorText(DialogueData& dialogueData, AZStd::string const& actorText);
-    inline constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZ::Name const& newAvailabilityId);
-    inline constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZStd::string const& newAvailabilityId);
-    inline constexpr void SetDialogueComment(DialogueData& dialogueData, AZStd::string_view comment);
-    inline constexpr void SetDialogueSpeaker(DialogueData& dialogueData, AZStd::string const& speaker);
-    inline constexpr void SetDialogueAudioTrigger(DialogueData& dialogueData, AZStd::string const& audioTrigger);
-    inline constexpr void SetDialogueEntryDelay(DialogueData& dialogueData, float entryDelay);
-    inline constexpr void SetDialogueComment(DialogueData& dialogueData, AZStd::string& comment);
+    constexpr void SetDialogueActorText(DialogueData& dialogueData, AZStd::string const& actorText);
+    constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZ::Name const& newAvailabilityId);
+    constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZStd::string const& newAvailabilityId);
+    constexpr void SetDialogueComment(DialogueData& dialogueData, AZStd::string_view comment);
+    constexpr void SetDialogueSpeaker(DialogueData& dialogueData, AZStd::string const& speaker);
+    constexpr void SetDialogueAudioTrigger(DialogueData& dialogueData, AZStd::string const& audioTrigger);
+    constexpr void SetDialogueEntryDelay(DialogueData& dialogueData, float entryDelay);
+    constexpr void SetDialogueComment(DialogueData& dialogueData, AZStd::string& comment);
 
-    inline constexpr void AddDialogueResponseId(DialogueData& dialogueData, DialogueId const responseId);
-    inline constexpr void AddDialogueResponseId(ResponseData const responseData);
+    constexpr void AddDialogueResponseId(DialogueData& dialogueData, DialogueId const responseId);
+    constexpr void AddDialogueResponseId(ResponseData const responseData);
 
     /**
      * @brief Assigns the dialogue an ID if it doesn't already have one.
@@ -68,7 +69,7 @@ namespace Conversation
     struct DialogueChunk
     {
     public:
-        AZ_TYPE_INFO(DialogueChunk, "81C04F0E-BA10-4D66-A3E8-0304FB8EB545"); // NOLINT
+        AZ_TYPE_INFO(DialogueChunk, "{81C04F0E-BA10-4D66-A3E8-0304FB8EB545}"); // NOLINT
         AZ_DEFAULT_COPY_MOVE(DialogueChunk); // NOLINT
 
         static void Reflect(AZ::ReflectContext* reflect);

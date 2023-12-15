@@ -36,15 +36,25 @@ namespace Conversation
 
     void ConversationAssetRefComponent::Init()
     {
+        AZ_Assert( // NOLINT
+            GetEntity() != nullptr,
+            "Init should not be called if we're not connected to an entity!");
+
         ConversationAssetRefComponentRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ConversationAssetRefComponent::Activate()
     {
+        AZ_Assert( // NOLINT
+            GetEntity() != nullptr,
+            "Activate should not be called if we're not connected to an entity!");
     }
 
     void ConversationAssetRefComponent::Deactivate()
     {
+        AZ_Assert( // NOLINT
+            GetEntity() != nullptr,
+            "Deactivate should not be called if we're not connected to an entity!");
     }
 
     auto ConversationAssetRefComponent::SetConversationAsset(AZ::Data::Asset<ConversationAsset> replacementAsset) -> bool
@@ -58,6 +68,7 @@ namespace Conversation
 
             return false;
         }
+
         m_asset = replacementAsset;
 
         return true;

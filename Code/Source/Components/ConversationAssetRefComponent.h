@@ -29,12 +29,6 @@ namespace Conversation
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        void Init() override;
-        void Activate() override;
-        void Deactivate() override;
-
-        auto SetConversationAsset(AZ::Data::Asset<ConversationAsset> replacementAsset) -> bool override;
-
         [[nodiscard]] auto CountStartingIds() const -> size_t override;
 
         [[nodiscard]] auto CountDialogues() const -> size_t override;
@@ -52,6 +46,13 @@ namespace Conversation
         [[nodiscard]] auto GetMainScriptAsset() const -> AZ::Data::Asset<AZ::ScriptAsset> override;
 
         void AddChunk(DialogueChunk const& dialogueChunk) override;
+
+    protected:
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
+
+        auto SetConversationAsset(AZ::Data::Asset<ConversationAsset> replacementAsset) -> bool override;
 
     private:
         AZ::Data::Asset<ConversationAsset> m_asset{};

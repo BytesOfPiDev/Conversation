@@ -445,7 +445,7 @@ namespace Conversation
         // conversation. Only check if there's an active dialogue because this function
         // can be called when there's no active dialogue, such as when first starting
         // a conversation.
-        if (m_activeDialogue && GetDialogueResponseIds(*m_activeDialogue).empty())
+        if (m_activeDialogue.has_value() && GetDialogueResponseIds(*m_activeDialogue).empty())
         {
             AZLOG(LOG_FollowConversation, "Ending conversation because there are no responses available."); // NOLINT
             EndConversation();
@@ -532,16 +532,16 @@ namespace Conversation
 
         if constexpr (FirstResponseNumber == 0)
         {
-            // Check 0-based choice is less than the upper bound [0, containerSize - 1].
-            if (responseNumber < m_availableResponses.size())
+            // Exit if 0-based choice is past the upperbound [0, size).
+            if (responseNumber >= m_availableResponses.size())
             {
                 return;
             }
         }
         else if constexpr (FirstResponseNumber == 1)
         {
-            // Check 1-based choice is less than the upper bounds [0, containerSize].
-            if (responseNumber <= m_availableResponses.size())
+            // Exit if 1-based choice is past the upper bounds [0, size].
+            if (responseNumber > m_availableResponses.size())
             {
                 return;
             }

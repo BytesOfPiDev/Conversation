@@ -101,7 +101,7 @@ namespace Conversation
          */
         void ContinueConversation() override;
 
-        [[nodiscard]] auto GetActiveDialogue() const -> DialogueData override
+        [[nodiscard]] auto GetActiveDialogue() const -> AZ::Outcome<DialogueData> override
         {
             return m_activeDialogue ? *m_activeDialogue : DialogueData();
         }

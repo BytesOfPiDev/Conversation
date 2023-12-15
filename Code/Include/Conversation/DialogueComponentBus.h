@@ -58,7 +58,7 @@ namespace Conversation
         [[nodiscard]] virtual auto CheckAvailability(DialogueData const& dialogueToCheck) -> bool = 0;
         [[nodiscard]] virtual auto CheckAvailability(DialogueId const& dialogueIdToCheck) -> bool = 0;
         [[nodiscard]] virtual auto GetAvailableResponses() const -> AZStd::vector<DialogueData> = 0;
-        [[nodiscard]] virtual auto GetActiveDialogue() const -> DialogueData = 0;
+        [[nodiscard]] virtual auto GetActiveDialogue() const -> AZ::Outcome<DialogueData> = 0;
         [[nodiscard]] virtual auto GetCurrentState() const -> DialogueState = 0;
     };
 
