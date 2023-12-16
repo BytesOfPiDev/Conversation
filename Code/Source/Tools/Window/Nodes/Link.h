@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Conversation/ConversationTypeIds.h"
 #include <GraphModel/Model/Node.h>
 
 namespace ConversationEditor
@@ -19,25 +20,25 @@ namespace ConversationEditor
         {
         public:
             AZ_CLASS_ALLOCATOR(Link, AZ::SystemAllocator, 0); // NOLINT
-            AZ_RTTI(Link, "{E8260E6A-DACD-4CB0-B691-92B1AD5ECDCD}", GraphModel::Node); // NOLINT
+            AZ_RTTI(Link, LinkNodeTypeId, GraphModel::Node); // NOLINT
 
             static void Reflect(AZ::ReflectContext* context);
 
             struct SlotNames
             {
-                inline static const char* LINKEDID = "LinkedId";
+                static constexpr char const* LINKEDID = "LinkedId";
             };
 
             Link() = default;
-            Link(const Link&) = delete;
+            Link(Link const&) = delete;
             Link(Link&&) = delete;
-            auto operator=(const Link&) -> Link& = delete;
+            auto operator=(Link const&) -> Link& = delete;
             auto operator=(Link&&) -> Link& = delete;
             Link(GraphModel::GraphPtr graph);
             ~Link() override = default;
 
         public:
-            auto GetTitle() const -> const char* override
+            auto GetTitle() const -> char const* override
             {
                 return "Dialogue Link";
             }
