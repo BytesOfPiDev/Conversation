@@ -13,6 +13,7 @@ namespace Conversation
         AZ_RTTI(ConversationAssetRefComponentRequests, "{EF3E6310-6459-4964-9742-C4EEFF352B68}", IConversationAsset); // NOLINT
         AZ_DISABLE_COPY_MOVE(ConversationAssetRefComponentRequests); // NOLINT
 
+        [[nodiscard]] virtual auto GetConversationAsset() const -> AZ::Data::Asset<ConversationAsset> = 0;
         virtual auto SetConversationAsset(AZ::Data::Asset<ConversationAsset> replacementAsset) -> bool = 0;
 
         ConversationAssetRefComponentRequests() = default;

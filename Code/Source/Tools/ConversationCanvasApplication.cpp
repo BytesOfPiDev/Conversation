@@ -230,12 +230,6 @@ namespace ConversationEditor
             editData, AZ::Edit::Attributes::StringList, AZStd::vector<AZStd::string>{ "Dialogue", "Condition", "Script" });
         m_dynamicNodeManager->RegisterEditDataForSetting("nodeType", editData);
 
-        /*
-              editData = {};
-              editData.m_elementId = AZ::Edit::UIHandlers::LineEdit;
-              m_dynamicNodeManager->RegisterEditDataForSetting("conditionBusId", editData);
-        */
-
         editData = {};
         editData.m_elementId = AZ_CRC_CE("StringFilePath");
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));

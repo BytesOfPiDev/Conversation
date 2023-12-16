@@ -31,9 +31,6 @@ namespace Conversation
     constexpr auto PlayerConversationTag{ AZ_CRC_CE("player_conversation") };
     constexpr auto PlayerSpeakerTag{ "player" };
 
-    // When given a list of responses to a dialogue, what number do we associate with the first response?
-    constexpr auto FirstResponseNumber = 1;
-
     class BehaviorDialogueComponentNotificationBusHandler
         : public DialogueComponentNotificationBus::Handler
         , public AZ::BehaviorEBusHandler

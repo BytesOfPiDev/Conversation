@@ -57,6 +57,11 @@ namespace Conversation
             "Deactivate should not be called if we're not connected to an entity!");
     }
 
+    auto ConversationAssetRefComponent::GetConversationAsset() const -> AZ::Data::Asset<ConversationAsset>
+    {
+        return m_asset;
+    }
+
     auto ConversationAssetRefComponent::SetConversationAsset(AZ::Data::Asset<ConversationAsset> replacementAsset) -> bool
     {
         if (GetEntity()->GetState() == AZ::Entity::State::Active)

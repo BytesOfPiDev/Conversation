@@ -12,6 +12,9 @@ namespace Conversation
 {
     class ConversationAssetRefComponentRequests;
 
+    // When given a list of responses to a dialogue, what number do we associate with the first response?
+    constexpr auto FirstResponseNumber = 1;
+
     /**
      * @brief Allows an entity to use the conversation system.
      *
