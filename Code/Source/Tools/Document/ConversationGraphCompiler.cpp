@@ -573,7 +573,7 @@ namespace ConversationEditor
             auto dialogueDataOpt = nodeData.m_dialogue;
             if (dialogueDataOpt.has_value())
             {
-                auto dialogueResponses = Conversation::ModifyDialogueResponseIds(*dialogueDataOpt);
+                auto& dialogueResponses = Conversation::ModifyDialogueResponseIds(*dialogueDataOpt);
                 dialogueResponses.insert(dialogueResponses.end(), nodeData.m_responseIds.begin(), nodeData.m_responseIds.end());
 
                 conversationAsset->AddDialogue(*dialogueDataOpt);
