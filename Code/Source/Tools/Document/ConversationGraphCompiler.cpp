@@ -710,7 +710,8 @@ namespace ConversationEditor
 
         if (!currentNode)
         {
-            AZStd::unexpected(CompilationError{ CompilationErrorCode::ExpectedDialogueNodeButGotNullptr, "" });
+            return AZStd::unexpected(
+                CompilationError{ CompilationErrorCode::ExpectedDialogueNodeButGotNullptr, "Nullptr given as argument." });
         }
 
         DialogueId currentNodeDialogueId{ GetSymbolNameFromNode(currentNode) };
