@@ -1,7 +1,6 @@
 #pragma once
 
-#include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <GraphModel/Model/Node.h>
+#include "GraphModel/Model/Node.h"
 
 #include "Conversation/ConversationTypeIds.h"
 
@@ -14,23 +13,20 @@ namespace ConversationEditor
         public:
             AZ_CLASS_ALLOCATOR(ActorDialogue, AZ::SystemAllocator, 0); // NOLINT
             AZ_RTTI(ActorDialogue, ActorDialogueNodeTypeId, GraphModel::Node); // NOLINT
+            AZ_DISABLE_COPY_MOVE(ActorDialogue); // NOLINT
 
             static void Reflect(AZ::ReflectContext* context);
 
             ActorDialogue() = default;
-            ActorDialogue(const ActorDialogue&) = delete;
-            ActorDialogue(ActorDialogue&&) = delete;
-            auto operator=(const ActorDialogue&) -> ActorDialogue& = delete;
-            auto operator=(ActorDialogue&&) -> ActorDialogue& = delete;
             ActorDialogue(GraphModel::GraphPtr graph);
             ~ActorDialogue() override = default;
 
-            auto GetSubTitle() const -> const char* override
+            auto GetSubTitle() const -> char const* override
             {
                 return "An actor's dialogue.";
             }
 
-            auto GetTitle() const -> const char* override
+            auto GetTitle() const -> char const* override
             {
                 return "Actor Dialogue";
             }

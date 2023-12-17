@@ -1,7 +1,9 @@
 #include "Tools/ConversationGraphContext.h"
 
 #include "AzCore/Serialization/SerializeContext.h"
+#include "Conversation/ConversationTypeIds.h"
 #include "GraphModel/Model/GraphContext.h"
+#include "Tools/DataTypes.h"
 
 namespace ConversationEditor
 {
@@ -16,12 +18,12 @@ namespace ConversationEditor
     }
 
     ConversationGraphContext::ConversationGraphContext()
-        : GraphContext("Conversation Graph", ".conversationgraph", {})
+        : GraphContext(SystemName, ModuleExtension, {})
     {
     }
 
     ConversationGraphContext::ConversationGraphContext(GraphModel::DataTypeList const& dataTypes)
-        : GraphContext("Conversation Graph", ".conversationgraph", dataTypes)
+        : GraphContext(SystemName, ModuleExtension, dataTypes)
     {
     }
 

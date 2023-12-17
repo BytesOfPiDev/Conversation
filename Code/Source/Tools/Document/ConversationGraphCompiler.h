@@ -9,6 +9,7 @@
 
 #include "Conditions/ConditionFunction.h"
 #include "Conversation/DialogueData.h"
+#include "Tools/NodeData.h"
 
 namespace ConversationEditor
 {
@@ -17,12 +18,14 @@ namespace ConversationEditor
     using SlotDialogueTable = AZStd::map<GraphModel::ConstSlotPtr, Conversation::DialogueData>;
     using SlotConditionTable = AZStd::map<GraphModel::ConstSlotPtr, Conversation::ConditionFunction>;
 
+    // NOTE: Experimenting. Trying to find an expressive way to say what errors can happen w/o exceptions.
     AZ_ENUM( // NOLINT
         CompilationErrorCode,
         NullGraphPointer,
         FailedToSaveConversationTemplate,
         ExpectedDialogueNodeButGotNullptr,
-        ExpectedDialogueNodeButGotSomethingElse);
+        ExpectedDialogueNodeButGotSomethingElse,
+        InvalidDialogueData);
 
     struct CompilationError
     {
@@ -115,18 +118,23 @@ namespace ConversationEditor
         [[nodiscard]] auto GetAllNodesInExecutionOrder() const -> AZStd::vector<GraphModel::ConstNodePtr>;
 
         /**
-         * @brief Starting point for being what a particular node represents.
+         * @brief Calls the build function responsible for generating the code or asset for the given node.
          *
          * It examines the given node to determine how to compile it, and then calls the necessary function that knows how to build it.
          */
         void BuildNode(GraphModel::ConstNodePtr const& node);
         /**
-         * @brief Examines an expected dialogue node and generates the data/code it represents.
+         * @brief Gathers the data needed to build a DialogueData for the ConversationAsset.
          *
-         * @param dialogueGraphNode The graph node to build data from.
-         * @return true or CompilationError: ExpectedDialogueNodeButGotNullptr
+         * @param dialogueGraphNode A node with the slots needed to build a DialogueData.
+         * @return true or CompilationError
          */
         auto BuildDialogueNode(GraphModel::ConstNodePtr const& dialogueGraphNode) -> AZStd::expected<AZStd::true_type, CompilationError>;
+
+        /**
+         * @brief Gathers the data needed by the compiler to setup dialogue links.
+         */
+        void BuildLinkNode(GraphModel::ConstNodePtr const& linkNode);
 
         /**
          * @brief Builds a table of all slot values and their slot IDs.
@@ -153,13 +161,6 @@ namespace ConversationEditor
         void ClearData();
 
     private:
-        struct NodeData
-        {
-            AZStd::optional<Conversation::DialogueData> m_dialogue;
-            AZStd::vector<AZ::Name> m_conditions;
-            AZStd::vector<Conversation::DialogueId> m_responseIds;
-        };
-
         AZStd::mutex m_instructionNodesForCurrentNodeMutex;
 
         GraphModel::ConstNodePtr m_currentNode{};

@@ -8,21 +8,19 @@
 #include "AtomToolsFramework/Graph/GraphUtil.h"
 #include "AtomToolsFramework/Util/Util.h"
 #include "AzCore/Asset/AssetCommon.h"
-#include "AzCore/Asset/AssetManager.h"
-#include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/Debug/Trace.h"
-#include "AzCore/IO/GenericStreams.h"
 #include "AzCore/IO/Path/Path_fwd.h"
+#include "AzCore/RTTI/RTTIMacros.h"
 #include "AzCore/Script/ScriptAsset.h"
 #include "AzCore/Serialization/ObjectStream.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/Utils/Utils.h"
-#include "AzCore/std/ranges/ranges.h"
 #include "AzCore/std/smart_ptr/shared_ptr.h"
 #include "AzCore/std/string/regex.h"
 #include "AzFramework/Asset/AssetSystemBus.h"
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
+#include "Conversation/DialogueData.h"
 #include "GraphModel/Model/Common.h"
 #include "GraphModel/Model/Node.h"
 #include "GraphModel/Model/Slot.h"
@@ -30,7 +28,9 @@
 #include "Conversation/Constants.h"
 #include "Conversation/ConversationAsset.h"
 #include "Conversation/ConversationTypeIds.h"
+#include "Conversation/DialogueData_incl.h"
 #include "Tools/DataTypes.h"
+#include "Tools/Document/NodeRequestBus.h"
 
 namespace ConversationEditor
 {
@@ -570,16 +570,13 @@ namespace ConversationEditor
 
         for (auto& [node, nodeData] : m_nodeDataTable)
         {
-            if (nodeData.m_dialogue.has_value())
+            auto dialogueDataOpt = nodeData.m_dialogue;
+            if (dialogueDataOpt.has_value())
             {
-                AZStd::ranges::for_each(
-                    nodeData.m_responseIds,
-                    [&nodeData = nodeData](Conversation::DialogueId const& responseId) -> void
-                    {
-                        nodeData.m_dialogue->m_responseIds.push_back(responseId);
-                    });
+                auto dialogueResponses = Conversation::ModifyDialogueResponseIds(*dialogueDataOpt);
+                dialogueResponses.insert(dialogueResponses.end(), nodeData.m_responseIds.begin(), nodeData.m_responseIds.end());
 
-                conversationAsset->AddDialogue(*nodeData.m_dialogue);
+                conversationAsset->AddDialogue(*dialogueDataOpt);
             }
         }
 
@@ -679,6 +676,9 @@ namespace ConversationEditor
         {
             return;
         }
+
+        auto& nodeData = m_nodeDataTable[currentNode];
+
         if (auto const dynamicNode = azrtti_cast<AtomToolsFramework::DynamicNode const*>(currentNode.get()))
         {
             auto const& dynamicNodeSettings = dynamicNode->GetConfig().m_settings;
@@ -691,7 +691,8 @@ namespace ConversationEditor
             bool const isDialogueNode = [&hasNodeTypeSetting, &dynamicNodeSettings]() -> bool
             {
                 return hasNodeTypeSetting &&
-                    AZStd::ranges::contains(dynamicNodeSettings.find(NodeSettings::NodeTypeKey)->second, "Dialogue");
+                    AZStd::ranges::contains(
+                           dynamicNodeSettings.find(NodeSettings::NodeTypeKey)->second, NodeSettings::NodeTypeValue_Dialogue);
             }();
 
             if (isDialogueNode)
@@ -700,6 +701,17 @@ namespace ConversationEditor
                 {
                 };
             }
+        }
+        else if (currentNode->RTTI_IsTypeOf(AZ::TypeId{ LinkNodeTypeId }))
+        {
+            auto* nodeRequests = azrtti_cast<NodeRequests const*>(currentNode.get());
+            if (!nodeRequests)
+            {
+                return;
+            }
+
+            nodeRequests->UpdateNodeData(nodeData);
+            BuildLinkNode(currentNode);
         }
     }
 
@@ -714,16 +726,17 @@ namespace ConversationEditor
                 CompilationError{ CompilationErrorCode::ExpectedDialogueNodeButGotNullptr, "Nullptr given as argument." });
         }
 
-        DialogueId currentNodeDialogueId{ GetSymbolNameFromNode(currentNode) };
-        if (!m_nodeDataTable[currentNode].m_dialogue.has_value())
-        {
-            m_nodeDataTable[currentNode].m_dialogue.emplace(currentNodeDialogueId);
-        }
-
+        DialogueId const currentNodeDialogueId{ GetSymbolNameFromNode(currentNode) };
         auto& nodeDataDialogue = m_nodeDataTable[currentNode].m_dialogue;
 
-        AZ_Error( // NOLINT
-            "ConversationGraphCompiler",
+        // The DialogueData is an optional since not every node will use one. Since we're processing a dialogue node, we need one, so we
+        // instantiate one if one hasn't already been instantiated.
+        if (!nodeDataDialogue.has_value())
+        {
+            nodeDataDialogue.emplace(currentNodeDialogueId);
+        }
+
+        AZ_Assert( // NOLINT
             currentNodeDialogueId == nodeDataDialogue->m_id,
             "The Id we generated and the one stored in the dialogue should be the same!");
 
@@ -736,10 +749,10 @@ namespace ConversationEditor
             switch (slot->GetDataType()->GetTypeEnum())
             {
             case AZ_CRC_CE("actor_text"):
-                m_nodeDataTable[currentNode].m_dialogue->m_actorText = AZStd::any_cast<AZStd::string>(value);
+                nodeDataDialogue->m_actorText = AZStd::any_cast<AZStd::string>(value);
                 break;
             case AZ_CRC_CE("speaker_tag"):
-                m_nodeDataTable[currentNode].m_dialogue->m_speaker = AZStd::any_cast<AZStd::string>(value);
+                nodeDataDialogue->m_speaker = AZStd::any_cast<AZStd::string>(value);
                 break;
             default:
                 break;
@@ -757,7 +770,7 @@ namespace ConversationEditor
 
         if (isStartingDialogue)
         {
-            m_startingIds.insert(m_nodeDataTable[currentNode].m_dialogue->m_id);
+            m_startingIds.insert(nodeDataDialogue->m_id);
         }
 
         auto const currentNodeHasParent = [&currentNode]() -> bool
@@ -798,6 +811,16 @@ namespace ConversationEditor
         }
 
         return AZStd::true_type();
+    }
+
+    void ConversationGraphCompiler::BuildLinkNode(GraphModel::ConstNodePtr const& linkNode)
+    {
+        auto const& linkData = m_nodeDataTable[linkNode].m_linkData;
+        auto& fromNodeData = m_nodeDataTable[linkData.m_from];
+        auto const& toNode = linkData.m_to;
+
+        // Add the 'To' node's ID to the 'From' node's list of responses.
+        fromNodeData.m_responseIds.push_back(Conversation::DialogueId{ GetSymbolNameFromNode(toNode) });
     }
 
     void ConversationGraphCompiler::BuildSlotValueTable()
@@ -951,7 +974,7 @@ namespace ConversationEditor
 
                             if (relativePathFound)
                             {
-                                includeStatements.push_back(AZStd::string::format("require <%s>", relativePath.c_str()));
+                                includeStatements.push_back(AZStd::string::format("require(\"%s\")", relativePath.c_str()));
                             }
                         }
                         return includeStatements;

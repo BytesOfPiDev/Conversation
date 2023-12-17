@@ -24,6 +24,7 @@ namespace ConversationEditor
     {
         constexpr auto InstructionKey = "instruction";
         constexpr auto NodeTypeKey = "nodeType";
+        constexpr auto NodeTypeValue_Dialogue = "Dialogue";
 
     } // namespace NodeSettings
 } // namespace ConversationEditor

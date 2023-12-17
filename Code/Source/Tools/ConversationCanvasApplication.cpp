@@ -18,6 +18,7 @@
 #include "AzCore/Script/ScriptAsset.h"
 #include "Conversation/DialogueData.h"
 #include "Editor/Framework/Configuration.h"
+#include "GraphModel/Integration/NodePalette/StandardNodePaletteItem.h"
 #include "GraphModel/Model/DataType.h"
 
 #include "Conditions/ConditionFunction.h"
@@ -29,6 +30,7 @@
 #include "Tools/Window/ConversationCanvasMainWindow.h"
 
 #include "QLabel"
+#include "Tools/Window/Nodes/Link.h"
 
 void InitConversationCanvasResources()
 {
@@ -79,7 +81,9 @@ namespace ConversationEditor
         ConversationGraphCompiler::Reflect(context);
         EditorActorText::Reflect(context);
 
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        GraphModelIntegration::ReflectAndCreateNodeMimeEvent<LinkNode>(context);
+
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->RegisterGenericType<AZStd::array<AZ::Vector2, 2>>();
             serialize->RegisterGenericType<AZStd::array<AZ::Vector3, 3>>();
@@ -148,6 +152,8 @@ namespace ConversationEditor
         // Instantiate the dynamic node manager to register all dynamic node configurations and data types used in this tool
         m_dynamicNodeManager = AZStd::make_unique<AtomToolsFramework::DynamicNodeManager>(m_toolId);
 
+        constexpr auto dialogueIdTypeInfo{ AZ::AzTypeInfo<Conversation::DialogueId>() };
+
         // Register all data types required by Conversation Canvas nodes with the dynamic node manager
         m_dynamicNodeManager->RegisterDataTypes({
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("bool"), bool{}, "bool"),
@@ -186,7 +192,12 @@ namespace ConversationEditor
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("lua_script"), AZ::Data::Asset<AZ::ScriptAsset>{}, "lua_script"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("condition_id"), Conversation::DialogueId{}, "condition_id"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("dialogue_id"), Conversation::DialogueId{}, "dialogue_id"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE(DialogueIdTypeName),
+                dialogueIdTypeInfo.Uuid(),
+                AZStd::make_any<Conversation::DialogueId>(),
+                DialogueIdTypeName,
+                dialogueIdTypeInfo.Name()),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("dialogue_data"), Conversation::DialogueData{}, "dialogue_data"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("uuid"), AZ::Uuid{}, "uuid"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("name"), AZ::Name{}, "name"),
@@ -269,11 +280,22 @@ namespace ConversationEditor
             AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
                 rootTreeItem, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::CreateNodePaletteTree);
 
+            auto coreNode = rootTreeItem->CreateChildNode<GraphCanvas::NodePaletteTreeItem>("Core", toolId);
+
+            coreNode->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<LinkNode>>("Jump", toolId);
+
             return rootTreeItem;
         };
 
+        // Initialize the default group preset names and colors needed by the graph canvas view to create node groups.
+        AZStd::map<AZStd::string, AZ::Color> const defaultGroupPresets =
+            AZStd::map<AZStd::string, AZ::Color>{ { "Logic", AZ::Color(0.188f, 0.972f, 0.243f, 1.0f) },
+                                                  { "Function", AZ::Color(0.396f, 0.788f, 0.788f, 1.0f) },
+                                                  { "Output", AZ::Color(0.866f, 0.498f, 0.427f, 1.0f) },
+                                                  { "Input", AZ::Color(0.396f, 0.788f, 0.549f, 1.0f) } };
+
         // Connect the graph view settings to the required buses so that they can be accessed throughout the application.
-        m_graphViewSettingsPtr->Initialize(m_toolId, AZStd::map<AZStd::string, AZ::Color>{});
+        m_graphViewSettingsPtr->Initialize(m_toolId, defaultGroupPresets);
     }
     void ConversationCanvasApplication::InitConversationGraphDocumentType()
     {
