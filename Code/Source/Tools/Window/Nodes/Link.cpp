@@ -1,6 +1,5 @@
 #include "Tools/Window/Nodes/Link.h"
 
-#include "AzCore/Console/ILogger.h"
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/SerializeContext.h"
@@ -14,10 +13,11 @@
 
 #include "Conversation/DialogueData.h"
 #include "Tools/DataTypes.h"
+#include "Tools/Document/NodeRequestBus.h"
 
 namespace ConversationEditor
 {
-    AZ_RTTI_NO_TYPE_INFO_IMPL(LinkNode, GraphModel::Node); // NOLINT
+    AZ_RTTI_NO_TYPE_INFO_IMPL(LinkNode, GraphModel::Node, NodeRequests); // NOLINT
     AZ_TYPE_INFO_WITH_NAME_IMPL(LinkNode, "LinkNode", LinkNodeTypeId); // NOLINT
     AZ_CLASS_ALLOCATOR_IMPL(LinkNode, AZ::SystemAllocator); // NOLINT
 
@@ -32,7 +32,7 @@ namespace ConversationEditor
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<LinkNode, GraphModel::Node>()->Version(0);
+            serializeContext->Class<LinkNode, GraphModel::Node, NodeRequests>()->Version(0);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {

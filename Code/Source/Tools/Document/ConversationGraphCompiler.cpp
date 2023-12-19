@@ -317,6 +317,18 @@ namespace ConversationEditor
 
     [[nodiscard]] auto ConversationGraphCompiler::GetSymbolNameFromNode(GraphModel::ConstNodePtr const& node) const -> AZStd::string
     {
+        auto const nodeNameSlot = node->GetSlot(ToString(GeneralSlots::NodeName));
+        auto const nodeNameValueAny = nodeNameSlot != nullptr ? nodeNameSlot->GetValue() : AZStd::any();
+
+        // If there's a NodeName property, we use that as the symbol name instead of generating a name.
+        if (nodeNameValueAny.is<AZStd::string>())
+        {
+            if (auto nodeName = AZStd::any_cast<AZStd::string>(nodeNameValueAny); !nodeName.empty())
+            {
+                return AtomToolsFramework::GetSymbolNameFromText(nodeName);
+            }
+        }
+
         return AtomToolsFramework::GetSymbolNameFromText(AZStd::string::format("node%u_%s", node->GetId(), node->GetTitle()));
     }
 

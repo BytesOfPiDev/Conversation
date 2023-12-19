@@ -89,6 +89,8 @@ namespace ConversationEditor
             serialize->RegisterGenericType<AZStd::array<AZ::Vector3, 3>>();
             serialize->RegisterGenericType<AZStd::array<AZ::Vector4, 3>>();
             serialize->RegisterGenericType<AZStd::array<AZ::Vector4, 4>>();
+
+            serialize->Class<NodeRequests>()->Version(0);
         }
     }
 

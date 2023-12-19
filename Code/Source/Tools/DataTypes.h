@@ -55,6 +55,10 @@ namespace ConversationEditor
         Link);
 
     AZ_ENUM( // NOLINT
+        GeneralSlots,
+        NodeName);
+
+    AZ_ENUM( // NOLINT
         LinkNodeSlots,
         inFrom,
         inTo);

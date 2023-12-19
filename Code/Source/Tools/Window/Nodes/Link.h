@@ -18,7 +18,7 @@ namespace ConversationEditor
      */
     class LinkNode
         : public GraphModel::Node
-        , protected NodeRequestBus::Handler
+        , public NodeRequestBus::Handler
     {
     public:
         AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
