@@ -90,6 +90,9 @@ namespace ConversationEditor
                 return false;
             }
 
+            // Get and store the data in node so it can be used while building a conversation asset later.
+            BuildNode(currentNode);
+
             // Search this node for any template path settings that describe files that need to be generated from the graph.
             BuildTemplatePathsForCurrentNode(currentNode);
 
@@ -122,11 +125,6 @@ namespace ConversationEditor
                 return false;
             }
         };
-
-        for (auto const& currentNode : nodesInExecutionOrder)
-        {
-            BuildNode(currentNode);
-        }
 
         if (!BuildConversationAsset())
         {
