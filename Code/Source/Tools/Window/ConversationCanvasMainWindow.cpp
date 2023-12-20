@@ -119,15 +119,20 @@ namespace ConversationEditor
         AZ_Assert(
             m_conversationViewport->size() == requestedViewportSize,
             "Resizing the window did not give the expected viewport size. Requested %d x %d but got %d x %d.",
-            requestedViewportSize.width(), requestedViewportSize.height(), m_conversationViewport->size().width(),
+            requestedViewportSize.width(),
+            requestedViewportSize.height(),
+            m_conversationViewport->size().width(),
             m_conversationViewport->size().height());
 
         [[maybe_unused]] QSize newDeviceSize = m_conversationViewport->size();
         AZ_Warning(
             "Conversation Canvas",
             static_cast<uint32_t>(newDeviceSize.width()) == width && static_cast<uint32_t>(newDeviceSize.height()) == height,
-            "Resizing the window did not give the expected frame size. Requested %d x %d but got %d x %d.", width, height,
-            newDeviceSize.width(), newDeviceSize.height());
+            "Resizing the window did not give the expected frame size. Requested %d x %d but got %d x %d.",
+            width,
+            height,
+            newDeviceSize.width(),
+            newDeviceSize.height());
     }
 
     void ConversationCanvasMainWindow::LockViewportRenderTargetSize(AZ::u32 width, AZ::u32 height)
@@ -143,19 +148,23 @@ namespace ConversationEditor
     void ConversationCanvasMainWindow::PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const
     {
         m_conversationCanvasCompileSettingsGroup = AtomToolsFramework::CreateSettingsPropertyGroup(
-            "Conversation Canvas Settings", "Conversation Canvas Settings",
+            "Conversation Canvas Settings",
+            "Conversation Canvas Settings",
             { AtomToolsFramework::CreateSettingsPropertyValue(
                 ConversationCanvasSettingsEnablePreviewKey, "Enable Preview Functionality", "Just testing.", false) });
 
         inspector->AddGroup(
-            m_conversationCanvasCompileSettingsGroup->m_name, m_conversationCanvasCompileSettingsGroup->m_displayName,
+            m_conversationCanvasCompileSettingsGroup->m_name,
+            m_conversationCanvasCompileSettingsGroup->m_displayName,
             m_conversationCanvasCompileSettingsGroup->m_description,
             aznew AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_conversationCanvasCompileSettingsGroup.get(), m_conversationCanvasCompileSettingsGroup.get(),
+                m_conversationCanvasCompileSettingsGroup.get(),
+                m_conversationCanvasCompileSettingsGroup.get(),
                 azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>()));
 
         inspector->AddGroup(
-            "Graph View Settings", "Graph View Settings",
+            "Graph View Settings",
+            "Graph View Settings",
             "Configuration settings for the graph view interaction, animation, and other behavior.",
             aznew AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
