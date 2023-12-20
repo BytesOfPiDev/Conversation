@@ -15,6 +15,7 @@
 #include "AzCore/Script/ScriptAsset.h"
 #include "AzCore/Serialization/ObjectStream.h"
 #include "AzCore/Serialization/SerializeContext.h"
+#include "AzCore/StringFunc/StringFunc.h"
 #include "AzCore/Utils/Utils.h"
 #include "AzCore/std/smart_ptr/shared_ptr.h"
 #include "AzCore/std/string/regex.h"
@@ -569,7 +570,7 @@ namespace ConversationEditor
 
     auto ConversationGraphCompiler::BuildConversationAsset() -> AZStd::expected<AZStd::true_type, CompilationError>
     {
-        auto conversationAsset = AZStd::make_unique<Conversation::ConversationAsset>();
+        auto const conversationAsset = AZStd::make_unique<Conversation::ConversationAsset>();
 
         AZStd::ranges::for_each(
             m_startingIds,
@@ -590,45 +591,40 @@ namespace ConversationEditor
             }
         }
 
-        // Save the conversation asset to a string instead of to the desk so that we can place it inside the relevant template.
-        AZStd::string const conversationAssetData = [&conversationAsset]() -> AZStd::string
+        // Create the path where we will save the asset.
+        auto const assetOutputPath = [this]() -> AZStd::string
         {
-            AZStd::vector<AZ::u8> dstData;
-            AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8>> dstByteStream(&dstData);
-            AZ::Utils::SaveObjectToStream(dstByteStream, AZ::DataStream::ST_JSON, conversationAsset.get());
-            dstByteStream.Close();
+            // "/path/to/somedialogue.conversationgraph"
+            auto pathToSaveAsset = GetGraphPath();
+            // "/path/to/somedialogue.conversationasset"
+            AZ::StringFunc::Path::ReplaceExtension(pathToSaveAsset, Conversation::ConversationAsset::ProductExtension);
 
-            return { dstData.begin(), dstData.end() };
+            // ""
+            AZStd::string fullFileName{};
+            // "somedialogue.conversationasset"
+            AZ::StringFunc::Path::GetFullFileName(pathToSaveAsset.c_str(), fullFileName);
+
+            // "/path/to/somedialogue.conversationasset" -> "/path/to"
+            AZ::StringFunc::Path::StripFullName(pathToSaveAsset);
+
+            // "/path/to/Generated/somedialogue.conversationasset"
+            AZ::StringFunc::Path::Join(
+                pathToSaveAsset.c_str(), AZStd::string::format("Generated/%s", fullFileName.c_str()).c_str(), pathToSaveAsset);
+
+            return pathToSaveAsset;
         }();
 
-        // We replace the symbol with the stringified asset. It's done this way to stick with using templates instead of saving the file to
-        // disk ourselves.
-        //
-        // TODO: Right now, the template only has this symbol inside it, with its extension as something other than '.conversation' in order
-        // to avoid being processed by the asset processor. It may be worth creating a real example asset that gets cleared when processed.
-        // Something to look into.
-        m_conversationAssetFileDataVecForCurrentCompile.ReplaceSymbol("__ConversationGraphAssetData__", conversationAssetData);
-
-        // This just replaces the O3DE alias in a path with the location it represents, such as "@assets@" ->
-        // "/home/user/projects/o3deprojectroot/assets".
-        auto const& conversationAssetTemplateInputPath =
-            AtomToolsFramework::GetPathWithoutAlias(m_conversationAssetFileDataVecForCurrentCompile.GetPath());
-        auto conversationAssetTemplateOutputPath = GetOutputPathFromTemplatePath(conversationAssetTemplateInputPath);
-
-        // Since the template may not have the correct extension, we change it to the correct one.
-        AZ::StringFunc::Path::ReplaceExtension(conversationAssetTemplateOutputPath, Conversation::ConversationAsset::ProductExtension);
-
-        if (!m_conversationAssetFileDataVecForCurrentCompile.Save(conversationAssetTemplateOutputPath))
+        bool const saveResult = AZ::Utils::SaveObjectToFile(assetOutputPath, AZ::DataStream::ST_JSON, conversationAsset.get());
+        if (!saveResult)
         {
-            return AZStd::unexpected{ CompilationError{
-                CompilationErrorCode::FailedToSaveConversationTemplate,
-                AZStd::string::format("Failed to save '%s'", conversationAssetTemplateOutputPath.c_str()) } };
+            return AZStd::unexpected{ CompilationError{ CompilationErrorCode::FailedToSaveConversationTemplate,
+                                                        AZStd::string::format("Failed to save '%s'", assetOutputPath.c_str()) } };
         }
 
         AzFramework::AssetSystemRequestBus::Broadcast(
-            &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, conversationAssetTemplateOutputPath);
+            &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, assetOutputPath);
 
-        m_generatedFiles.push_back(conversationAssetTemplateOutputPath);
+        m_generatedFiles.push_back(assetOutputPath);
 
         return AZStd::true_type();
     }
@@ -896,11 +892,6 @@ namespace ConversationEditor
                     return false;
                 }
 
-                if (isConversationTemplate)
-                {
-                    m_conversationAssetFileDataVecForCurrentCompile = AZStd::move(templateFileData);
-                    continue; // Don't add this one to the current node vector. It's processed after all nodes.
-                }
                 m_templateFileDataVecForCurrentNode.emplace_back(AZStd::move(templateFileData));
             }
         };
@@ -922,7 +913,11 @@ namespace ConversationEditor
         AZ::StringFunc::Path::ReplaceFullName(templateOutputPath, templateInputFileName.c_str());
 
         AZ::StringFunc::Replace(templateOutputPath, "ConversationGraphName", GetUniqueGraphName().c_str());
-        AZ::StringFunc::Replace(templateOutputPath, "ConversationGraphConditionNode", GetSymbolNameFromNode(m_currentNode).c_str());
+        // Replacing the condition symbol is only valid while processing a node.
+        if (m_currentNode)
+        {
+            AZ::StringFunc::Replace(templateOutputPath, "ConversationGraphConditionNode", GetSymbolNameFromNode(m_currentNode).c_str());
+        }
         return templateOutputPath;
     }
 
@@ -1043,7 +1038,6 @@ namespace ConversationEditor
 
     void ConversationGraphCompiler::ClearData()
     {
-        m_conversationAssetFileDataVecForCurrentCompile = AtomToolsFramework::GraphTemplateFileData{};
         m_instructionNodesForCurrentNode.clear();
         m_currentNode = nullptr;
         m_generatedFiles.clear();

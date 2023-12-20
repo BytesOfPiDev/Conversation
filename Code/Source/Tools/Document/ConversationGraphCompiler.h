@@ -181,7 +181,6 @@ namespace ConversationEditor
         StartingIdContainer m_startingIds{};
         AZStd::map<GraphModel::ConstNodePtr, NodeData> m_nodeDataTable{};
         AZStd::list<AtomToolsFramework::GraphTemplateFileData> m_templateFileDataVecForCurrentNode{};
-        AtomToolsFramework::GraphTemplateFileData m_conversationAssetFileDataVecForCurrentCompile{};
         AZStd::set<AZStd::string> m_templatePathsForCurrentNode{};
         AZStd::vector<GraphModel::ConstNodePtr> m_instructionNodesForCurrentNode;
         AZStd::unordered_set<Conversation::DialogueChunk> m_chunks;
