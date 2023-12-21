@@ -932,8 +932,8 @@ namespace ConversationEditor
                 ModifyTemplateDataForCurrentNode().end(),
                 [this](auto const& templateFileData)
                 {
-                    auto const& templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templateFileData.GetPath());
-                    auto const& templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
+                    auto const templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templateFileData.GetPath());
+                    auto const templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
 
                     auto fileIO = AZ::IO::FileIOBase::GetInstance();
                     fileIO->Remove(templateOutputPath.c_str());
