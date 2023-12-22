@@ -63,6 +63,14 @@ namespace ConversationEditor
         inFrom,
         inTo);
 
+    AZ_ENUM_CLASS( // NOLINT
+        ConditionNodeSlots,
+        outCondition);
+
+    AZ_ENUM_CLASS( // NOLINT
+        DialogueNodeSlots,
+        inCondition);
+
     namespace CommonSlotDisplayNames
     {
         inline constexpr auto AVAILABILITYSCRIPT = "ActiveScript";

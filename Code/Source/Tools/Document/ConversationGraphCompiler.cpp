@@ -80,6 +80,12 @@ namespace ConversationEditor
 
         AZStd::vector<GraphModel::ConstNodePtr> const nodesInExecutionOrder = GetAllNodesInExecutionOrder();
 
+        constexpr auto scriptTemplatePath =
+            "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/ConversationGraphName.lua";
+
+        m_scriptFileDataTemplate.Load(scriptTemplatePath);
+        ReplaceBasicSymbols(m_scriptFileDataTemplate);
+
         // Traverse all graph nodes and slots searching for settings to generate files from templates
         for (auto const& currentNode : nodesInExecutionOrder)
         {
@@ -132,6 +138,25 @@ namespace ConversationEditor
             AZ_Error("ConversationGraphCompiler", false, "Compilation failed to build the conversation asset."); // NOLINT
             SetState(AtomToolsFramework::GraphCompiler::State::Failed);
         }
+
+        m_scriptFileDataTemplate.ReplaceLinesInBlock(
+            "BOP_GENERATED_FUNCTIONS_BEGIN",
+            "BOP_GENERATED_FUNCTIONS_END",
+            [&]([[maybe_unused]] AZStd::string const& blockHeader)
+            {
+                return m_functionDefinitions;
+            });
+
+        m_scriptFileDataTemplate.ReplaceLinesInBlock(
+            "BOP_GENERATED_CONDITION_FUNCTIONS_BEGIN",
+            "BOP_GENERATED_CONDITION_FUNCTIONS_END",
+            [&]([[maybe_unused]] AZStd::string const& blockHeader)
+            {
+                return m_conditionFunctionDefinitions;
+            });
+
+        auto const templateOutputPath = GetOutputPathFromTemplatePath(m_scriptFileDataTemplate.GetPath());
+        m_scriptFileDataTemplate.Save(templateOutputPath);
 
         if (!ReportGeneratedFileStatus())
         {
@@ -565,6 +590,17 @@ namespace ConversationEditor
 
                         return lines;
                     });
+
+                AZStd::scoped_lock lock(m_conditionFunctionDefinitionsMutex);
+                // We create a string representation of the generated instructions when there's an outCondition slot.
+                // When compiling, we'll use it to add a new function to the companion script that can be called to
+                // confirm a dialogue's availability in Lua.
+                if (currentNode->GetSlot(ToString(ConditionNodeSlots::outCondition)))
+                {
+                    AZStd::string luaFunc{};
+                    AZ::StringFunc::Join(luaFunc, templateFileData.GetLines(), "\n");
+                    m_conditionFunctionDefinitions.emplace_back(AZStd::move(luaFunc));
+                }
             });
     }
 
@@ -742,11 +778,22 @@ namespace ConversationEditor
             nodeDataDialogue.emplace(currentNodeDialogueId);
         }
 
-        AZ_Assert( // NOLINT
-            currentNodeDialogueId == nodeDataDialogue->m_id,
-            "The Id we generated and the one stored in the dialogue should be the same!");
+        // Dialogue nodes that have a connection to inCondition will need to add the connected
+        // node's symbol as an availability Id.
+        if (auto const inConditionSlot = currentNode->GetSlot(ToString(DialogueNodeSlots::inCondition));
+            inConditionSlot && !inConditionSlot->GetConnections().empty())
+        {
+            AZ_Error( // NOLINT
+                "ConversationGraphCompiler",
+                inConditionSlot->GetConnections().size() <= 1,
+                "There should be a maximum of one connection.");
 
-        nodeDataDialogue->m_availabilityId = AZ::Name{ GetSymbolNameFromNode(currentNode) };
+            if (inConditionSlot->GetConnections().size() == 1)
+            {
+                auto const sourceNode = inConditionSlot->GetConnections().front()->GetSourceNode();
+                SetDialogueAvailabilityId(*nodeDataDialogue, GetSymbolNameFromNode(sourceNode));
+            }
+        }
 
         for (auto& [slotId, slot] : currentNode->GetSlots())
         {
@@ -755,10 +802,10 @@ namespace ConversationEditor
             switch (slot->GetDataType()->GetTypeEnum())
             {
             case AZ_CRC_CE("actor_text"):
-                nodeDataDialogue->m_actorText = AZStd::any_cast<AZStd::string>(value);
+                SetDialogueActorText(*nodeDataDialogue, AZStd::any_cast<AZStd::string>(value));
                 break;
             case AZ_CRC_CE("speaker_tag"):
-                nodeDataDialogue->m_speaker = AZStd::any_cast<AZStd::string>(value);
+                SetDialogueSpeaker(*nodeDataDialogue, AZStd::any_cast<AZStd::string>(value));
                 break;
             default:
                 break;
@@ -952,7 +999,7 @@ namespace ConversationEditor
             [&](auto& templateFileData)
             {
                 // Substitute all references to the placeholder graph name with one generated from the document name
-                templateFileData.ReplaceSymbol("ConversationGraphName", GetUniqueGraphName());
+                ReplaceBasicSymbols(templateFileData);
 
                 // Inject include files found while traversing the graph into any include file blocks in the template.
                 templateFileData.ReplaceLinesInBlock(
@@ -1038,20 +1085,30 @@ namespace ConversationEditor
 
     void ConversationGraphCompiler::ClearData()
     {
+        m_scriptFileDataTemplate = {};
         m_instructionNodesForCurrentNode.clear();
         m_currentNode = nullptr;
         m_generatedFiles.clear();
         m_includePaths.clear();
         m_classDefinitions.clear();
         m_functionDefinitions.clear();
+        m_conditionFunctionDefinitions.clear();
         m_slotValueTable.clear();
         m_slotDialogueTable.clear();
         m_startingIds.clear();
         m_nodeDataTable.clear();
         m_templateFileDataVecForCurrentNode.clear();
         m_configIdsVisited.clear();
-        m_configIdsVisited.clear();
         m_templateNodeCount = 0;
+    }
+
+    void ConversationGraphCompiler::ReplaceBasicSymbols(AtomToolsFramework::GraphTemplateFileData& templateFileData)
+    {
+        templateFileData.ReplaceSymbol("ConversationGraphName", GetUniqueGraphName());
+        if (m_currentNode)
+        {
+            templateFileData.ReplaceSymbol("ConversationGraphNodeName", GetSymbolNameFromNode(m_currentNode));
+        }
     }
 
 } // namespace ConversationEditor

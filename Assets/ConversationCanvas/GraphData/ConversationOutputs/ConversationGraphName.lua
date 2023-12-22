@@ -3,15 +3,23 @@
 require("conversation.core")
 local dcLib = require("conversation.dialogue_component")
 
-local ConversationScriptComponent = dcLib.ScriptDialogueComponent:New()
+-- BOP_GENERATED_INCLUDES_BEGIN
 
-function ConversationScriptComponent:InitConversationScript()
+-- BOP_GENERATED_INCLUDES_END
+
+-- BOP_GENERATED_FUNCTIONS_BEGIN
+
+-- BOP_GENERATED_FUNCTIONS_END
+
+local ConversationGraphName = dcLib.ScriptDialogueComponent:New()
+
+function ConversationGraphName:InitConversationScript()
 	-- BOP_GENERATED_INSTRUCTIONS_BEGIN: in_branch1, in_branch2, in_branch3, in_branch4
 
 	-- BOP_GENERATED_INSTRUCTIONS_END
 end
 
-function ConversationScriptComponent:OnActivate()
+function ConversationGraphName:OnActivate()
 	self:ActivateConversationScript() -- Required since defining OnActivate in the metaclass doesn't seem to work.
 
 	Debug.Log(
@@ -21,7 +29,7 @@ function ConversationScriptComponent:OnActivate()
 	)
 end
 
-function ConversationScriptComponent:OnDeactivate()
+function ConversationGraphName:OnDeactivate()
 	self:DeactivateConversationScript() -- Required since defining OnActivate in the metaclass doesn't seem to work.
 
 	Debug.Log(
@@ -31,4 +39,8 @@ function ConversationScriptComponent:OnDeactivate()
 	)
 end
 
-return ConversationScriptComponent
+-- BOP_GENERATED_CONDITION_FUNCTIONS_BEGIN
+
+-- BOP_GENERATED_CONDITION_FUNCTIONS_END
+
+return ConversationGraphName

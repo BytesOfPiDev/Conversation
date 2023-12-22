@@ -1,9 +1,7 @@
-#include <utility>
-
-#include "AzCore/Script/ScriptContextAttributes.h"
 #include "Conversation/DialogueData.h"
 
 #include "AzCore/RTTI/BehaviorContext.h"
+#include "AzCore/Script/ScriptContextAttributes.h"
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
 #include "AzCore/Serialization/SerializeContext.h"
@@ -77,7 +75,7 @@ namespace Conversation
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DialogueData>()
-                ->Version(6) // NOLINT
+                ->Version(7) // NOLINT
                 ->Field("ActorText", &DialogueData::m_actorText)
                 ->Field("AvailabilityId", &DialogueData::m_availabilityId)
                 ->Field("AudioTrigger", &DialogueData::m_audioTrigger)
@@ -99,16 +97,24 @@ namespace Conversation
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &DialogueData::m_actorText, "Actor Text", "What the actor will say.")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DialogueData::m_speaker, "Speaker",
+                        AZ::Edit::UIHandlers::Default,
+                        &DialogueData::m_speaker,
+                        "Speaker",
                         "Represents a specific actor in the conversation.")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DialogueData::m_audioTrigger, "AudioTrigger",
+                        AZ::Edit::UIHandlers::Default,
+                        &DialogueData::m_audioTrigger,
+                        "AudioTrigger",
                         "The trigger for the audio file to play.")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DialogueData::m_scriptIds, "ScriptIds",
+                        AZ::Edit::UIHandlers::Default,
+                        &DialogueData::m_scriptIds,
+                        "ScriptIds",
                         "Script Ids to be executed upon dialogue selection.")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DialogueData::m_availabilityId, "AvailabilityId",
+                        AZ::Edit::UIHandlers::Default,
+                        &DialogueData::m_availabilityId,
+                        "AvailabilityId",
                         "Id to be called when determining dialogue availability.")
 
                     ->DataElement(AZ::Edit::UIHandlers::Button, &DialogueData::m_id, "Id", "")
@@ -162,7 +168,7 @@ namespace Conversation
         }
     }
 
-    DialogueData::DialogueData(const DialogueId id)
+    DialogueData::DialogueData(DialogueId const id)
         : m_id(id)
     {
     }

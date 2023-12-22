@@ -160,8 +160,11 @@ namespace ConversationEditor
 
         void ClearData();
 
+        void ReplaceBasicSymbols(AtomToolsFramework::GraphTemplateFileData& templateFileData);
+
     private:
-        AZStd::mutex m_instructionNodesForCurrentNodeMutex;
+        AZStd::mutex m_instructionNodesForCurrentNodeMutex{};
+        AZStd::mutex m_conditionFunctionDefinitionsMutex{};
 
         GraphModel::ConstNodePtr m_currentNode{};
 
@@ -174,16 +177,17 @@ namespace ConversationEditor
         AZStd::set<AZStd::string> m_includePaths{};
         // Not currently implemented.
         AZStd::vector<AZStd::string> m_classDefinitions{};
-        // Not currently implemented.
         AZStd::vector<AZStd::string> m_functionDefinitions{};
+        AZStd::vector<AZStd::string> m_conditionFunctionDefinitions{};
         SlotValueTable m_slotValueTable{};
         SlotDialogueTable m_slotDialogueTable{};
         StartingIdContainer m_startingIds{};
         AZStd::map<GraphModel::ConstNodePtr, NodeData> m_nodeDataTable{};
         AZStd::list<AtomToolsFramework::GraphTemplateFileData> m_templateFileDataVecForCurrentNode{};
         AZStd::set<AZStd::string> m_templatePathsForCurrentNode{};
-        AZStd::vector<GraphModel::ConstNodePtr> m_instructionNodesForCurrentNode;
-        AZStd::unordered_set<Conversation::DialogueChunk> m_chunks;
+        AZStd::vector<GraphModel::ConstNodePtr> m_instructionNodesForCurrentNode{};
+        AZStd::unordered_set<Conversation::DialogueChunk> m_chunks{};
+        AtomToolsFramework::GraphTemplateFileData m_scriptFileDataTemplate{};
 
         // Container of unique node configurations IDs visited on the graph to collect include paths, class definitions, and function
         // definitions.

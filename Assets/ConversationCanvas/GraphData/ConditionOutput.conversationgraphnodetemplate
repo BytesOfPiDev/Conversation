@@ -1,0 +1,30 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Conditions",
+        "settings": {
+            "templatePaths": [
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConversationGraphName_ConversationGraphConditionName.lua"
+            ]
+        },
+        "outputSlots": [
+            {
+                "name": "outDialogue",
+                "displayName": "Dialogue",
+                "supportedDataTypeRegex": "dialogue_id",
+                "defaultDataType": "dialogue_id",
+                "defaultValue": {
+                    "$type": "DialogueId"
+                },
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [
+                        "    result = true"
+                    ]
+                }
+            }
+        ]
+    }
+}

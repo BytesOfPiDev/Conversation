@@ -79,19 +79,19 @@ namespace Conversation
         return dialogueData.m_scriptIds;
     }
 
-    [[nodiscard]] auto GetDialogueAvailabilityId(DialogueData const& dialogueData) -> AZ::Name
+    [[nodiscard]] auto GetDialogueAvailabilityId(DialogueData const& dialogueData) -> AvailabilityId
     {
         return dialogueData.m_availabilityId;
     }
 
-    constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZStd::string const& newAvailabilityId)
+    constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AvailabilityId const& newAvailabilityId)
     {
         dialogueData.m_availabilityId = newAvailabilityId;
     }
 
-    constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZ::Name const& newAvailabilityId)
+    constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AvailabilityIdAsName const& newAvailabilityId)
     {
-        dialogueData.m_availabilityId = newAvailabilityId;
+        dialogueData.m_availabilityId = newAvailabilityId.GetStringView();
     }
 
     constexpr void SetDialogueActorText(DialogueData& dialogueData, AZStd::string const& actorText)

@@ -17,6 +17,7 @@ namespace AZ
 namespace Conversation
 {
     using AvailabilityId = AZStd::string;
+    using AvailabilityIdAsName = AZ::Name;
 
     struct DialogueId;
     struct DialogueData;
@@ -40,11 +41,11 @@ namespace Conversation
     [[nodiscard]] constexpr auto GetDialogueResponseIds(DialogueData const& dialogueData) -> AZStd::vector<DialogueId> const&;
     [[nodiscard]] constexpr auto ModifyDialogueResponseIds(DialogueData& dialogueData) -> AZStd::vector<DialogueId>&;
     [[nodiscard]] constexpr auto GetDialogueScriptIds(DialogueData const& dialogueData) -> AZStd::vector<AZStd::string> const&;
-    [[nodiscard]] inline auto GetDialogueAvailabilityId(DialogueData const& dialogueData) -> AZ::Name;
+    [[nodiscard]] inline auto GetDialogueAvailabilityId(DialogueData const& dialogueData) -> AvailabilityId;
 
     constexpr void SetDialogueActorText(DialogueData& dialogueData, AZStd::string const& actorText);
     constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZ::Name const& newAvailabilityId);
-    constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AZStd::string const& newAvailabilityId);
+    constexpr void SetDialogueAvailabilityId(DialogueData& dialogueData, AvailabilityId const& newAvailabilityId);
     constexpr void SetDialogueComment(DialogueData& dialogueData, AZStd::string_view comment);
     constexpr void SetDialogueSpeaker(DialogueData& dialogueData, AZStd::string const& speaker);
     constexpr void SetDialogueAudioTrigger(DialogueData& dialogueData, AZStd::string const& audioTrigger);
@@ -243,7 +244,7 @@ namespace Conversation
         AZStd::vector<AZ::Name> m_conditionIds{};
         // A script that is run when this dialogue is activated.
         AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> m_script{};
-        AZ::Name m_availabilityId{};
+        AZStd::string m_availabilityId{};
         AZStd::array<size_t, ChunkArraySize> m_chunkIds{};
     };
 

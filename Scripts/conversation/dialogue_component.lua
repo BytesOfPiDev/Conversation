@@ -49,14 +49,16 @@ end
 function lib.ScriptDialogueComponent:OnDialogue(dialogue, availableResponses) end
 
 function lib.ScriptDialogueComponent:IsAvailable(nodeId)
-	if type(self.conditions[nodeId]) == "table" then
-		local result = self.conditions[nodeId]:IsAvailable()
-		return result
+	local conditionFunc = self[nodeId]
+	if type(conditionFunc) == "function" then
+		return conditionFunc()
 	end
 
 	-- We return true if no condition function was found because dialogues are available by default.
 	-- No conditon means we should always return true.
-	Debug.Log("IsAvailable returning 'true' since there are no conditions.")
+	Debug.Log(
+		"IsAvailable returning 'true' since a condition function for '" .. tostring(nodeId) .. "' could not be found."
+	)
 	return true
 end
 

@@ -589,7 +589,7 @@ namespace Conversation
             // NOTE: A DialogueData is, by default, available, unless a handler explicitly sets it to false.
             AZ::EBusReduceResult<bool, AZStd::logical_and<bool>> result(true);
             AvailabilityRequestBus::EventResult(
-                result, GetEntityId(), &AvailabilityRequestBus::Events::IsAvailable, dialogueData.m_availabilityId.GetStringView());
+                result, GetEntityId(), &AvailabilityRequestBus::Events::IsAvailable, dialogueData.m_availabilityId);
             return result.value;
         }();
 
