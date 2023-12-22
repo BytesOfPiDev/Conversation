@@ -11,10 +11,10 @@
         },
         "outputSlots": [
             {
-                "name": "outDialogue",
-                "displayName": "Dialogue",
-                "supportedDataTypeRegex": "dialogue_id",
-                "defaultDataType": "dialogue_id",
+                "name": "outCondition",
+                "displayName": "Condition",
+                "supportedDataTypeRegex": "condition_id",
+                "defaultDataType": "condition_id",
                 "defaultValue": {
                     "$type": "DialogueId"
                 },
