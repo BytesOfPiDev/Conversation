@@ -6,7 +6,7 @@
         "category": "Conditions",
         "settings": {
             "templatePaths": [
-                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConversationGraphName_ConversationGraphConditionName.lua"
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConditionFunction.lua"
             ]
         },
         "outputSlots": [
