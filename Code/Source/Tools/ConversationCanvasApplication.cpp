@@ -284,7 +284,7 @@ namespace ConversationEditor
 
             auto coreNode = rootTreeItem->CreateChildNode<GraphCanvas::NodePaletteTreeItem>("Core", toolId);
 
-            coreNode->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<LinkNode>>("Jump", toolId);
+            coreNode->CreateChildNode<GraphModelIntegration::StandardNodePaletteItem<LinkNode>>("Link", toolId);
 
             return rootTreeItem;
         };
