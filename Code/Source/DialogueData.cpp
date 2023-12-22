@@ -30,7 +30,7 @@ namespace Conversation
 
     void DialogueId::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<DialogueId>()->Version(0)->Field("Id", &DialogueId::m_id);
 
@@ -42,7 +42,7 @@ namespace Conversation
             }
         }
 
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<DialogueId>("DialogueId")
                 ->Attribute(AZ::Script::Attributes::Category, DialogueSystemCategory)
@@ -72,7 +72,7 @@ namespace Conversation
         ResponseData::Reflect(context);
         DialogueChunk::Reflect(context);
 
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DialogueData>()
                 ->Version(7) // NOLINT
@@ -133,7 +133,7 @@ namespace Conversation
             }
         }
 
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<DialogueData>("Dialogue Data")
                 ->Attribute(AZ::Script::Attributes::Category, DialogueSystemCategory)
