@@ -152,6 +152,7 @@ namespace ConversationEditor
 
         void DeleteExistingFilesForCurrentNode();
 
+        void PreProcessTemplate(AtomToolsFramework::GraphTemplateFileData& templateFileData);
         void PreprocessTemplatesForCurrentNode();
 
         [[nodiscard]] auto GetUniqueGraphName() const -> AZStd::string;

@@ -991,6 +991,61 @@ namespace ConversationEditor
         }
     }
 
+    void ConversationGraphCompiler::PreProcessTemplate(AtomToolsFramework::GraphTemplateFileData& templateFileData)
+    {
+        // Substitute all references to the placeholder graph name with one generated from the document name
+        ReplaceBasicSymbols(templateFileData);
+
+        // Inject include files found while traversing the graph into any include file blocks in the template.
+        templateFileData.ReplaceLinesInBlock(
+            "BOP_GENERATED_INCLUDES_BEGIN",
+            "BOP_GENERATED_INCLUDES_END",
+            [&, this]([[maybe_unused]] AZStd::string const& blockHeader)
+            {
+                // Include file paths will need to be converted to include statements.
+                AZStd::vector<AZStd::string> includeStatements;
+                includeStatements.reserve(m_includePaths.size());
+
+                for (const auto& path : m_includePaths)
+                {
+                    bool relativePathFound = false;
+                    AZStd::string relativePath;
+                    AZStd::string relativePathFolder;
+
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                        relativePathFound,
+                        &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath,
+                        AtomToolsFramework::GetPathWithoutAlias(path),
+                        relativePath,
+                        relativePathFolder);
+
+                    if (relativePathFound)
+                    {
+                        includeStatements.push_back(AZStd::string::format("require(\"%s\")", relativePath.c_str()));
+                    }
+                }
+                return includeStatements;
+            });
+
+        // Inject class definitions found while traversing the graph.
+        templateFileData.ReplaceLinesInBlock(
+            "BOP_GENERATED_CLASSES_BEGIN",
+            "BOP_GENERATED_CLASSES_END",
+            [&]([[maybe_unused]] AZStd::string const& blockHeader)
+            {
+                return m_classDefinitions;
+            });
+
+        // Inject function definitions found while traversing the graph.
+        templateFileData.ReplaceLinesInBlock(
+            "BOP_GENERATED_FUNCTIONS_BEGIN",
+            "BOP_GENERATED_FUNCTIONS_END",
+            [&]([[maybe_unused]] AZStd::string const& blockHeader)
+            {
+                return m_functionDefinitions;
+            });
+    }
+
     void ConversationGraphCompiler::PreprocessTemplatesForCurrentNode()
     {
         AZ::parallel_for_each(
@@ -998,58 +1053,10 @@ namespace ConversationEditor
             ModifyTemplateDataForCurrentNode().end(),
             [&](auto& templateFileData)
             {
-                // Substitute all references to the placeholder graph name with one generated from the document name
-                ReplaceBasicSymbols(templateFileData);
-
-                // Inject include files found while traversing the graph into any include file blocks in the template.
-                templateFileData.ReplaceLinesInBlock(
-                    "BOP_GENERATED_INCLUDES_BEGIN",
-                    "BOP_GENERATED_INCLUDES_END",
-                    [&, this]([[maybe_unused]] const AZStd::string& blockHeader)
-                    {
-                        // Include file paths will need to be converted to include statements.
-                        AZStd::vector<AZStd::string> includeStatements;
-                        includeStatements.reserve(m_includePaths.size());
-
-                        for (const auto& path : m_includePaths)
-                        {
-                            bool relativePathFound = false;
-                            AZStd::string relativePath;
-                            AZStd::string relativePathFolder;
-
-                            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                                relativePathFound,
-                                &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath,
-                                AtomToolsFramework::GetPathWithoutAlias(path),
-                                relativePath,
-                                relativePathFolder);
-
-                            if (relativePathFound)
-                            {
-                                includeStatements.push_back(AZStd::string::format("require(\"%s\")", relativePath.c_str()));
-                            }
-                        }
-                        return includeStatements;
-                    });
-
-                // Inject class definitions found while traversing the graph.
-                templateFileData.ReplaceLinesInBlock(
-                    "BOP_GENERATED_CLASSES_BEGIN",
-                    "BOP_GENERATED_CLASSES_END",
-                    [&]([[maybe_unused]] const AZStd::string& blockHeader)
-                    {
-                        return m_classDefinitions;
-                    });
-
-                // Inject function definitions found while traversing the graph.
-                templateFileData.ReplaceLinesInBlock(
-                    "BOP_GENERATED_FUNCTIONS_BEGIN",
-                    "BOP_GENERATED_FUNCTIONS_END",
-                    [&]([[maybe_unused]] const AZStd::string& blockHeader)
-                    {
-                        return m_functionDefinitions;
-                    });
+                PreProcessTemplate(templateFileData);
             });
+
+        PreProcessTemplate(m_scriptFileDataTemplate);
     }
 
     [[nodiscard]] auto ConversationGraphCompiler::GetUniqueGraphName() const -> AZStd::string
