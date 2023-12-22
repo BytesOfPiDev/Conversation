@@ -3,11 +3,17 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{E16E3EDC-50F4-48A9-A947-A295A65A6580}",
+        "id": "{93276F9A-288A-45AF-B857-AABA17527935}",
         "category": "Conditions",
         "title": "Is Player Gender",
         "settings": {
-            "templatePaths": {}
+            "includePaths": [
+                "@gemroot:Conversation@/Scripts/conversation/example_dlg_script.lua"
+            ],
+            "instructions": {},
+            "templatePaths": [
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConditionFunction.lua"
+            ]
         },
         "propertySlots": [
             {
@@ -39,7 +45,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "-- Begin NODEID|SLOTNAME\n    local SLOTNAME = function()\n        local result = GameActorRequestBus.Event.GetGender(GetEntityByTag(\"player\"));\n        return result == Crc32(\"SLOTVALUE(inGender)\");\n    end\n-- End NODEID|SLOTNAME"
+                        "        local gender = GameActorRequestBus.Event.GetGender(GetEntityByTag(\"player\"));\n        result =  gender == Crc32(\"SLOTVALUE(inGender)\");"
                     ]
                 }
             }
