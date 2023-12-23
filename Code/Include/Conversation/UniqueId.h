@@ -64,6 +64,6 @@ namespace Conversation
         size_t m_id;
     };
 
-    static_assert(AZStd::is_pod_v<UniqueId>, "Ensure DialogueId is POD");
+    static_assert(AZStd::is_pod_v<UniqueId>, "Ensure UniqueId is POD");
 
 } // namespace Conversation
