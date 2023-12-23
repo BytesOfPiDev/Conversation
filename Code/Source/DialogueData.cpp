@@ -46,7 +46,7 @@ namespace Conversation
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DialogueData>()
-                ->Version(7) // NOLINT
+                ->Version(8) // NOLINT
                 ->Field("ActorText", &DialogueData::m_actorText)
                 ->Field("AvailabilityId", &DialogueData::m_availabilityId)
                 ->Field("AudioTrigger", &DialogueData::m_audioTrigger)
@@ -56,10 +56,9 @@ namespace Conversation
                 ->Field("ScriptIds", &DialogueData::m_scriptIds)
                 ->Field("Speaker", &DialogueData::m_speaker);
 
-            // serializeContext->RegisterGenericType<DialogueDataPtr>();
-            // serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
-            // serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
-            //  serializeContext->RegisterGenericType<AZStd::unordered_map<DialogueId, DialogueData>>();
+            serializeContext->RegisterGenericType<DialogueDataPtr>();
+            serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
