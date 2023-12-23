@@ -1,6 +1,5 @@
 #include "Conversation/Components/DialogueComponentConfig.h"
 
-#include "Atom/RPI.Reflect/Image/StreamingImageAsset.h"
 #include "AzCore/Asset/AssetSerializer.h"
 #include "AzCore/Component/ComponentBus.h"
 #include "AzCore/Memory/SystemAllocator.h"
@@ -8,6 +7,8 @@
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
 #include "AzCore/Serialization/SerializeContext.h"
+
+#include "Conversation/ConversationTypeIds.h"
 
 namespace Conversation
 {

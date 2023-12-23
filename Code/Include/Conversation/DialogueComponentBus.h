@@ -48,7 +48,7 @@ namespace Conversation
          *
          * Does nothing if it could not find one.
          */
-        virtual auto TryToSelectDialogue(DialogueId const dialogueIdToFindAndSelect) -> bool = 0;
+        virtual auto TryToSelectDialogue(UniqueId const dialogueIdToFindAndSelect) -> bool = 0;
 
         virtual void SelectAvailableResponse(int const availableResponseIndex) = 0;
         virtual void AbortConversation() = 0;
@@ -56,7 +56,7 @@ namespace Conversation
         virtual void ContinueConversation() = 0;
 
         [[nodiscard]] virtual auto CheckAvailability(DialogueData const& dialogueToCheck) -> bool = 0;
-        [[nodiscard]] virtual auto CheckAvailability(DialogueId const& dialogueIdToCheck) -> bool = 0;
+        [[nodiscard]] virtual auto CheckAvailability(UniqueId const& dialogueIdToCheck) -> bool = 0;
         [[nodiscard]] virtual auto GetAvailableResponses() const -> AZStd::vector<DialogueData> = 0;
         [[nodiscard]] virtual auto GetActiveDialogue() const -> AZ::Outcome<DialogueData> = 0;
         [[nodiscard]] virtual auto GetCurrentState() const -> DialogueState = 0;

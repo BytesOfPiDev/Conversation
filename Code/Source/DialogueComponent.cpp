@@ -12,7 +12,6 @@
 #include "Conversation/Components/ConversationAssetRefComponentBus.h"
 #include "Conversation/ConversationTypeIds.h"
 #include "Conversation/DialogueComponentBus.h"
-#include "Conversation/DialogueData_incl.h"
 #include "LmbrCentral/Scripting/TagComponentBus.h"
 #include "cstdlib"
 
@@ -331,7 +330,7 @@ namespace Conversation
         auto const dialogues{ m_conversationAssetRequests->CopyDialogues() };
 
         // We find the first available starting ID and use it to start the conversation.
-        for (DialogueId const& startingId : startingIds)
+        for (UniqueId const& startingId : startingIds)
         {
             // DialogueData and DialogueId are different types. We need to search a
             // list of DialogueData for one matching the current DialogueId. To do so,
@@ -341,7 +340,7 @@ namespace Conversation
             auto const startingDialogueIter = dialogues.find(DialogueData(startingId));
 
             // Verify we found one. This should never fail, but just in case.
-            if (startingDialogueIter == dialogues.end() || !IsValid(*startingDialogueIter))
+            if (startingDialogueIter == dialogues.end() || !startingDialogueIter->IsValid())
             {
                 m_currentState = DialogueState::Inactive;
 
@@ -442,14 +441,14 @@ namespace Conversation
         // conversation. Only check if there's an active dialogue because this function
         // can be called when there's no active dialogue, such as when first starting
         // a conversation.
-        if (m_activeDialogue.has_value() && GetDialogueResponseIds(*m_activeDialogue).empty())
+        if (m_activeDialogue.has_value() && m_activeDialogue->CountResponseIds() > 0)
         {
             AZLOG(LOG_FollowConversation, "Ending conversation because there are no responses available."); // NOLINT
             EndConversation();
             return;
         }
 
-        if (!IsValid(dialogueToSelect))
+        if (!dialogueToSelect.IsValid())
         {
             AZ_Assert( // NOLINT
                 false,
@@ -464,7 +463,7 @@ namespace Conversation
         m_availableResponses.clear();
 
         // Check all responses and determine which should be available for use.
-        for (DialogueId const& responseId : GetDialogueResponseIds(*m_activeDialogue))
+        for (UniqueId const& responseId : m_activeDialogue->GetResponseIds())
         {
             AZ::Outcome<DialogueData> const responseDialogueOutcome = m_conversationAssetRequests->GetDialogueById(responseId);
             // An invalid ID means we didn't find a dialogue matching the responseId.
@@ -488,19 +487,19 @@ namespace Conversation
             LOG_FollowConversation,
             "[Dialogue: '%s'] \"%s\"",
             GetNamedEntityId().GetName().data(),
-            GetDialogueActorText(*m_activeDialogue).data());
+            m_activeDialogue->GetDialogueActorText().data());
 
         // Since it's considered spoken, we should sent any necessary notifications related to speaking a dialogue.
         // The first thing we want to do is run any provided scripts.
         AZStd::ranges::for_each(
-            GetDialogueScriptIds(*m_activeDialogue),
+            m_activeDialogue->GetDialogueScriptIds(),
             [](auto const scriptId)
             {
                 DialogueScriptRequestBus::Event(AZ::Crc32(scriptId), &DialogueScriptRequestBus::Events::RunDialogueScript);
             });
     }
 
-    auto DialogueComponent::TryToSelectDialogue(DialogueId const dialogueId) -> bool
+    auto DialogueComponent::TryToSelectDialogue(UniqueId const dialogueId) -> bool
     {
         auto const getDialogueOutcome = m_conversationAssetRequests->GetDialogueById(dialogueId);
         if (!getDialogueOutcome.IsSuccess())
@@ -562,7 +561,8 @@ namespace Conversation
             return;
         }
         // Only if the first available response is the same speaker as the active dialogue, select it.
-        if (GetDialogueSpeaker(*m_activeDialogue) == GetDialogueSpeaker(*m_availableResponses.begin()))
+        // m_availableResponses is guaranteed to have at least one element due to an earlier check.
+        if (m_activeDialogue->GetDialogueSpeaker() == m_availableResponses.front().GetDialogueSpeaker())
         {
             SelectDialogue(*m_availableResponses.begin());
             return;
@@ -570,11 +570,11 @@ namespace Conversation
 
         // FIXME: If the active dialogue's speaker is the player, we automatically choose an NPC response.
         // This is just a workaround until proper NPC response handling is implemented.
-        if (GetDialogueSpeaker(*m_activeDialogue) == PlayerSpeakerTag)
+        if (m_activeDialogue->GetDialogueSpeaker() == PlayerSpeakerTag)
         {
             auto const firstAvailableResponseIter = m_availableResponses.begin();
             if (firstAvailableResponseIter != m_availableResponses.end() &&
-                GetDialogueSpeaker(*firstAvailableResponseIter) != PlayerSpeakerTag)
+                firstAvailableResponseIter->GetDialogueSpeaker() != PlayerSpeakerTag)
             {
                 SelectDialogue(*firstAvailableResponseIter);
             }
@@ -589,14 +589,14 @@ namespace Conversation
             // NOTE: A DialogueData is, by default, available, unless a handler explicitly sets it to false.
             AZ::EBusReduceResult<bool, AZStd::logical_and<bool>> result(true);
             AvailabilityRequestBus::EventResult(
-                result, GetEntityId(), &AvailabilityRequestBus::Events::IsAvailable, dialogueData.m_availabilityId);
+                result, GetEntityId(), &AvailabilityRequestBus::Events::IsAvailable, dialogueData.GetDialogueAvailabilityId());
             return result.value;
         }();
 
         return isDialogueAvailable;
     }
 
-    auto DialogueComponent::CheckAvailability(DialogueId const& dialogueId) -> bool
+    auto DialogueComponent::CheckAvailability(UniqueId const& dialogueId) -> bool
     {
         auto const getDialogueOutcome = m_conversationAssetRequests->GetDialogueById(dialogueId);
         return getDialogueOutcome.IsSuccess() ? CheckAvailability(getDialogueOutcome.GetValue()) : false;

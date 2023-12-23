@@ -1,6 +1,5 @@
 set(FILES
     Include/Conversation/Components/DialogueComponentConfig.h
-    Include/Conversation/DialogueData_incl.h
 
     Source/ConversationModuleInterface.h
     Source/ConversationSystemComponent.cpp
@@ -9,7 +8,6 @@ set(FILES
     Source/ConversationAsset.cpp
     Source/DialogueComponent.cpp
     Source/DialogueData.cpp
-    Source/DialogueData_incl.cpp
     Source/Logging.h
 
     Source/Components/DialogueComponentConfig.cpp

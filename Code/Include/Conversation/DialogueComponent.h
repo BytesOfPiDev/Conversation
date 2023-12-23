@@ -79,7 +79,7 @@ namespace Conversation
          *
          * @param dialogueId The ID of a dialogue contained in an attached ConversationAssetRefComponent.
          */
-        auto TryToSelectDialogue(DialogueId const dialogueId) -> bool override;
+        auto TryToSelectDialogue(UniqueId const dialogueId) -> bool override;
         /**
          * Processes and sends out the index matching an available dialogue choice.
          *
@@ -120,7 +120,7 @@ namespace Conversation
         }
 
         [[nodiscard]] auto CheckAvailability(DialogueData const& dialogueData) -> bool override;
-        [[nodiscard]] auto CheckAvailability(DialogueId const& dialogueIdToCheck) -> bool override;
+        [[nodiscard]] auto CheckAvailability(UniqueId const& dialogueIdToCheck) -> bool override;
 
     private:
         ConversationAssetRefComponentRequests* m_conversationAssetRequests{};

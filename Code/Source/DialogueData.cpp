@@ -7,7 +7,6 @@
 #include "AzCore/Serialization/SerializeContext.h"
 
 #include "Conversation/Constants.h"
-#include "Conversation/DialogueData_incl.h"
 
 namespace Conversation
 {
@@ -28,33 +27,6 @@ namespace Conversation
         }
     }
 
-    void DialogueId::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serialize->Class<DialogueId>()->Version(0)->Field("Id", &DialogueId::m_id);
-
-            if (AZ::EditContext* editContext = serialize->GetEditContext())
-            {
-                editContext->Class<DialogueId>("DialogueId", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DialogueId::m_id, "Id", "");
-            }
-        }
-
-        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<DialogueId>("DialogueId")
-                ->Attribute(AZ::Script::Attributes::Category, DialogueSystemCategory)
-                ->Attribute(AZ::Script::Attributes::Module, DialogueSystemModule)
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
-                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
-                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
-                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventReturnType, true)
-                ->Property("Value", BehaviorValueProperty(&DialogueId::m_id));
-        }
-    }
     void ResponseData::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -68,7 +40,6 @@ namespace Conversation
 
     void DialogueData::Reflect(AZ::ReflectContext* context)
     {
-        DialogueId::Reflect(context);
         ResponseData::Reflect(context);
         DialogueChunk::Reflect(context);
 
@@ -85,10 +56,10 @@ namespace Conversation
                 ->Field("ScriptIds", &DialogueData::m_scriptIds)
                 ->Field("Speaker", &DialogueData::m_speaker);
 
-            serializeContext->RegisterGenericType<DialogueDataPtr>();
-            serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_map<DialogueId, DialogueData>>();
+            // serializeContext->RegisterGenericType<DialogueDataPtr>();
+            // serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
+            // serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
+            //  serializeContext->RegisterGenericType<AZStd::unordered_map<DialogueId, DialogueData>>();
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -117,19 +88,7 @@ namespace Conversation
                         "AvailabilityId",
                         "Id to be called when determining dialogue availability.")
 
-                    ->DataElement(AZ::Edit::UIHandlers::Button, &DialogueData::m_id, "Id", "")
-                    //->Attribute(AZ::Edit::Attributes::ValueText, &DialogueData::InternalGetId)
-                    ->Attribute(AZ::Edit::Attributes::AddNotify, &DialogueData::OnResetId)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DialogueData::OnResetId)
-                    ->Attribute(AZ::Edit::Attributes::ClearNotify, &DialogueData::OnResetId)
-                    ->Attribute(AZ::Edit::Attributes::RemoveNotify, &DialogueData::OnResetId)
-                    ->Attribute(AZ::Edit::Attributes::PostChangeNotify, &DialogueData::OnResetId)
-                    ->Attribute(
-                        AZ::Edit::Attributes::ButtonText,
-                        [](DialogueData const& dialogueData) -> AZStd::string
-                        {
-                            return ToString(dialogueData);
-                        });
+                    ->DataElement(AZ::Edit::UIHandlers::Button, &DialogueData::m_id, "Id", "");
             }
         }
 
@@ -146,36 +105,31 @@ namespace Conversation
                 ->Attribute(AZ::Script::Attributes::EnableAsScriptEventReturnType, true)
                 ->Constructor()
                 ->Property("Text", BehaviorValueProperty(&DialogueData::m_actorText))
-                ->Property("ID", BehaviorValueProperty(&DialogueData::m_id))
+                ->Property("ID", &DialogueData::GetDialogueId, nullptr)
                 ->Property("Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
                 ->Property("AudioTrigger", BehaviorValueProperty(&DialogueData::m_audioTrigger))
-                ->Property("ResponseIds", BehaviorValueGetter(&DialogueData::m_responseIds), nullptr)
+                ->Property("ResponseIds", &DialogueData::GetResponseIds, nullptr)
                 ->Property("ScriptIds", BehaviorValueGetter(&DialogueData::m_scriptIds), nullptr);
         }
     }
 
-    DialogueData::DialogueData(DialogueId const id, AZStd::string actorText, AZStd::string speaker, AZStd::vector<DialogueId> responses)
+    DialogueData::DialogueData(UniqueId const id, AZStd::string actorText, AZStd::string speaker, AZStd::vector<UniqueId> responses)
         : m_id(id)
         , m_actorText(AZStd::move(actorText))
         , m_speaker(AZStd::move(speaker))
         , m_responseIds(AZStd::move(responses))
     {
         // Ensure the ID is always valid.
-        if (Conversation::IsValid(m_id))
+        if (m_id.IsValid())
         {
-            AZ_Printf("DialogueData", "A null ID was passed in. Creating random ID: %s.", ToString(m_id).c_str());
-            m_id = CreateRandomDialogueId();
+            AZ_Error("DialogueData", false, "A null ID was passed in. Creating random ID: %zu.", m_id.GetHash());
+            m_id = UniqueId::CreateRandomId();
         }
     }
 
-    DialogueData::DialogueData(DialogueId const id)
+    DialogueData::DialogueData(UniqueId const id)
         : m_id(id)
     {
-    }
-
-    void DialogueData::OnResetId()
-    {
-        InitDialogueId(*this);
     }
 
     [[nodiscard]] auto ConvertToLua(DialogueData const& dialogueData, AZStd::string_view variableName, bool isLocal) -> AZStd::string

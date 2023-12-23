@@ -7,13 +7,13 @@
 #include "AzCore/std/containers/unordered_set.h"
 #include "AzCore/std/containers/vector.h"
 #include "Conversation/ConversationTypeIds.h"
+#include "Conversation/ResponseData.h"
 
 namespace Conversation
 {
 
     struct DialogueData;
-    struct DialogueId;
-    struct ResponseData;
+    struct UniqueId;
     struct DialogueChunk;
 
     /*
@@ -44,11 +44,11 @@ namespace Conversation
         /*
          * @brief Returns a reference to the DialogueIds that can potentially be used to start a conversation.
          */
-        [[nodiscard]] virtual auto GetStartingIds() const -> AZStd::vector<DialogueId> const& = delete;
+        [[nodiscard]] virtual auto GetStartingIds() const -> AZStd::vector<UniqueId> const& = delete;
         /*
          * @brief Returns a copy of the DialogueIds that can potentially be used to start a conversation.
          */
-        [[nodiscard]] virtual auto CopyStartingIds() const -> AZStd::vector<DialogueId> = 0;
+        [[nodiscard]] virtual auto CopyStartingIds() const -> AZStd::vector<UniqueId> = 0;
 
         /*
          * @brief Returns a reference to the DialogueData objects within the asset.
@@ -59,12 +59,12 @@ namespace Conversation
          */
         [[nodiscard]] virtual auto CopyDialogues() const -> AZStd::unordered_set<DialogueData> = 0;
 
-        virtual void AddStartingId(DialogueId const& newStartingId) = 0;
+        virtual void AddStartingId(UniqueId const& newStartingId) = 0;
         virtual void AddDialogue(DialogueData const& newDialogueData) = 0;
         virtual void AddResponse(ResponseData const& responseData) = 0;
 
-        [[nodiscard]] virtual auto GetDialogueById(DialogueId const& dialogueId) -> AZ::Outcome<DialogueData> = 0;
-        [[nodiscard]] virtual auto CheckDialogueExists(DialogueId const& dialogueId) -> bool = 0;
+        [[nodiscard]] virtual auto GetDialogueById(UniqueId const& dialogueId) -> AZ::Outcome<DialogueData> = 0;
+        [[nodiscard]] virtual auto CheckDialogueExists(UniqueId const& dialogueId) -> bool = 0;
 
         [[nodiscard]] virtual auto GetMainScriptAsset() const -> AZ::Data::Asset<AZ::ScriptAsset> = 0;
 

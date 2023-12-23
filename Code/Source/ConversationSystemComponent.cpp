@@ -1,5 +1,6 @@
 #include "ConversationSystemComponent.h"
 
+#include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/RTTI/BehaviorContext.h"
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
@@ -7,11 +8,13 @@
 
 #include "Conditions/ConditionFunction.h"
 #include "Conversation/AvailabilityBus.h"
+#include "Conversation/Constants.h"
 #include "Conversation/ConversationAsset.h"
 #include "Conversation/ConversationBus.h"
 #include "Conversation/DialogueComponentBus.h"
 #include "Conversation/DialogueData.h"
 #include "Conversation/DialogueScript.h"
+#include "Conversation/UniqueId.h"
 
 namespace Conversation
 {
@@ -32,8 +35,37 @@ namespace Conversation
         }
     };
 
+    void ReflectDialogueId(AZ::ReflectContext* context)
+    {
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<UniqueId>()->Version(1)->Field("Id", &UniqueId::m_id);
+
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
+            {
+                editContext->Class<UniqueId>("UniqueId", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &UniqueId::m_id, "Id", "");
+            }
+        }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<UniqueId>("DialogueId")
+                ->Attribute(AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
+                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventReturnType, true)
+                ->Property("Value", BehaviorValueProperty(&UniqueId::m_id));
+        }
+    }
+
     void ConversationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        ReflectDialogueId(context);
         DialogueData::Reflect(context);
         ConditionFunction::Reflect(context);
 

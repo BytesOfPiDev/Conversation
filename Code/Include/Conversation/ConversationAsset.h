@@ -43,7 +43,7 @@ namespace Conversation
             return m_dialogues.size();
         }
 
-        [[nodiscard]] auto CopyStartingIds() const -> AZStd::vector<DialogueId> override
+        [[nodiscard]] auto CopyStartingIds() const -> AZStd::vector<UniqueId> override
         {
             return m_startingIds;
         }
@@ -53,7 +53,7 @@ namespace Conversation
             return m_dialogues;
         }
 
-        void AddStartingId(DialogueId const& newStartingId) override;
+        void AddStartingId(UniqueId const& newStartingId) override;
         void AddDialogue(DialogueData const& newDialogueData) override;
         /**
          * @brief Add a dialogue as a response to another dialogue
@@ -69,9 +69,9 @@ namespace Conversation
 
         void AddResponse(ResponseData const& responseData) override;
 
-        auto GetDialogueById(DialogueId const& dialogueId) -> AZ::Outcome<DialogueData> override;
+        auto GetDialogueById(UniqueId const& dialogueId) -> AZ::Outcome<DialogueData> override;
 
-        [[nodiscard]] auto CheckDialogueExists(DialogueId const& dialogueId) -> bool override
+        [[nodiscard]] auto CheckDialogueExists(UniqueId const& dialogueId) -> bool override
         {
             return m_dialogues.contains(DialogueData(dialogueId));
         }
@@ -98,7 +98,7 @@ namespace Conversation
 
     private:
         //! The IDs of any dialogues that can be used to begin a conversation.
-        AZStd::vector<DialogueId> m_startingIds{};
+        AZStd::vector<UniqueId> m_startingIds{};
         AZStd::vector<ResponseData> m_responses;
         AZStd::unordered_set<DialogueChunk> m_chunks;
         DialogueDataContainer m_dialogues{};
@@ -110,7 +110,7 @@ namespace Conversation
 
     using ConversationAssetContainer = AZStd::vector<AZ::Data::Asset<ConversationAsset>>;
 
-    inline constexpr void AddStartingId(ConversationAsset& conversationAsset, DialogueId const& startingId)
+    inline constexpr void AddStartingId(ConversationAsset& conversationAsset, UniqueId const& startingId)
     {
         conversationAsset.AddStartingId(startingId);
     }

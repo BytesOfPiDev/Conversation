@@ -33,16 +33,16 @@ namespace Conversation
 
         [[nodiscard]] auto CountDialogues() const -> size_t override;
 
-        [[nodiscard]] auto CopyStartingIds() const -> AZStd::vector<DialogueId> override;
+        [[nodiscard]] auto CopyStartingIds() const -> AZStd::vector<UniqueId> override;
 
         [[nodiscard]] auto CopyDialogues() const -> AZStd::unordered_set<DialogueData> override;
 
-        void AddStartingId(DialogueId const& newStartingId) override;
+        void AddStartingId(UniqueId const& newStartingId) override;
         void AddDialogue(DialogueData const& newDialogueData) override;
         void AddResponse(ResponseData const& responseData) override;
 
-        [[nodiscard]] auto GetDialogueById(DialogueId const& dialogueId) -> AZ::Outcome<DialogueData> override;
-        [[nodiscard]] auto CheckDialogueExists(DialogueId const& dialogueId) -> bool override;
+        [[nodiscard]] auto GetDialogueById(UniqueId const& dialogueId) -> AZ::Outcome<DialogueData> override;
+        [[nodiscard]] auto CheckDialogueExists(UniqueId const& dialogueId) -> bool override;
         [[nodiscard]] auto GetMainScriptAsset() const -> AZ::Data::Asset<AZ::ScriptAsset> override;
 
         void AddChunk(DialogueChunk const& dialogueChunk) override;

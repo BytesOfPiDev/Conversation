@@ -108,9 +108,9 @@ namespace Conversation
         return m_asset ? m_asset->CountDialogues() : 0;
     }
 
-    auto ConversationAssetRefComponent::CopyStartingIds() const -> AZStd::vector<DialogueId>
+    auto ConversationAssetRefComponent::CopyStartingIds() const -> AZStd::vector<UniqueId>
     {
-        return m_asset ? m_asset->CopyStartingIds() : AZStd::vector<DialogueId>{};
+        return m_asset ? m_asset->CopyStartingIds() : AZStd::vector<UniqueId>{};
     }
 
     auto ConversationAssetRefComponent::CopyDialogues() const -> DialogueDataContainer
@@ -118,7 +118,7 @@ namespace Conversation
         return m_asset ? m_asset->CopyDialogues() : DialogueDataContainer{};
     }
 
-    void ConversationAssetRefComponent::AddStartingId(DialogueId const& newStartingId)
+    void ConversationAssetRefComponent::AddStartingId(UniqueId const& newStartingId)
     {
         m_asset ? m_asset->AddStartingId(newStartingId) : void();
     }
@@ -133,11 +133,11 @@ namespace Conversation
         m_asset ? m_asset->AddResponse(responseData) : void();
     }
 
-    auto ConversationAssetRefComponent::GetDialogueById(DialogueId const& dialogueId) -> AZ::Outcome<DialogueData>
+    auto ConversationAssetRefComponent::GetDialogueById(UniqueId const& dialogueId) -> AZ::Outcome<DialogueData>
     {
         return m_asset ? m_asset->GetDialogueById(dialogueId) : AZ::Failure();
     }
-    auto ConversationAssetRefComponent::CheckDialogueExists(DialogueId const& dialogueId) -> bool
+    auto ConversationAssetRefComponent::CheckDialogueExists(UniqueId const& dialogueId) -> bool
     {
         return m_asset ? m_asset->CheckDialogueExists(dialogueId) : false;
     }

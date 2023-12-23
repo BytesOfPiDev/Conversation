@@ -12,7 +12,6 @@
 #include "Conversation/DialogueComponent.h"
 #include "Conversation/DialogueComponentBus.h"
 #include "Conversation/DialogueData.h"
-#include "Conversation/DialogueData_incl.h"
 #include "ConversationTestEnvironment.h"
 #include <gtest/gtest.h>
 
@@ -22,8 +21,6 @@ namespace ConversationTest
     constexpr AZ::TypeId TagComponentType{ AZ::TypeId{ Conversation::TagComponentTypeId } };
     constexpr AZ::TypeId ConversationAssetRefComponentType{ AZ::TypeId{ Conversation::ConversationAssetRefComponentTypeId } };
     constexpr AZ::TypeId DialogueComponentType{ Conversation::DialogueComponentTypeId };
-
-    static Conversation::DialogueId const ValidDialogueId = Conversation::DialogueId{ "ValidDialogueId" };
 
     class DialogueDataTests : public ::testing::Test
     {
@@ -40,8 +37,8 @@ namespace ConversationTest
     class ConversationAssetTests : public ::testing::Test
     {
     protected:
-        Conversation::DialogueData m_dlg1{ Conversation::DialogueId{ "TestDialogue01" } };
-        Conversation::DialogueData m_dlg2{ Conversation::DialogueId{ "TestDialogue02" } };
+        Conversation::DialogueData m_dlg1{ Conversation::UniqueId::CreateNamedId("TestDialogue01") };
+        Conversation::DialogueData m_dlg2{ Conversation::UniqueId::CreateNamedId("TestDialogue02") };
     };
 
     class DialogueComponentTests : public ::testing::Test
@@ -72,16 +69,16 @@ namespace ConversationTest
                 TestConversationAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
 
             // Requires at least one dialogue with a valid DialogueId.
-            DialogueData startingDialogue1{ DialogueId{ "StartableAssetDialogueId1" } };
-            SetDialogueActorText(startingDialogue1, "Hello, where are you from?");
+            DialogueData startingDialogue1{ UniqueId::CreateNamedId("StartableAssetDialogueId1") };
+            startingDialogue1.SetDialogueActorText("Hello, where are you from?");
             startableAsset->AddDialogue(startingDialogue1);
 
             // Requires at least one valid starting Id that matches a dialogue inside the asset.
-            startableAsset->AddStartingId(GetDialogueId(startingDialogue1));
+            startableAsset->AddStartingId(startingDialogue1.GetDialogueId());
 
-            DialogueData earthResponseDialogue{ CreateRandomDialogueId() };
-            earthResponseDialogue.m_actorText = "I am from Earth, duh.";
-            startableAsset->AddResponse({ GetDialogueId(startingDialogue1), GetDialogueId(earthResponseDialogue) });
+            DialogueData earthResponseDialogue{ UniqueId::CreateRandomId() };
+            earthResponseDialogue.SetDialogueActorText("I am from Earth, duh.");
+            startableAsset->AddResponse({ startingDialogue1.GetDialogueId(), earthResponseDialogue.GetDialogueId() });
 
             return startableAsset;
         }
@@ -89,8 +86,8 @@ namespace ConversationTest
         AZStd::unique_ptr<AZ::Entity> m_dialogueEntity{};
         AZ::Data::AssetCatalogRequests* m_catalogRequests{};
 
-        Conversation::DialogueData m_dlg1{ Conversation::DialogueId{ "TestDialogue01" } };
-        Conversation::DialogueData m_dlg2{ Conversation::DialogueId{ "TestDialogue02" } };
+        Conversation::DialogueData const m_dlg1{ Conversation::UniqueId::CreateNamedId("TestDialogue01") };
+        Conversation::DialogueData const m_dlg2{ Conversation::UniqueId::CreateNamedId("TestDialogue02") };
     };
 
     class ConversationAssetRefComponentTests : public ::testing::Test
@@ -103,7 +100,7 @@ namespace ConversationTest
 
         DialogueData const defaultDialogueData{};
 
-        EXPECT_FALSE(IsValid(defaultDialogueData));
+        EXPECT_FALSE(defaultDialogueData.IsValid());
     }
 
     TEST_F(DialogueDataTests, DefaultObject_IsValidReturnsFalse)
@@ -111,7 +108,7 @@ namespace ConversationTest
         using namespace Conversation;
 
         DialogueData const defaultDialogueData{};
-        EXPECT_FALSE(IsValid(defaultDialogueData));
+        EXPECT_FALSE(defaultDialogueData.IsValid());
     }
 
     TEST_F(DialogueDataTests, AddResponse_CorrectlyAddsResponseId)
@@ -119,28 +116,29 @@ namespace ConversationTest
         using namespace Conversation;
 
         DialogueData dialogueData{};
-        EXPECT_TRUE(GetDialogueResponseIds(dialogueData).empty());
+        EXPECT_TRUE(dialogueData.GetResponseIds().empty());
 
-        DialogueId const responseId{ DialogueId{ "TestId" } };
-        EXPECT_TRUE(IsValid(responseId));
+        auto const responseId{ UniqueId::CreateNamedId("TestId") };
+        EXPECT_TRUE(responseId.IsValid());
 
-        AddDialogueResponseId(dialogueData, responseId);
-        EXPECT_EQ(CountDialogueResponseIds(dialogueData), 1);
-        EXPECT_EQ(GetDialogueResponseIds(dialogueData).front(), responseId);
+        dialogueData.AddDialogueResponseId(responseId);
+        EXPECT_EQ(dialogueData.CountResponseIds(), 1);
+        EXPECT_EQ(dialogueData.GetResponseIds().front(), responseId);
 
         for (auto index = 0; index < (DialogueData::MaxResponses + 1); ++index)
         {
-            AddDialogueResponseId(dialogueData, DialogueId{ AZStd::string("TestId") + AZStd::to_string(index) });
+            static constexpr auto dialogueIdFormat = "TestDialogueId_%d";
+            dialogueData.AddDialogueResponseId(UniqueId::CreateNamedId(AZStd::string::format(dialogueIdFormat, index)));
         }
 
-        EXPECT_EQ(CountDialogueResponseIds(dialogueData), DialogueData::MaxResponses);
+        EXPECT_EQ(dialogueData.CountResponseIds(), DialogueData::MaxResponses);
     }
 
     TEST_F(ConversationAssetTests, DefaultConstructed_AddingInvalidStartingIdIsRejected)
     {
         Conversation::ConversationAsset asset{};
         EXPECT_EQ(asset.CountStartingIds(), 0);
-        asset.AddStartingId(Conversation::DialogueId{});
+        asset.AddStartingId(Conversation::UniqueId{});
         EXPECT_EQ(asset.CountStartingIds(), 0);
     }
 
@@ -150,7 +148,7 @@ namespace ConversationTest
 
         Conversation::ConversationAsset asset{};
         EXPECT_EQ(asset.CountStartingIds(), 0);
-        asset.AddStartingId(CreateRandomDialogueId());
+        asset.AddStartingId(UniqueId::CreateRandomId());
         EXPECT_EQ(asset.CountStartingIds(), 1);
     }
 

@@ -154,7 +154,7 @@ namespace ConversationEditor
         // Instantiate the dynamic node manager to register all dynamic node configurations and data types used in this tool
         m_dynamicNodeManager = AZStd::make_unique<AtomToolsFramework::DynamicNodeManager>(m_toolId);
 
-        constexpr auto dialogueIdTypeInfo{ AZ::AzTypeInfo<Conversation::DialogueId>() };
+        constexpr auto dialogueIdTypeInfo{ AZ::AzTypeInfo<Conversation::UniqueId>() };
 
         // Register all data types required by Conversation Canvas nodes with the dynamic node manager
         m_dynamicNodeManager->RegisterDataTypes({
@@ -193,11 +193,11 @@ namespace ConversationEditor
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("editor_actor_text"), EditorActorText{}, "editor_actor_text"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("lua_script"), AZ::Data::Asset<AZ::ScriptAsset>{}, "lua_script"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("condition_id"), Conversation::DialogueId{}, "condition_id"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("condition_id"), Conversation::UniqueId{}, "condition_id"),
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE(DialogueIdTypeName),
                 dialogueIdTypeInfo.Uuid(),
-                AZStd::make_any<Conversation::DialogueId>(),
+                AZStd::make_any<Conversation::UniqueId>(),
                 DialogueIdTypeName,
                 dialogueIdTypeInfo.Name()),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("dialogue_data"), Conversation::DialogueData{}, "dialogue_data"),

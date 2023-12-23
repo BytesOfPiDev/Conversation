@@ -9,7 +9,6 @@
 #include "AzCore/Serialization/EditContextConstants.inl"
 #include "Conversation/Constants.h"
 #include "Conversation/ConversationTypeIds.h"
-#include "Conversation/DialogueData_incl.h"
 #include "Conversation/IConversationAsset.h"
 
 namespace Conversation
@@ -51,9 +50,9 @@ namespace Conversation
         }
     }
 
-    void ConversationAsset::AddStartingId(DialogueId const& newStartingId)
+    void ConversationAsset::AddStartingId(UniqueId const& newStartingId)
     {
-        if (!IsValid(newStartingId))
+        if (!newStartingId.IsValid())
         {
             AZLOG_WARN("Adding a starting ID requires that the ID is not null."); // NOLINT
             return;
@@ -63,7 +62,7 @@ namespace Conversation
         auto const iterFoundStartingId = AZStd::find_if(
             m_startingIds.begin(),
             m_startingIds.end(),
-            [&newStartingId](DialogueId const& existingId)
+            [&newStartingId](UniqueId const& existingId)
             {
                 return existingId == newStartingId;
             });
@@ -80,7 +79,7 @@ namespace Conversation
 
     void ConversationAsset::AddDialogue(DialogueData const& newDialogueData)
     {
-        if (!IsValid(newDialogueData))
+        if (!newDialogueData.IsValid())
         {
             AZ_Warning( // NOLINT
                 "ConversationAsset",
@@ -103,7 +102,7 @@ namespace Conversation
 
     void ConversationAsset::AddResponse(ResponseData const& responseData)
     {
-        if (!IsValid(responseData))
+        if (!responseData.IsValid())
         {
             AZLOG_WARN("Attempt to add invalid response data to a ConversationAsset rejected. Each ID must not be null."); // NOLINT
             return;
@@ -113,7 +112,7 @@ namespace Conversation
             m_dialogues,
             [&responseData](DialogueData const& dialogueData) -> bool
             {
-                return (dialogueData.m_id == responseData.m_parentDialogueId);
+                return dialogueData.GetDialogueId() == responseData.m_parentDialogueId;
             });
 
         // We add response data without confirming if we have a DialogueData
@@ -128,10 +127,10 @@ namespace Conversation
         }
 
         // If it was found, we also add the response directly to the DialogueData.
-        AddDialogueResponseId(*iter, responseData);
+        iter->AddDialogueResponseId(responseData);
     }
 
-    auto ConversationAsset::GetDialogueById(DialogueId const& dialogueId) -> AZ::Outcome<DialogueData>
+    auto ConversationAsset::GetDialogueById(UniqueId const& dialogueId) -> AZ::Outcome<DialogueData>
     {
         auto iter = m_dialogues.find(DialogueData(dialogueId));
         return iter != m_dialogues.end() ? AZ::Success(*iter) : AZ::Outcome<DialogueData>(AZ::Failure());

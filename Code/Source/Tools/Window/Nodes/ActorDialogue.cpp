@@ -51,49 +51,134 @@ namespace ConversationEditor
             GraphModel::DataTypePtr const entityIdDataType = GetGraphContext()->GetDataType(AZ_CRC_CE("entity_id"));
 
             auto nodeNameProperty = AZStd::make_shared<GraphModel::SlotDefinition>(
-                GraphModel::SlotDirection::Input, GraphModel::SlotType::Property, ToString(NodeAndSlotNames::NodeNameProperty), "Node Name",
-                "Node Name Description", GraphModel::DataTypeList{ stringDataType }, stringDataType->GetDefaultValue(), 1, 1, "", "",
-                AZStd::vector<AZStd::string>{}, false, false);
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Property,
+                ToString(NodeAndSlotNames::NodeNameProperty),
+                "Node Name",
+                "Node Name Description",
+                GraphModel::DataTypeList{ stringDataType },
+                stringDataType->GetDefaultValue(),
+                1,
+                1,
+                "",
+                "",
+                AZStd::vector<AZStd::string>{},
+                false,
+                false);
 
             auto parentIdInput = AZStd::make_shared<GraphModel::SlotDefinition>(
-                GraphModel::SlotDirection::Input, GraphModel::SlotType::Data, ToString(NodeAndSlotNames::ActorDialogueInput_ParentId),
-                "Parent", "The dialogue owning this response .", GraphModel::DataTypeList{ dialogueIdDataType },
-                dialogueIdDataType->GetDefaultValue(), 1, 1);
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Data,
+                ToString(NodeAndSlotNames::ActorDialogueInput_ParentId),
+                "Parent",
+                "The dialogue owning this response .",
+                GraphModel::DataTypeList{ dialogueIdDataType },
+                dialogueIdDataType->GetDefaultValue(),
+                1,
+                1);
 
             auto conditionIdInput = AZStd::make_shared<GraphModel::SlotDefinition>(
-                GraphModel::SlotDirection::Input, GraphModel::SlotType::Data, ToString(NodeAndSlotNames::ActorDialogueInput_ConditionId),
-                "Condition", "", GraphModel::DataTypeList{ dialogueIdDataType }, dialogueIdDataType->GetDefaultValue(), 0, 3,
-                "Add Condition", "", AZStd::vector<AZStd::string>(), true, false);
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Data,
+                ToString(NodeAndSlotNames::ActorDialogueInput_ConditionId),
+                "Condition",
+                "",
+                GraphModel::DataTypeList{ dialogueIdDataType },
+                dialogueIdDataType->GetDefaultValue(),
+                0,
+                3,
+                "Add Condition",
+                "",
+                AZStd::vector<AZStd::string>(),
+                true,
+                false);
 
             auto linkToInput = AZStd::make_shared<GraphModel::SlotDefinition>(
-                GraphModel::SlotDirection::Input, GraphModel::SlotType::Data, "Link", "Link To",
-                "A non-owning dialogue to which this is a response to.", GraphModel::DataTypeList{ dialogueIdDataType },
-                dialogueIdDataType->GetDefaultValue(), 1, 1);
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Data,
+                "Link",
+                "Link To",
+                "A non-owning dialogue to which this is a response to.",
+                GraphModel::DataTypeList{ dialogueIdDataType },
+                dialogueIdDataType->GetDefaultValue(),
+                1,
+                1);
 
             auto speakerProperty = AZStd::make_shared<GraphModel::SlotDefinition>(
-                GraphModel::SlotDirection::Input, GraphModel::SlotType::Property, ToString(NodeAndSlotNames::ActorDialogueProperty_Speaker),
-                "Speaker", "The speaker.", GraphModel::DataTypeList{ stringDataType }, stringDataType->GetDefaultValue(), 1, 1, "", "",
-                AZStd::vector<AZStd::string>{ "", "owner", "player" }, false, false);
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Property,
+                ToString(NodeAndSlotNames::ActorDialogueProperty_Speaker),
+                "Speaker",
+                "The speaker.",
+                GraphModel::DataTypeList{ stringDataType },
+                stringDataType->GetDefaultValue(),
+                1,
+                1,
+                "",
+                "",
+                AZStd::vector<AZStd::string>{ "", "owner", "player" },
+                false,
+                false);
 
             auto nodeIdProperty = AZStd::make_shared<GraphModel::SlotDefinition>(
-                GraphModel::SlotDirection::Input, GraphModel::SlotType::Property, ToString(NodeAndSlotNames::NodeIdProperty),
-                CommonSlotDisplayNames::DialogueId, CommonSlotDescriptions::DialogueId, GraphModel::DataTypeList{ dialogueIdDataType },
-                AZStd::any(Conversation::CreateRandomDialogueId()), 1, 1, "", "", AZStd::vector<AZStd::string>(), false, false);
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Property,
+                ToString(NodeAndSlotNames::NodeIdProperty),
+                CommonSlotDisplayNames::DialogueId,
+                CommonSlotDescriptions::DialogueId,
+                GraphModel::DataTypeList{ dialogueIdDataType },
+                AZStd::any(Conversation::UniqueId::CreateRandomId()),
+                1,
+                1,
+                "",
+                "",
+                AZStd::vector<AZStd::string>(),
+                false,
+                false);
 
             auto speakerTextProperty = AZStd::make_shared<GraphModel::SlotDefinition>(
-                GraphModel::SlotDirection::Input, GraphModel::SlotType::Property, ToString(NodeAndSlotNames::ActorDialogueProperty_Text),
-                CommonSlotDisplayNames::ActorText, CommonSlotDescriptions::ActorText, GraphModel::DataTypeList{ stringDataType },
-                stringDataType->GetDefaultValue(), 1, 1, "", "", AZStd::vector<AZStd::string>(), false, false);
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Property,
+                ToString(NodeAndSlotNames::ActorDialogueProperty_Text),
+                CommonSlotDisplayNames::ActorText,
+                CommonSlotDescriptions::ActorText,
+                GraphModel::DataTypeList{ stringDataType },
+                stringDataType->GetDefaultValue(),
+                1,
+                1,
+                "",
+                "",
+                AZStd::vector<AZStd::string>(),
+                false,
+                false);
 
             auto scriptAssetProperty = AZStd::make_shared<GraphModel::SlotDefinition>(
-                GraphModel::SlotDirection::Input, GraphModel::SlotType::Property, "Script", "Script", "The script",
-                GraphModel::DataTypeList{ sourceHandleDataType }, sourceHandleDataType->GetDefaultValue(), 0, 0, "", "",
-                AZStd::vector<AZStd::string>(), false, false);
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Property,
+                "Script",
+                "Script",
+                "The script",
+                GraphModel::DataTypeList{ sourceHandleDataType },
+                sourceHandleDataType->GetDefaultValue(),
+                0,
+                0,
+                "",
+                "",
+                AZStd::vector<AZStd::string>(),
+                false,
+                false);
 
             auto dialogueIdOutput = AZStd::make_shared<GraphModel::SlotDefinition>(
-                GraphModel::SlotDirection::Output, GraphModel::SlotType::Data, ToString(NodeAndSlotNames::ActorDialogueOutput_Id),
-                CommonSlotDisplayNames::OutputDialogueId, CommonSlotDescriptions::OutputDialogueId,
-                GraphModel::DataTypeList{ dialogueIdDataType }, dialogueIdDataType->GetDefaultValue(), 1, 1, "");
+                GraphModel::SlotDirection::Output,
+                GraphModel::SlotType::Data,
+                ToString(NodeAndSlotNames::ActorDialogueOutput_Id),
+                CommonSlotDisplayNames::OutputDialogueId,
+                CommonSlotDescriptions::OutputDialogueId,
+                GraphModel::DataTypeList{ dialogueIdDataType },
+                dialogueIdDataType->GetDefaultValue(),
+                1,
+                1,
+                "");
 
             /*
                       auto exitEvent = AZStd::make_shared<GraphModel::SlotDefinition>(

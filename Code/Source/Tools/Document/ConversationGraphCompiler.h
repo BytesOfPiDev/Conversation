@@ -13,7 +13,7 @@
 
 namespace ConversationEditor
 {
-    using StartingIdContainer = AZStd::set<Conversation::DialogueId>;
+    using StartingIdContainer = AZStd::vector<Conversation::UniqueId>;
     using SlotValueTable = AZStd::map<GraphModel::ConstSlotPtr, AZStd::any>;
     using SlotDialogueTable = AZStd::map<GraphModel::ConstSlotPtr, Conversation::DialogueData>;
     using SlotConditionTable = AZStd::map<GraphModel::ConstSlotPtr, Conversation::ConditionFunction>;
@@ -22,16 +22,21 @@ namespace ConversationEditor
     AZ_ENUM( // NOLINT
         CompilationErrorCode,
         NullGraphPointer,
-        FailedToSaveConversationTemplate,
-        ExpectedDialogueNodeButGotNullptr,
-        ExpectedDialogueNodeButGotSomethingElse,
-        InvalidDialogueData);
+        FailedToSaveTemplate,
+        BadDialogueNodeData);
+
+    using SuccessTypeWhenNoReturnDataExpected = AZStd::true_type;
 
     struct CompilationError
     {
-        CompilationErrorCode const m_errorCode;
-        AZStd::string const m_errorMessage;
+        static constexpr auto ErrorMessageSize{ 64 };
+        using ErrorMessageType = std::array<char, ErrorMessageSize>;
+
+        CompilationErrorCode m_errorCode;
+        ErrorMessageType m_errorMessage;
     };
+
+    static_assert(AZStd::is_pod_v<CompilationError>, "Ensure CompilationError is POD");
 
     class ConversationGraphCompiler : public AtomToolsFramework::GraphCompiler
     {
@@ -76,7 +81,7 @@ namespace ConversationEditor
 
         constexpr void ClearInstructionsForCurrentNodeAndReserveSize(size_t reserveAmount);
 
-        [[nodiscard]] auto BuildDependencyTables() -> AZStd::expected<AZStd::true_type, CompilationError>;
+        [[nodiscard]] auto BuildDependencyTables() -> AZStd::expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
 
         [[nodiscard]] auto ShouldUseInstructionsFromInputNode(
             GraphModel::ConstNodePtr const& outputNode,
@@ -109,7 +114,8 @@ namespace ConversationEditor
             AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const -> AZStd::vector<AZStd::string>;
 
         void BuildInstructionsForCurrentNode(GraphModel::ConstNodePtr const& currentNode);
-        auto BuildConversationAsset() -> AZStd::expected<AZStd::true_type, CompilationError>;
+        auto BuildConversationAsset() -> AZStd::expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
+        auto BuildConversationScript() -> AZStd::expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
 
         [[nodiscard]] auto GetValueFromSlot(GraphModel::ConstSlotPtr const slot) const -> AZStd::any;
 
@@ -129,7 +135,8 @@ namespace ConversationEditor
          * @param dialogueGraphNode A node with the slots needed to build a DialogueData.
          * @return true or CompilationError
          */
-        auto BuildDialogueNode(GraphModel::ConstNodePtr const& dialogueGraphNode) -> AZStd::expected<AZStd::true_type, CompilationError>;
+        auto BuildDialogueNode(GraphModel::ConstNodePtr const& dialogueGraphNode)
+            -> AZStd::expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
 
         /**
          * @brief Gathers the data needed by the compiler to setup dialogue links.
