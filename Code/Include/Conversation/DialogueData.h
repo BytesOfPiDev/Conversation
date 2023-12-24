@@ -105,8 +105,6 @@ namespace Conversation
         }
 
         constexpr DialogueData() = default;
-        explicit DialogueData(bool const autoInitializeId)
-            : m_id(autoInitializeId ? UniqueId::CreateRandomId() : UniqueId::CreateInvalidId()){};
         explicit DialogueData(UniqueId const id);
         /**
          * @brief Setup a valid dialogue

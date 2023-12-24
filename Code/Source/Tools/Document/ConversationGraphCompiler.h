@@ -190,6 +190,7 @@ namespace ConversationEditor
         SlotValueTable m_slotValueTable{};
         SlotDialogueTable m_slotDialogueTable{};
         StartingIdContainer m_startingIds{};
+        AZStd::vector<AZ::Name> m_names{};
         AZStd::map<GraphModel::ConstNodePtr, NodeData> m_nodeDataTable{};
         AZStd::list<AtomToolsFramework::GraphTemplateFileData> m_templateFileDataVecForCurrentNode{};
         AZStd::set<AZStd::string> m_templatePathsForCurrentNode{};

@@ -90,25 +90,29 @@ namespace ConversationTest
         Conversation::DialogueData const m_dlg2{ Conversation::UniqueId::CreateNamedId("TestDialogue02") };
     };
 
+    class DialogueComponentActiveConversationFixture : public ::testing::Test
+    {
+    };
+
     class ConversationAssetRefComponentTests : public ::testing::Test
     {
     };
 
-    TEST_F(DialogueDataTests, DefaultObject_HasNullId)
+    TEST_F(DialogueDataTests, DefaultObject_HasInvalidId)
     {
         using namespace Conversation;
 
         DialogueData const defaultDialogueData{};
-
         EXPECT_FALSE(defaultDialogueData.IsValid());
     }
 
-    TEST_F(DialogueDataTests, DefaultObject_IsValidReturnsFalse)
+    TEST_F(DialogueDataTests, Construction_PassingValidDialogueId_GetIdReturnsIdGivenToConstructor)
     {
         using namespace Conversation;
 
-        DialogueData const defaultDialogueData{};
-        EXPECT_FALSE(defaultDialogueData.IsValid());
+        auto const validId{ UniqueId::CreateRandomId() };
+        DialogueData const dialogue{ validId };
+        EXPECT_EQ(dialogue.GetDialogueId(), validId);
     }
 
     TEST_F(DialogueDataTests, AddResponse_CorrectlyAddsResponseId)
@@ -116,10 +120,8 @@ namespace ConversationTest
         using namespace Conversation;
 
         DialogueData dialogueData{};
-        EXPECT_TRUE(dialogueData.GetResponseIds().empty());
 
         auto const responseId{ UniqueId::CreateNamedId("TestId") };
-        EXPECT_TRUE(responseId.IsValid());
 
         dialogueData.AddDialogueResponseId(responseId);
         EXPECT_EQ(dialogueData.CountResponseIds(), 1);
@@ -147,16 +149,18 @@ namespace ConversationTest
         using namespace Conversation;
 
         Conversation::ConversationAsset asset{};
-        EXPECT_EQ(asset.CountStartingIds(), 0);
         asset.AddStartingId(UniqueId::CreateRandomId());
+
         EXPECT_EQ(asset.CountStartingIds(), 1);
     }
 
     TEST_F(ConversationAssetTests, DefaultConstructed_AddingInvalidDialogueIsRejected)
     {
+        using namespace Conversation;
+
         Conversation::ConversationAsset asset{};
-        Conversation::DialogueData const defaultDialogueData{};
-        asset.AddDialogue(defaultDialogueData);
+        asset.AddDialogue(DialogueData{ Conversation::UniqueId::CreateInvalidId() });
+
         EXPECT_EQ(asset.CountDialogues(), 0);
     }
 
@@ -165,8 +169,6 @@ namespace ConversationTest
         Conversation::ConversationAsset asset{};
 
         asset.AddDialogue(m_dlg1);
-        EXPECT_EQ(asset.CountDialogues(), 1);
-
         asset.AddDialogue(m_dlg2);
         EXPECT_EQ(asset.CountDialogues(), 2);
     }

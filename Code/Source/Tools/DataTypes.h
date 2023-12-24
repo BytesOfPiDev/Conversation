@@ -12,11 +12,6 @@ namespace ConversationEditor
     constexpr auto CommentDataTypeName = "comment";
     constexpr auto DialogueIdTypeName = "dialogue_id";
 
-    constexpr auto DialogueNodeActorTextSlotName = "inActorText";
-    constexpr auto DialogueNodeDialogueIdSlotName = "inDialogueId";
-    constexpr auto DialogueNodeIsStarterSlotName = "inIsStarter";
-    constexpr auto DialogueNodeParentSlotName = "inParent";
-
     // NOLINTNEXTLINE(modernize-use-trailing-return-type)
     AZ_ENUM_CLASS(
         NodeAndSlotNames,
@@ -69,7 +64,9 @@ namespace ConversationEditor
 
     AZ_ENUM_CLASS( // NOLINT
         DialogueNodeSlots,
-        inCondition);
+        inCondition,
+        inParent,
+        inIsStarter);
 
     namespace CommonSlotDisplayNames
     {

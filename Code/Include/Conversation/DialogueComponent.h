@@ -71,7 +71,7 @@ namespace Conversation
          *
          * @param dialogueToSelect The dialogue that will be made active.
          */
-        void SelectDialogue(DialogueData const& dialogueToSelect) override;
+        void SelectDialogue(DialogueData dialogueToSelect) override;
         /**
          * Attempts to find a dialogue matching the given ID and makes it active.
          *

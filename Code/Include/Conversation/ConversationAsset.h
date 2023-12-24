@@ -2,6 +2,7 @@
 
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Script/ScriptAsset.h"
+#include "AzCore/std/ranges/transform_view.h"
 #include "AzFramework/Asset/GenericAssetHandler.h"
 #include "Conversation/DialogueData.h"
 #include "Conversation/IConversationAsset.h"
@@ -96,6 +97,17 @@ namespace Conversation
             m_mainScript = asset;
         }
 
+        auto AddNames(AZStd::span<AZ::Name> names)
+        {
+            // TODO: Improve; maybe ranges, views, transform
+            AZStd::ranges::for_each(
+                names,
+                [this](auto const& name)
+                {
+                    m_names.insert(name);
+                });
+        }
+
     private:
         //! The IDs of any dialogues that can be used to begin a conversation.
         AZStd::vector<UniqueId> m_startingIds{};
@@ -104,6 +116,7 @@ namespace Conversation
         DialogueDataContainer m_dialogues{};
         AZStd::string m_comment{};
         AZ::Data::Asset<AZ::ScriptAsset> m_mainScript{};
+        AZStd::unordered_set<AZ::Name> m_names{};
     };
 
     using ConversationAssetHandler = AzFramework::GenericAssetHandler<ConversationAsset>;

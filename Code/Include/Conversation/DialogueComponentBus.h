@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AzCore/Component/ComponentBus.h"
-#include "Conversation/ConversationAsset.h"
 #include "Conversation/IConversationAsset.h"
 
 namespace Conversation
@@ -35,13 +34,17 @@ namespace Conversation
         /**
          * Sends out the given DialogueData, making it the active dialogue.
          *
-         * \param dialogueToSelect The desired dialogue.
+         * @param dialogueToSelect The desired dialogue.
          *
-         * \note There is nothing that enforces that this dialogue actually
+         * @note There is nothing that enforces that this dialogue actually
          * exist in the assets attached to this component. Potentially, this
          * may allow injecting a dialogue if desired.
+         *
+         * @note It isn't a const reference because it is possible for the referenced
+         * object to cease existence while processing the selection. It could be stored
+         * in a container or object that gets reset or deleted.
          */
-        virtual void SelectDialogue(DialogueData const& /*dialogueToSelect*/) = 0;
+        virtual void SelectDialogue(DialogueData /*dialogueToSelect*/) = 0;
 
         /**
          * Attempts to find and send out a DialogueData using its DialogueId.

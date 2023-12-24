@@ -153,8 +153,7 @@ namespace Conversation
                     "TryToStartConversation",
                     &DialogueComponentRequestBus::Events::TryToStartConversation,
                     { { { "Initiator", "The entity starting the conversation." } } })
-                // Specifying the specific overloaded SelectDialogue function that takes DialogueData as a parameter.
-                ->EventWithBus<DialogueComponentRequestBus, void (DialogueComponentRequestBus::Events::*)(DialogueData const&)>(
+                ->EventWithBus<DialogueComponentRequestBus>(
                     "SelectDialogue",
                     &DialogueComponentRequestBus::Events::SelectDialogue,
                     { { { "DialogueData", "The dialogue to make active." } } })
@@ -326,21 +325,18 @@ namespace Conversation
             "[Entity: '%s'] Entered starting state. Now checking for available starting dialogues.\n",
             GetNamedEntityId().GetName().data());
 
-        auto const startingIds{ m_conversationAssetRequests->CopyStartingIds() };
-        auto const dialogues{ m_conversationAssetRequests->CopyDialogues() };
-
         // We find the first available starting ID and use it to start the conversation.
-        for (UniqueId const& startingId : startingIds)
+        for (UniqueId const& startingId : m_conversationAssetRequests->CopyStartingIds())
         {
             // DialogueData and DialogueId are different types. We need to search a
             // list of DialogueData for one matching the current DialogueId. To do so,
             // I create a new instance of DialogueData based on the current DialogueId.
             // DialogueData objects are always equal only if they have matching IDs.
             // This allows me to use AZStd::find to search the container of dialogues.
-            auto const startingDialogueIter = dialogues.find(DialogueData(startingId));
+            auto const startingDialogueOutcome = m_conversationAssetRequests->GetDialogueById(startingId);
 
             // Verify we found one. This should never fail, but just in case.
-            if (startingDialogueIter == dialogues.end() || !startingDialogueIter->IsValid())
+            if (!startingDialogueOutcome.IsSuccess() || !startingDialogueOutcome.GetValue().IsValid())
             {
                 m_currentState = DialogueState::Inactive;
 
@@ -352,7 +348,7 @@ namespace Conversation
                 return false;
             }
 
-            if (CheckAvailability(*startingDialogueIter))
+            if (CheckAvailability(startingDialogueOutcome.GetValue()))
             {
                 m_currentState = DialogueState::Active;
                 LmbrCentral::TagComponentRequestBus::Event(
@@ -377,7 +373,7 @@ namespace Conversation
                 GlobalConversationNotificationBus::Broadcast(
                     &GlobalConversationNotificationBus::Events::OnConversationStarted, initiatingEntityId, GetEntityId());
 
-                SelectDialogue(*startingDialogueIter);
+                SelectDialogue(startingDialogueOutcome.GetValue());
                 AZ_Info("DialogueComponent", "A conversation was successfully started."); // NOLINT
                 return true; // Success - We're only interested in the first available.
             }
@@ -424,7 +420,7 @@ namespace Conversation
         GlobalConversationNotificationBus::Broadcast(&GlobalConversationNotificationBus::Events::OnConversationEnded, GetEntityId());
     }
 
-    void DialogueComponent::SelectDialogue(DialogueData const& dialogueToSelect)
+    void DialogueComponent::SelectDialogue(DialogueData dialogueToSelect)
     {
         // Selection should only be possible in 'Active' or 'Starting'.
         if (!(m_currentState == DialogueState::Active || m_currentState == DialogueState::Starting))
@@ -436,30 +432,17 @@ namespace Conversation
             return;
         }
 
-        // TODO: Review. For now, if an attempt is made to select a dialogue and there are no
-        // responses available, we're going to assume the caller wants to end the
-        // conversation. Only check if there's an active dialogue because this function
-        // can be called when there's no active dialogue, such as when first starting
-        // a conversation.
-        if (m_activeDialogue.has_value() && m_activeDialogue->CountResponseIds() > 0)
-        {
-            AZLOG(LOG_FollowConversation, "Ending conversation because there are no responses available."); // NOLINT
-            EndConversation();
-            return;
-        }
-
         if (!dialogueToSelect.IsValid())
         {
-            AZ_Assert( // NOLINT
+            AZ_Error( // NOLINT
+                "DialogueComponent",
                 false,
                 "A valid dialogue is needed in order to make a selection.");
 
-            // Abort when given an invalid dialogue.
-            AbortConversation();
             return;
         }
 
-        m_activeDialogue = dialogueToSelect;
+        m_activeDialogue.emplace(dialogueToSelect);
         m_availableResponses.clear();
 
         // Check all responses and determine which should be available for use.
@@ -544,7 +527,8 @@ namespace Conversation
         }
 
         // This is why we care if the choice is 0-based or 1-based. We have to adjust our index accordingly.
-        SelectDialogue(m_availableResponses[responseNumber - FirstResponseNumber]);
+        auto dialogueToSelect{ m_availableResponses[responseNumber - FirstResponseNumber] };
+        SelectDialogue(dialogueToSelect);
     }
 
     void DialogueComponent::ContinueConversation()
@@ -589,7 +573,10 @@ namespace Conversation
             // NOTE: A DialogueData is, by default, available, unless a handler explicitly sets it to false.
             AZ::EBusReduceResult<bool, AZStd::logical_and<bool>> result(true);
             AvailabilityRequestBus::EventResult(
-                result, GetEntityId(), &AvailabilityRequestBus::Events::IsAvailable, dialogueData.GetDialogueAvailabilityId());
+                result,
+                GetEntityId(),
+                &AvailabilityRequestBus::Events::IsAvailable,
+                AZ::Name{ dialogueData.GetDialogueAvailabilityId() }.GetStringView());
             return result.value;
         }();
 

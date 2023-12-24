@@ -40,13 +40,6 @@ namespace Conversation
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<UniqueId>()->Version(1)->Field("Id", &UniqueId::m_id);
-
-            if (AZ::EditContext* editContext = serialize->GetEditContext())
-            {
-                editContext->Class<UniqueId>("UniqueId", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &UniqueId::m_id, "Id", "");
-            }
         }
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

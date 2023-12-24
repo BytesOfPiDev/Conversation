@@ -112,20 +112,6 @@ namespace Conversation
         }
     }
 
-    DialogueData::DialogueData(UniqueId const id, AZStd::string actorText, AZStd::string speaker, AZStd::vector<UniqueId> responses)
-        : m_id(id)
-        , m_actorText(AZStd::move(actorText))
-        , m_speaker(AZStd::move(speaker))
-        , m_responseIds(AZStd::move(responses))
-    {
-        // Ensure the ID is always valid.
-        if (m_id.IsValid())
-        {
-            AZ_Error("DialogueData", false, "A null ID was passed in. Creating random ID: %zu.", m_id.GetHash());
-            m_id = UniqueId::CreateRandomId();
-        }
-    }
-
     DialogueData::DialogueData(UniqueId const id)
         : m_id(id)
     {

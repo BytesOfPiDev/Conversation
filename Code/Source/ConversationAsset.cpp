@@ -29,7 +29,8 @@ namespace Conversation
                 ->Field("Dialogues", &ConversationAsset::m_dialogues)
                 ->Field("MainScript", &ConversationAsset::m_mainScript)
                 ->Field("ResponseData", &ConversationAsset::m_responses)
-                ->Field("StartingIds", &ConversationAsset::m_startingIds);
+                ->Field("StartingIds", &ConversationAsset::m_startingIds)
+                ->Field("Names", &ConversationAsset::m_names);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {

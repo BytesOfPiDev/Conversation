@@ -3,6 +3,8 @@
 #include "AzCore/Math/Uuid.h"
 #include "AzCore/RTTI/ReflectContext.h"
 
+#include "AzCore/StringFunc/StringFunc.h"
+#include "AzCore/std/string/conversions.h"
 #include "Conversation/ConversationTypeIds.h"
 
 namespace Conversation
@@ -31,7 +33,8 @@ namespace Conversation
         static auto CreateNamedId(AZStd::string_view name)
         {
             UniqueId newDialogueId{};
-            newDialogueId.m_id = AZ::Crc32(name);
+            newDialogueId.m_id = AZ::Name{ name }.GetHash();
+
             return newDialogueId;
         }
 
@@ -61,6 +64,8 @@ namespace Conversation
         }
 
     private:
+        static constexpr auto MaxNameSize{ 64 };
+
         size_t m_id;
     };
 

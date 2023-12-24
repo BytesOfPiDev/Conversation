@@ -17,6 +17,7 @@
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/StringFunc/StringFunc.h"
 #include "AzCore/Utils/Utils.h"
+#include "AzCore/std/ranges/filter_view.h"
 #include "AzCore/std/smart_ptr/shared_ptr.h"
 #include "AzCore/std/string/regex.h"
 #include "AzFramework/Asset/AssetSystemBus.h"
@@ -141,6 +142,15 @@ namespace ConversationEditor
         {
             AZ_Error("ConversationGraphCompiler", false, "Compilation failed to build the conversation asset."); // NOLINT
             SetState(AtomToolsFramework::GraphCompiler::State::Failed);
+        }
+
+        if (auto buildResult{ BuildConversationScript() }; !buildResult)
+        {
+            AZ_Error(
+                "ConversationGraphCompiler",
+                false,
+                "Failed to compile conversation script. Message: %s",
+                buildResult.error().m_errorMessage.data());
         }
 
         if (!ReportGeneratedFileStatus())
@@ -575,7 +585,6 @@ namespace ConversationEditor
                         return lines;
                     });
 
-                AZStd::scoped_lock lock(m_conditionFunctionDefinitionsMutex);
                 // We create a string representation of the generated instructions when there's an outCondition slot.
                 // When compiling, we'll use it to add a new function to the companion script that can be called to
                 // confirm a dialogue's availability in Lua.
@@ -583,7 +592,8 @@ namespace ConversationEditor
                 {
                     AZStd::string luaFunc{};
                     AZ::StringFunc::Join(luaFunc, templateFileData.GetLines(), "\n");
-                    m_conditionFunctionDefinitions.emplace_back(AZStd::move(luaFunc));
+                    AZStd::scoped_lock lock(m_conditionFunctionDefinitionsMutex);
+                    m_conditionFunctionDefinitions.emplace_back(luaFunc);
                 }
             });
     }
@@ -591,6 +601,8 @@ namespace ConversationEditor
     auto ConversationGraphCompiler::BuildConversationAsset() -> AZStd::expected<AZStd::true_type, CompilationError>
     {
         auto const conversationAsset = AZStd::make_unique<Conversation::ConversationAsset>();
+
+        conversationAsset->AddNames(m_names);
 
         AZStd::ranges::for_each(
             m_startingIds,
@@ -612,38 +624,26 @@ namespace ConversationEditor
             });
 
         // Create the path where we will save the asset.
-        auto const assetOutputPath = [this]() -> AZStd::string
+        auto const conversationAssetOutputPath = [this]() -> AZStd::string
         {
             // "/path/to/somedialogue.conversationgraph"
             auto pathToSaveAsset = GetGraphPath();
             // "/path/to/somedialogue.conversationasset"
             AZ::StringFunc::Path::ReplaceExtension(pathToSaveAsset, Conversation::ConversationAsset::ProductExtension);
 
-            // ""
-            AZStd::string fullFileName{};
-            // "somedialogue.conversationasset"
-            AZ::StringFunc::Path::GetFullFileName(pathToSaveAsset.c_str(), fullFileName);
-
-            // "/path/to/somedialogue.conversationasset" -> "/path/to"
-            AZ::StringFunc::Path::StripFullName(pathToSaveAsset);
-
-            // "/path/to/Generated/somedialogue.conversationasset"
-            AZ::StringFunc::Path::Join(
-                pathToSaveAsset.c_str(), AZStd::string::format("Generated/%s", fullFileName.c_str()).c_str(), pathToSaveAsset);
-
             return pathToSaveAsset;
         }();
 
-        bool const saveResult = AZ::Utils::SaveObjectToFile(assetOutputPath, AZ::DataStream::ST_JSON, conversationAsset.get());
+        bool const saveResult = AZ::Utils::SaveObjectToFile(conversationAssetOutputPath, AZ::DataStream::ST_JSON, conversationAsset.get());
         if (!saveResult)
         {
             return UnexpectedCompilationError(CompilationErrorCode::FailedToSaveTemplate, "Failed to save Conversation Asset");
         }
 
         AzFramework::AssetSystemRequestBus::Broadcast(
-            &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, assetOutputPath);
+            &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, conversationAssetOutputPath);
 
-        m_generatedFiles.push_back(assetOutputPath);
+        m_generatedFiles.push_back(conversationAssetOutputPath);
 
         return SuccessTypeWhenNoReturnDataExpected{};
     }
@@ -719,7 +719,7 @@ namespace ConversationEditor
             AtomToolsFramework::SortNodesInExecutionOrder(nodes);
         }
 
-        return AZStd::move(nodes);
+        return nodes;
     }
 
     void ConversationGraphCompiler::BuildNode(GraphModel::ConstNodePtr const& currentNode)
@@ -730,6 +730,8 @@ namespace ConversationEditor
         {
             return;
         }
+
+        m_names.emplace_back(GetSymbolNameFromNode(currentNode));
 
         auto& nodeData = m_nodeDataTable[currentNode];
 
@@ -769,30 +771,30 @@ namespace ConversationEditor
         }
     }
 
-    auto ConversationGraphCompiler::BuildDialogueNode(GraphModel::ConstNodePtr const& dialogueNode)
+    auto ConversationGraphCompiler::BuildDialogueNode(GraphModel::ConstNodePtr const& targetDialogueNode)
         -> AZStd::expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>
     {
         using namespace Conversation;
 
-        if (!dialogueNode)
+        if (!targetDialogueNode)
         {
             return UnexpectedCompilationError(
                 CompilationErrorCode::BadDialogueNodeData, "Expected valid dialogue node, but got a nullptr instead.");
         }
 
-        auto const currentNodeDialogueId{ Conversation::UniqueId::CreateNamedId(GetSymbolNameFromNode(dialogueNode)) };
-        auto& nodeDataDialogue = m_nodeDataTable[dialogueNode].m_dialogue;
+        auto const targetDialogueId{ Conversation::UniqueId::CreateNamedId(GetSymbolNameFromNode(targetDialogueNode)) };
+        auto& targetNodeDataDialogue = m_nodeDataTable[targetDialogueNode].m_dialogue;
 
         // The DialogueData is an optional since not every node will use one. Since we're processing a dialogue node, we need one, so we
         // instantiate one if one hasn't already been instantiated.
-        if (!nodeDataDialogue.has_value())
+        if (!targetNodeDataDialogue.has_value())
         {
-            nodeDataDialogue.emplace(currentNodeDialogueId);
+            targetNodeDataDialogue.emplace(targetDialogueId);
         }
 
         // Dialogue nodes that have a connection to inCondition will need to add the connected
         // node's symbol as an availability Id.
-        if (auto const inConditionSlot = dialogueNode->GetSlot(ToString(DialogueNodeSlots::inCondition));
+        if (auto const inConditionSlot = targetDialogueNode->GetSlot(ToString(DialogueNodeSlots::inCondition));
             inConditionSlot && !inConditionSlot->GetConnections().empty())
         {
             AZ_Error( // NOLINT
@@ -803,21 +805,21 @@ namespace ConversationEditor
             if (inConditionSlot->GetConnections().size() == 1)
             {
                 auto const sourceNode = inConditionSlot->GetConnections().front()->GetSourceNode();
-                nodeDataDialogue->SetDialogueAvailabilityId(GetSymbolNameFromNode(sourceNode));
+                targetNodeDataDialogue->SetDialogueAvailabilityId(GetSymbolNameFromNode(sourceNode));
             }
         }
 
-        for (auto& [slotId, slot] : dialogueNode->GetSlots())
+        for (auto& [slotId, slot] : targetDialogueNode->GetSlots())
         {
             auto const value = m_slotValueTable[slot];
 
             switch (slot->GetDataType()->GetTypeEnum())
             {
             case AZ_CRC_CE("actor_text"):
-                nodeDataDialogue->SetDialogueActorText(AZStd::any_cast<AZStd::string>(value));
+                targetNodeDataDialogue->SetDialogueActorText(AZStd::any_cast<AZStd::string>(value));
                 break;
             case AZ_CRC_CE("speaker_tag"):
-                nodeDataDialogue->SetDialogueSpeaker(AZStd::any_cast<AZStd::string>(value));
+                targetNodeDataDialogue->SetDialogueSpeaker(AZStd::any_cast<AZStd::string>(value));
                 break;
             default:
                 break;
@@ -825,9 +827,9 @@ namespace ConversationEditor
         }
 
         // Is this dialogue a starting dialogue?
-        auto const isStartingDialogue = [&dialogueNode]() -> bool
+        auto const isStartingDialogue = [&targetDialogueNode]() -> bool
         {
-            auto const inputSlot_isStarter = dialogueNode->GetSlot(DialogueNodeIsStarterSlotName);
+            auto const inputSlot_isStarter = targetDialogueNode->GetSlot(ToString(DialogueNodeSlots::inIsStarter));
             return (inputSlot_isStarter && inputSlot_isStarter->GetValue().is<bool>()) //
                 ? inputSlot_isStarter->GetValue<bool>()
                 : false;
@@ -835,32 +837,27 @@ namespace ConversationEditor
 
         if (isStartingDialogue)
         {
-            m_startingIds.push_back(nodeDataDialogue->GetId());
+            m_startingIds.push_back(targetNodeDataDialogue->GetId());
         }
+        auto const inParentSlotPtr{ targetDialogueNode->GetSlot(ToString(DialogueNodeSlots::inParent)) };
 
-        auto const currentNodeHasParent = [&dialogueNode]() -> bool
+        if (inParentSlotPtr && !inParentSlotPtr->GetConnections().empty())
         {
-            GraphModel::ConstSlotPtr currentNodeParentInputSlot = dialogueNode->GetSlot(DialogueNodeParentSlotName);
-            return currentNodeParentInputSlot && !currentNodeParentInputSlot->GetConnections().empty();
-        }();
-
-        if (currentNodeHasParent)
-        {
-            auto const parentNode = [&dialogueNode]() -> GraphModel::ConstNodePtr
+            auto const sourceNodePtr = [&targetDialogueNode, &inParentSlotPtr]() -> GraphModel::ConstNodePtr
             {
-                auto const connections = dialogueNode->GetSlot(DialogueNodeParentSlotName)->GetConnections();
-                if (connections.size() != 1)
+                auto const inParentConnections = inParentSlotPtr->GetConnections();
+                if (inParentConnections.size() != 1)
                 {
                     AZLOG_ERROR( // NOLINT
                         "There should be exactly one connection on the current node's parent input. We found: %lu.",
-                        connections.size());
+                        inParentConnections.size());
                     return nullptr;
                 }
 
-                GraphModel::ConstConnectionPtr const connection = *connections.begin();
-                if (connection->GetSourceNode() != dialogueNode && connection->GetTargetNode() == dialogueNode)
+                auto const& connectionPtr = inParentConnections.front();
+                if (connectionPtr->GetSourceNode() != targetDialogueNode && connectionPtr->GetTargetNode() == targetDialogueNode)
                 {
-                    return connection->GetSourceNode();
+                    return connectionPtr->GetSourceNode();
                 }
 
                 AZLOG_ERROR( // NOLINT
@@ -869,9 +866,26 @@ namespace ConversationEditor
                 return nullptr;
             }();
 
-            if (parentNode)
+            if (sourceNodePtr)
             {
-                m_nodeDataTable[parentNode].m_responseIds.push_back(currentNodeDialogueId);
+                auto& sourceNodeDataDialogue{ m_nodeDataTable[sourceNodePtr].m_dialogue };
+                if (!sourceNodeDataDialogue.has_value())
+                {
+                    return UnexpectedCompilationError(
+                        CompilationErrorCode::BadDialogueNodeData, "Source node should have a valid dialogue!");
+                }
+
+                if (IsCompileLoggingEnabled())
+                {
+                    AZLOG_INFO(
+                        "Adding response [Symbol: %s | Id: %zu] to dialogue [Symbol: %s | Id: %zu].\n",
+                        GetSymbolNameFromNode(targetDialogueNode).c_str(),
+                        targetDialogueId.GetHash(),
+                        GetSymbolNameFromNode(sourceNodePtr).c_str(),
+                        sourceNodeDataDialogue->GetDialogueId().GetHash());
+                }
+
+                sourceNodeDataDialogue->AddDialogueResponseId(targetDialogueId);
             }
         }
 
@@ -951,7 +965,7 @@ namespace ConversationEditor
                     return false;
                 }
 
-                m_templateFileDataVecForCurrentNode.emplace_back(AZStd::move(templateFileData));
+                m_templateFileDataVecForCurrentNode.emplace_back(templateFileData);
             }
         };
         return true;
