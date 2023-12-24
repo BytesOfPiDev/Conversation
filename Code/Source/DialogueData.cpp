@@ -46,7 +46,7 @@ namespace Conversation
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DialogueData>()
-                ->Version(8) // NOLINT
+                ->Version(8) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
                 ->Field("ActorText", &DialogueData::m_actorText)
                 ->Field("AvailabilityId", &DialogueData::m_availabilityId)
                 ->Field("AudioTrigger", &DialogueData::m_audioTrigger)

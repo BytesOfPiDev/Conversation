@@ -17,13 +17,10 @@ namespace AZ
 
 namespace Conversation
 {
-    using AvailabilityId = AZStd::string;
+    using AvailabilityIdAsString = AZStd::string;
     using AvailabilityIdAsName = AZ::Name;
 
-    struct UniqueId;
     struct DialogueData;
-
-    [[nodiscard]] inline auto ToLua(DialogueData const&) -> AZStd::string;
 
     struct DialogueChunk
     {
@@ -92,9 +89,9 @@ namespace Conversation
          * @param dialogueData The dialogue to initialize
          * @return DialogueId The dialogue's ID.
          *
-         * @note The ID should generally never be changed once it is set. If that's necessary, it'll have to be done directly on the object.
+         * @note The ID should generally never be changed once it is set. Not currently enforced.
          */
-        static auto InitDialogueId(DialogueData& dialogueData) -> UniqueId
+        static auto InitId(DialogueData& dialogueData) -> UniqueId
         {
             if (!dialogueData.IsValid())
             {
@@ -175,7 +172,7 @@ namespace Conversation
             return m_scriptIds;
         }
 
-        [[nodiscard]] auto GetDialogueAvailabilityId() const -> AvailabilityId
+        [[nodiscard]] auto GetDialogueAvailabilityId() const -> AvailabilityIdAsString
         {
             return m_availabilityId;
         }
@@ -185,7 +182,7 @@ namespace Conversation
             return m_comment;
         }
 
-        constexpr void SetDialogueAvailabilityId(AvailabilityId const& newAvailabilityId)
+        constexpr void SetDialogueAvailabilityId(AvailabilityIdAsString const& newAvailabilityId)
         {
             m_availabilityId = newAvailabilityId;
         }
