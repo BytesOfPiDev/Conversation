@@ -17,10 +17,16 @@
 
 namespace ConversationTest
 {
-    constexpr AZ::TypeId TestConversationAssetId{ "{3EBCCFAF-4574-4C56-BDD3-09EDC9CB8405}" };
-    constexpr AZ::TypeId TagComponentType{ AZ::TypeId{ Conversation::TagComponentTypeId } };
-    constexpr AZ::TypeId ConversationAssetRefComponentType{ AZ::TypeId{ Conversation::ConversationAssetRefComponentTypeId } };
-    constexpr AZ::TypeId DialogueComponentType{ Conversation::DialogueComponentTypeId };
+    constexpr AZ::TypeId TestConversationAssetId{
+        "{3EBCCFAF-4574-4C56-BDD3-09EDC9CB8405}"
+    };
+    constexpr AZ::TypeId TagComponentType{ AZ::TypeId{
+        Conversation::TagComponentTypeId } };
+    constexpr AZ::TypeId ConversationAssetRefComponentType{ AZ::TypeId{
+        Conversation::ConversationAssetRefComponentTypeId } };
+    constexpr AZ::TypeId DialogueComponentType{
+        Conversation::DialogueComponentTypeId
+    };
 
     class DialogueDataTests : public ::testing::Test
     {
@@ -37,8 +43,12 @@ namespace ConversationTest
     class ConversationAssetTests : public ::testing::Test
     {
     protected:
-        Conversation::DialogueData m_dlg1{ Conversation::UniqueId::CreateNamedId("TestDialogue01") };
-        Conversation::DialogueData m_dlg2{ Conversation::UniqueId::CreateNamedId("TestDialogue02") };
+        Conversation::DialogueData m_dlg1{
+            Conversation::UniqueId::CreateNamedId("TestDialogue01")
+        };
+        Conversation::DialogueData m_dlg2{
+            Conversation::UniqueId::CreateNamedId("TestDialogue02")
+        };
     };
 
     class DialogueComponentTests : public ::testing::Test
@@ -52,7 +62,8 @@ namespace ConversationTest
             m_dialogueEntity->Init();
 
             m_dialogueEntity->CreateComponent(TagComponentType);
-            m_dialogueEntity->CreateComponent(ConversationAssetRefComponentType);
+            m_dialogueEntity->CreateComponent(
+                ConversationAssetRefComponentType);
             m_dialogueEntity->CreateComponent(DialogueComponentType);
         }
 
@@ -61,24 +72,33 @@ namespace ConversationTest
             m_dialogueEntity = nullptr;
         }
 
-        auto CreateStartableAsset() -> AZ::Data::Asset<Conversation::ConversationAsset>
+        auto CreateStartableAsset()
+            -> AZ::Data::Asset<Conversation::ConversationAsset>
         {
             using namespace Conversation;
 
-            auto startableAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<Conversation::ConversationAsset>(
-                TestConversationAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            auto startableAsset =
+                AZ::Data::AssetManager::Instance()
+                    .FindOrCreateAsset<Conversation::ConversationAsset>(
+                        TestConversationAssetId,
+                        AZ::Data::AssetLoadBehavior::PreLoad);
 
             // Requires at least one dialogue with a valid DialogueId.
-            DialogueData startingDialogue1{ UniqueId::CreateNamedId("StartableAssetDialogueId1") };
-            startingDialogue1.SetDialogueActorText("Hello, where are you from?");
+            DialogueData startingDialogue1{ UniqueId::CreateNamedId(
+                "StartableAssetDialogueId1") };
+            startingDialogue1.SetDialogueActorText(
+                "Hello, where are you from?");
             startableAsset->AddDialogue(startingDialogue1);
 
-            // Requires at least one valid starting Id that matches a dialogue inside the asset.
+            // Requires at least one valid starting Id that matches a dialogue
+            // inside the asset.
             startableAsset->AddStartingId(startingDialogue1.GetDialogueId());
 
             DialogueData earthResponseDialogue{ UniqueId::CreateRandomId() };
             earthResponseDialogue.SetDialogueActorText("I am from Earth, duh.");
-            startableAsset->AddResponse({ startingDialogue1.GetDialogueId(), earthResponseDialogue.GetDialogueId() });
+            startableAsset->AddResponse(
+                { startingDialogue1.GetDialogueId(),
+                  earthResponseDialogue.GetDialogueId() });
 
             return startableAsset;
         }
@@ -86,8 +106,12 @@ namespace ConversationTest
         AZStd::unique_ptr<AZ::Entity> m_dialogueEntity{};
         AZ::Data::AssetCatalogRequests* m_catalogRequests{};
 
-        Conversation::DialogueData const m_dlg1{ Conversation::UniqueId::CreateNamedId("TestDialogue01") };
-        Conversation::DialogueData const m_dlg2{ Conversation::UniqueId::CreateNamedId("TestDialogue02") };
+        Conversation::DialogueData const m_dlg1{
+            Conversation::UniqueId::CreateNamedId("TestDialogue01")
+        };
+        Conversation::DialogueData const m_dlg2{
+            Conversation::UniqueId::CreateNamedId("TestDialogue02")
+        };
     };
 
     class DialogueComponentActiveConversationFixture : public ::testing::Test
@@ -106,7 +130,9 @@ namespace ConversationTest
         EXPECT_FALSE(defaultDialogueData.IsValid());
     }
 
-    TEST_F(DialogueDataTests, Construction_PassingValidDialogueId_GetIdReturnsIdGivenToConstructor)
+    TEST_F(
+        DialogueDataTests,
+        Construction_PassingValidDialogueId_GetIdReturnsIdGivenToConstructor)
     {
         using namespace Conversation;
 
@@ -130,13 +156,16 @@ namespace ConversationTest
         for (auto index = 0; index < (DialogueData::MaxResponses + 1); ++index)
         {
             static constexpr auto dialogueIdFormat = "TestDialogueId_%d";
-            dialogueData.AddDialogueResponseId(UniqueId::CreateNamedId(AZStd::string::format(dialogueIdFormat, index)));
+            dialogueData.AddDialogueResponseId(UniqueId::CreateNamedId(
+                AZStd::string::format(dialogueIdFormat, index)));
         }
 
         EXPECT_EQ(dialogueData.CountResponseIds(), DialogueData::MaxResponses);
     }
 
-    TEST_F(ConversationAssetTests, DefaultConstructed_AddingInvalidStartingIdIsRejected)
+    TEST_F(
+        ConversationAssetTests,
+        DefaultConstructed_AddingInvalidStartingIdIsRejected)
     {
         Conversation::ConversationAsset asset{};
         EXPECT_EQ(asset.CountStartingIds(), 0);
@@ -144,7 +173,9 @@ namespace ConversationTest
         EXPECT_EQ(asset.CountStartingIds(), 0);
     }
 
-    TEST_F(ConversationAssetTests, DefaultConstructed_AddingValidStartingIdIsAccepted)
+    TEST_F(
+        ConversationAssetTests,
+        DefaultConstructed_AddingValidStartingIdIsAccepted)
     {
         using namespace Conversation;
 
@@ -154,17 +185,22 @@ namespace ConversationTest
         EXPECT_EQ(asset.CountStartingIds(), 1);
     }
 
-    TEST_F(ConversationAssetTests, DefaultConstructed_AddingInvalidDialogueIsRejected)
+    TEST_F(
+        ConversationAssetTests,
+        DefaultConstructed_AddingInvalidDialogueIsRejected)
     {
         using namespace Conversation;
 
         Conversation::ConversationAsset asset{};
-        asset.AddDialogue(DialogueData{ Conversation::UniqueId::CreateInvalidId() });
+        asset.AddDialogue(
+            DialogueData{ Conversation::UniqueId::CreateInvalidId() });
 
         EXPECT_EQ(asset.CountDialogues(), 0);
     }
 
-    TEST_F(ConversationAssetTests, DefaultConstructed_AddingValidDialogueIsAccepted)
+    TEST_F(
+        ConversationAssetTests,
+        DefaultConstructed_AddingValidDialogueIsAccepted)
     {
         Conversation::ConversationAsset asset{};
 
@@ -177,7 +213,8 @@ namespace ConversationTest
     {
         ASSERT_NE(m_dialogueEntity, nullptr);
         EXPECT_NE(m_dialogueEntity->FindComponent(TagComponentType), nullptr);
-        EXPECT_NE(m_dialogueEntity->FindComponent(DialogueComponentType), nullptr);
+        EXPECT_NE(
+            m_dialogueEntity->FindComponent(DialogueComponentType), nullptr);
         EXPECT_EQ(m_dialogueEntity->GetState(), AZ::Entity::State::Init);
     }
 
@@ -191,11 +228,15 @@ namespace ConversationTest
 
         bool successfullyAssignedAsset{};
         ConversationAssetRefComponentRequestBus::EventResult(
-            successfullyAssignedAsset, m_dialogueEntity->GetId(), &ConversationAssetRefComponentRequests::SetConversationAsset, asset);
+            successfullyAssignedAsset,
+            m_dialogueEntity->GetId(),
+            &ConversationAssetRefComponentRequests::SetConversationAsset,
+            asset);
 
         EXPECT_TRUE(successfullyAssignedAsset);
 
-        AZ::Component* const dialogueComponent = m_dialogueEntity->FindComponent(DialogueComponentType);
+        AZ::Component* const dialogueComponent =
+            m_dialogueEntity->FindComponent(DialogueComponentType);
         dialogueComponent->SetConfiguration(dialogueComponentConfig);
         m_dialogueEntity->Activate();
 
@@ -203,11 +244,16 @@ namespace ConversationTest
 
         bool success{ false };
         DialogueComponentRequestBus::EventResult(
-            success, m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, someOtherEntityId);
+            success,
+            m_dialogueEntity->GetId(),
+            &DialogueComponentRequests::TryToStartConversation,
+            someOtherEntityId);
 
         DialogueState dialogueCurrentState{ DialogueState::Invalid };
         DialogueComponentRequestBus::EventResult(
-            dialogueCurrentState, m_dialogueEntity->GetId(), &DialogueComponentRequests::GetCurrentState);
+            dialogueCurrentState,
+            m_dialogueEntity->GetId(),
+            &DialogueComponentRequests::GetCurrentState);
 
         EXPECT_EQ(dialogueCurrentState, Conversation::DialogueState::Active);
         EXPECT_TRUE(success);
@@ -224,7 +270,10 @@ namespace ConversationTest
             bool result{};
             AZ::EntityId const someOtherEntityId{ AZ::Entity::MakeId() };
             DialogueComponentRequestBus::EventResult(
-                result, m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, someOtherEntityId);
+                result,
+                m_dialogueEntity->GetId(),
+                &DialogueComponentRequests::TryToStartConversation,
+                someOtherEntityId);
 
             return result;
         }();
@@ -232,7 +281,9 @@ namespace ConversationTest
         EXPECT_FALSE(conversationStarted);
     }
 
-    TEST_F(DialogueComponentTests, TryStartConversation_CallWithValidData_SucceedsWithValidDialogueState)
+    TEST_F(
+        DialogueComponentTests,
+        TryStartConversation_CallWithValidData_SucceedsWithValidDialogueState)
     {
         using namespace Conversation;
 
@@ -240,7 +291,10 @@ namespace ConversationTest
 
         bool successfullyAssignedAsset{};
         ConversationAssetRefComponentRequestBus::EventResult(
-            successfullyAssignedAsset, m_dialogueEntity->GetId(), &ConversationAssetRefComponentRequests::SetConversationAsset, asset);
+            successfullyAssignedAsset,
+            m_dialogueEntity->GetId(),
+            &ConversationAssetRefComponentRequests::SetConversationAsset,
+            asset);
 
         EXPECT_TRUE(successfullyAssignedAsset);
 
@@ -250,37 +304,51 @@ namespace ConversationTest
 
         bool success{ false };
         DialogueComponentRequestBus::EventResult(
-            success, m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, someOtherEntityId);
+            success,
+            m_dialogueEntity->GetId(),
+            &DialogueComponentRequests::TryToStartConversation,
+            someOtherEntityId);
 
         EXPECT_TRUE(success);
 
         DialogueState dialogueCurrentState{ DialogueState::Invalid };
         DialogueComponentRequestBus::EventResult(
-            dialogueCurrentState, m_dialogueEntity->GetId(), &DialogueComponentRequests::GetCurrentState);
+            dialogueCurrentState,
+            m_dialogueEntity->GetId(),
+            &DialogueComponentRequests::GetCurrentState);
         EXPECT_EQ(dialogueCurrentState, Conversation::DialogueState::Active);
     }
 
-    TEST_F(DialogueComponentTests, ActiveConversation_WithResponsesAvailable_SelectingOutOfBoundsResponseIsRejected)
+    TEST_F(
+        DialogueComponentTests,
+        ActiveConversation_WithResponsesAvailable_SelectingOutOfBoundsResponseIsRejected)
     {
         using namespace Conversation;
 
         auto asset = CreateStartableAsset();
 
         ConversationAssetRefComponentRequestBus::Event(
-            m_dialogueEntity->GetId(), &ConversationAssetRefComponentRequests::SetConversationAsset, asset);
+            m_dialogueEntity->GetId(),
+            &ConversationAssetRefComponentRequests::SetConversationAsset,
+            asset);
 
         m_dialogueEntity->Activate();
 
         DialogueComponentRequestBus::Event(
-            m_dialogueEntity->GetId(), &DialogueComponentRequests::TryToStartConversation, AZ::Entity::MakeId());
+            m_dialogueEntity->GetId(),
+            &DialogueComponentRequests::TryToStartConversation,
+            AZ::Entity::MakeId());
 
         // Test upper bound
         {
-            auto const activeDialogueOutcomeBeforeSelection = [this]() -> AZ::Outcome<DialogueData>
+            auto const activeDialogueOutcomeBeforeSelection =
+                [this]() -> AZ::Outcome<DialogueData>
             {
                 AZ::Outcome<DialogueData> resultOutcome{};
                 DialogueComponentRequestBus::EventResult(
-                    resultOutcome, m_dialogueEntity->GetId(), &DialogueComponentRequests::GetActiveDialogue);
+                    resultOutcome,
+                    m_dialogueEntity->GetId(),
+                    &DialogueComponentRequests::GetActiveDialogue);
                 return resultOutcome;
             }();
 
@@ -288,63 +356,91 @@ namespace ConversationTest
             {
                 AZStd::vector<DialogueData> availableResponses{};
                 DialogueComponentRequestBus::EventResult(
-                    availableResponses, m_dialogueEntity->GetId(), &DialogueComponentRequests::GetAvailableResponses);
+                    availableResponses,
+                    m_dialogueEntity->GetId(),
+                    &DialogueComponentRequests::GetAvailableResponses);
                 return availableResponses.size();
             }();
 
             DialogueComponentRequestBus::Event(
-                m_dialogueEntity->GetId(), &DialogueComponentRequests::SelectAvailableResponse, numberOfAvailableResponses + 1);
+                m_dialogueEntity->GetId(),
+                &DialogueComponentRequests::SelectAvailableResponse,
+                numberOfAvailableResponses + 1);
 
-            auto const activeDialogueOutcomeAfterSelection = [this]() -> AZ::Outcome<DialogueData>
+            auto const activeDialogueOutcomeAfterSelection =
+                [this]() -> AZ::Outcome<DialogueData>
             {
                 AZ::Outcome<DialogueData> resultOutcome{};
                 DialogueComponentRequestBus::EventResult(
-                    resultOutcome, m_dialogueEntity->GetId(), &DialogueComponentRequests::GetActiveDialogue);
+                    resultOutcome,
+                    m_dialogueEntity->GetId(),
+                    &DialogueComponentRequests::GetActiveDialogue);
                 return resultOutcome;
             }();
 
-            EXPECT_EQ(activeDialogueOutcomeBeforeSelection.GetValue(), activeDialogueOutcomeAfterSelection.GetValue());
+            EXPECT_EQ(
+                activeDialogueOutcomeBeforeSelection.GetValue(),
+                activeDialogueOutcomeAfterSelection.GetValue());
         }
 
         // Test lower bound
         {
-            auto const activeDialogueOutcomeBeforeSelection = [this]() -> AZ::Outcome<DialogueData>
+            auto const activeDialogueOutcomeBeforeSelection =
+                [this]() -> AZ::Outcome<DialogueData>
             {
                 AZ::Outcome<DialogueData> resultOutcome{};
                 DialogueComponentRequestBus::EventResult(
-                    resultOutcome, m_dialogueEntity->GetId(), &DialogueComponentRequests::GetActiveDialogue);
+                    resultOutcome,
+                    m_dialogueEntity->GetId(),
+                    &DialogueComponentRequests::GetActiveDialogue);
                 return resultOutcome;
             }();
 
             DialogueComponentRequestBus::Event(
-                m_dialogueEntity->GetId(), &DialogueComponentRequests::SelectAvailableResponse, FirstResponseNumber - 1);
+                m_dialogueEntity->GetId(),
+                &DialogueComponentRequests::SelectAvailableResponse,
+                FirstResponseNumber - 1);
 
-            auto const activeDialogueOutcomeAfterSelection = [this]() -> AZ::Outcome<DialogueData>
+            auto const activeDialogueOutcomeAfterSelection =
+                [this]() -> AZ::Outcome<DialogueData>
             {
                 AZ::Outcome<DialogueData> resultOutcome{};
                 DialogueComponentRequestBus::EventResult(
-                    resultOutcome, m_dialogueEntity->GetId(), &DialogueComponentRequests::GetActiveDialogue);
+                    resultOutcome,
+                    m_dialogueEntity->GetId(),
+                    &DialogueComponentRequests::GetActiveDialogue);
                 return resultOutcome;
             }();
 
-            EXPECT_EQ(activeDialogueOutcomeBeforeSelection.GetValue(), activeDialogueOutcomeAfterSelection.GetValue());
+            EXPECT_EQ(
+                activeDialogueOutcomeBeforeSelection.GetValue(),
+                activeDialogueOutcomeAfterSelection.GetValue());
         }
     }
 
-    TEST_F(DialogueComponentTests, TryStartConversation_CallWithInvalidData_FailsWithInactiveDialogueState)
+    TEST_F(
+        DialogueComponentTests,
+        TryStartConversation_CallWithInvalidData_FailsWithInactiveDialogueState)
     {
-        AZ::Component* const dialogueComponent = m_dialogueEntity->FindComponent(AZ::TypeId{ Conversation::DialogueComponentTypeId });
+        AZ::Component* const dialogueComponent =
+            m_dialogueEntity->FindComponent(
+                AZ::TypeId{ Conversation::DialogueComponentTypeId });
 
         Conversation::DialogueComponentConfig dialogueComponentConfig{};
         dialogueComponent->SetConfiguration(dialogueComponentConfig);
 
         m_dialogueEntity->Activate();
 
-        auto* dialogueComponentRequests = Conversation::DialogueComponentRequestBus::FindFirstHandler(m_dialogueEntity->GetId());
+        auto* dialogueComponentRequests =
+            Conversation::DialogueComponentRequestBus::FindFirstHandler(
+                m_dialogueEntity->GetId());
         EXPECT_NE(dialogueComponentRequests, nullptr);
 
-        EXPECT_FALSE(dialogueComponentRequests->TryToStartConversation(AZ::Entity::MakeId()));
-        EXPECT_EQ(dialogueComponentRequests->GetCurrentState(), Conversation::DialogueState::Inactive);
+        EXPECT_FALSE(dialogueComponentRequests->TryToStartConversation(
+            AZ::Entity::MakeId()));
+        EXPECT_EQ(
+            dialogueComponentRequests->GetCurrentState(),
+            Conversation::DialogueState::Inactive);
     }
 
     TEST_F(ConversationAssetRefComponentTests, Fixture_SanityCheck)
@@ -352,13 +448,17 @@ namespace ConversationTest
         EXPECT_TRUE(AZ::Data::AssetManager::IsReady());
     }
 
-    TEST_F(ConversationAssetRefComponentTests, Constucted_NotConnectedToAssetRefComponentBus)
+    TEST_F(
+        ConversationAssetRefComponentTests,
+        Constucted_NotConnectedToAssetRefComponentBus)
     {
         Conversation::ConversationAssetRefComponent assetRefComponent{};
         EXPECT_FALSE(assetRefComponent.BusIsConnected());
     }
 
-    TEST_F(ConversationAssetRefComponentTests, ComponentOnAlreadyInitializedEntity_AssignAssetWithBus_Success)
+    TEST_F(
+        ConversationAssetRefComponentTests,
+        ComponentOnAlreadyInitializedEntity_AssignAssetWithBus_Success)
     {
         using namespace Conversation;
 
@@ -367,22 +467,32 @@ namespace ConversationTest
         entity.Init();
 
         auto const randomAssetId{ AZ::Uuid::CreateRandom() };
-        auto const originalAsset = AZ::Data::AssetManager::Instance().CreateAsset<Conversation::ConversationAsset>(
-            randomAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+        auto const originalAsset =
+            AZ::Data::AssetManager::Instance()
+                .CreateAsset<Conversation::ConversationAsset>(
+                    randomAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
 
         ConversationAssetRefComponentRequestBus::Event(
-            entity.GetId(), &ConversationAssetRefComponentRequests::SetConversationAsset, originalAsset);
+            entity.GetId(),
+            &ConversationAssetRefComponentRequests::SetConversationAsset,
+            originalAsset);
 
-        auto const returnedAsset = [&entity]() -> AZ::Data::Asset<ConversationAsset>
+        auto const returnedAsset =
+            [&entity]() -> AZ::Data::Asset<ConversationAsset>
         {
             AZ::Data::Asset<ConversationAsset> result{};
             ConversationAssetRefComponentRequestBus::EventResult(
-                result, entity.GetId(), &ConversationAssetRefComponentRequests::GetConversationAsset);
+                result,
+                entity.GetId(),
+                &ConversationAssetRefComponentRequests::GetConversationAsset);
             return result;
         }();
 
-        EXPECT_EQ(returnedAsset, originalAsset) << "Expected the returned asset to be " << originalAsset.ToString<AZStd::string>().c_str()
-                                                << ", but received " << returnedAsset.ToString<AZStd::string>().c_str();
+        EXPECT_EQ(returnedAsset, originalAsset)
+            << "Expected the returned asset to be "
+            << originalAsset.ToString<AZStd::string>().c_str()
+            << ", but received "
+            << returnedAsset.ToString<AZStd::string>().c_str();
     }
 
 } // namespace ConversationTest

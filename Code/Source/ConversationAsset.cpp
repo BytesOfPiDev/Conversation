@@ -13,16 +13,24 @@
 
 namespace Conversation
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(ConversationAsset, "ConversationAsset", ConversationAssetTypeId); // NOLINT
+    AZ_TYPE_INFO_WITH_NAME_IMPL(
+        ConversationAsset,
+        "ConversationAsset",
+        ConversationAssetTypeId); // NOLINT
     AZ_RTTI_NO_TYPE_INFO_IMPL(ConversationAsset, AZ::Data::AssetData); // NOLINT
-    AZ_CLASS_ALLOCATOR_IMPL(ConversationAsset, AZ::SystemAllocator, 0); // NOLINT
+    AZ_CLASS_ALLOCATOR_IMPL(
+        ConversationAsset, AZ::SystemAllocator, 0); // NOLINT
 
     void ConversationAsset::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<IConversationAsset>()->Version(0);
-            serializeContext->Class<ConversationAsset, AZ::Data::AssetData, IConversationAsset>()
+            serializeContext
+                ->Class<
+                    ConversationAsset,
+                    AZ::Data::AssetData,
+                    IConversationAsset>()
                 ->Version(1)
                 ->Field("Chunks", &ConversationAsset::m_chunks)
                 ->Field("Comment", &ConversationAsset::m_comment)
@@ -32,22 +40,31 @@ namespace Conversation
                 ->Field("StartingIds", &ConversationAsset::m_startingIds)
                 ->Field("Names", &ConversationAsset::m_names);
 
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            if (AZ::EditContext* editContext =
+                    serializeContext->GetEditContext())
             {
                 editContext
-                    ->Class<ConversationAsset>("ConversationAsset", "Stores dialogue and other information needed to start a conversation.")
+                    ->Class<ConversationAsset>(
+                        "ConversationAsset",
+                        "Stores dialogue and other information needed to start "
+                        "a conversation.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, DialogueSystemCategory);
+                    ->Attribute(
+                        AZ::Edit::Attributes::Category, DialogueSystemCategory);
             }
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<ConversationAsset>("ConversationAsset")
-                ->Attribute(AZ::Script::Attributes::Category, DialogueSystemCategory)
-                ->Attribute(AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(
+                    AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(
+                    AZ::Script::Attributes::Module, DialogueSystemModule)
                 ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
+                ->Attribute(
+                    AZ::Script::Attributes::Scope,
+                    AZ::Script::Attributes::ScopeFlags::Common);
         }
     }
 
@@ -55,7 +72,8 @@ namespace Conversation
     {
         if (!newStartingId.IsValid())
         {
-            AZLOG_WARN("Adding a starting ID requires that the ID is not null."); // NOLINT
+            AZLOG_WARN("Adding a starting ID requires that the ID is not "
+                       "null."); // NOLINT
             return;
         }
 
@@ -71,7 +89,8 @@ namespace Conversation
         // Early out if it's already in the container.
         if (iterFoundStartingId != m_startingIds.end())
         {
-            AZLOG_WARN("The starting ID is already in the conversation asset."); // NOLINT
+            AZLOG_WARN(
+                "The starting ID is already in the conversation asset."); // NOLINT
             return;
         }
 
@@ -85,7 +104,8 @@ namespace Conversation
             AZ_Warning( // NOLINT
                 "ConversationAsset",
                 false,
-                "Unable to add dialogue because the ID is invalid! It must be set to a valid ID before being added.\n");
+                "Unable to add dialogue because the ID is invalid! It must be "
+                "set to a valid ID before being added.\n");
             return;
         }
 
@@ -94,7 +114,8 @@ namespace Conversation
             AZ_Warning( // NOLINT
                 "ConversationAsset",
                 false,
-                "Unable to add dialogue because there is already a dialogue with the same ID.\n");
+                "Unable to add dialogue because there is already a dialogue "
+                "with the same ID.\n");
             return;
         }
 
@@ -105,7 +126,9 @@ namespace Conversation
     {
         if (!responseData.IsValid())
         {
-            AZLOG_WARN("Attempt to add invalid response data to a ConversationAsset rejected. Each ID must not be null."); // NOLINT
+            AZLOG_WARN(
+                "Attempt to add invalid response data to a ConversationAsset "
+                "rejected. Each ID must not be null."); // NOLINT
             return;
         }
 
@@ -113,7 +136,8 @@ namespace Conversation
             m_dialogues,
             [&responseData](DialogueData const& dialogueData) -> bool
             {
-                return dialogueData.GetDialogueId() == responseData.m_parentDialogueId;
+                return dialogueData.GetDialogueId() ==
+                    responseData.m_parentDialogueId;
             });
 
         // We add response data without confirming if we have a DialogueData
@@ -127,14 +151,18 @@ namespace Conversation
             return;
         }
 
-        // If it was found, we also add the response directly to the DialogueData.
+        // If it was found, we also add the response directly to the
+        // DialogueData.
         iter->AddDialogueResponseId(responseData);
     }
 
-    auto ConversationAsset::GetDialogueById(UniqueId const& dialogueId) -> AZ::Outcome<DialogueData>
+    auto ConversationAsset::GetDialogueById(UniqueId const& dialogueId)
+        -> AZ::Outcome<DialogueData>
     {
         auto iter = m_dialogues.find(DialogueData(dialogueId));
-        return iter != m_dialogues.end() ? AZ::Success(*iter) : AZ::Outcome<DialogueData>(AZ::Failure());
+        return iter != m_dialogues.end()
+            ? AZ::Success(*iter)
+            : AZ::Outcome<DialogueData>(AZ::Failure());
     }
 
 } // namespace Conversation

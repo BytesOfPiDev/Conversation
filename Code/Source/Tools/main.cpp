@@ -14,8 +14,10 @@ auto main(int argc, char** argv) -> int
         AZ::ComponentApplication::Descriptor appDesc;
         appDesc.m_enableScriptReflection = true;
 
-        appDesc.m_modules.push_back(AZ::DynamicModuleDescriptor{ "LmbrCentral" });
-        appDesc.m_modules.push_back(AZ::DynamicModuleDescriptor{ "ScriptCanvas" });
+        appDesc.m_modules.push_back(
+            AZ::DynamicModuleDescriptor{ "LmbrCentral" });
+        appDesc.m_modules.push_back(
+            AZ::DynamicModuleDescriptor{ "ScriptCanvas" });
 
         AZ::ComponentApplication::StartupParameters startupParams{};
 

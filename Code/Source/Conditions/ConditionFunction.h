@@ -18,7 +18,9 @@ namespace Conversation
 
     struct ConditionFunction
     {
-        AZ_TYPE_INFO(ConditionFunction, "3C516F9D-7F5A-4326-800E-B5C8AF5B9F3E"); // NOLINT
+        AZ_TYPE_INFO(
+            ConditionFunction,
+            "3C516F9D-7F5A-4326-800E-B5C8AF5B9F3E"); // NOLINT
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::Name m_functionName{};

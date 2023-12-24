@@ -7,7 +7,7 @@ namespace BytesOfPi
 {
     namespace DialogueNodes
     {
-        static constexpr const char* k_categoryName = "Conversation";
+        static constexpr char const* k_categoryName = "Conversation";
 
     } // namespace DialogueNodes
 } // namespace BytesOfPi

@@ -95,9 +95,12 @@ namespace ConversationEditor
     namespace CommonSlotDescriptions
     {
         constexpr auto ActorText = "The text that will show up on screen.";
-        constexpr auto DialogueId = "The globally unique identifier for this specific dialogue.";
-        constexpr auto DIALOGUEDATA = "Stores data related to a specific dialogue node.";
-        constexpr auto DIALOGUESCRIPT = "An identifier for a script that runs when the dialogue is used.";
+        constexpr auto DialogueId =
+            "The globally unique identifier for this specific dialogue.";
+        constexpr auto DIALOGUEDATA =
+            "Stores data related to a specific dialogue node.";
+        constexpr auto DIALOGUESCRIPT =
+            "An identifier for a script that runs when the dialogue is used.";
         constexpr auto ENTER = "";
         constexpr auto EXIT = "";
         constexpr auto OutputDialogueId = DialogueId;
@@ -108,5 +111,7 @@ namespace ConversationEditor
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(ConversationEditor::NodeAndSlotNames, "{543AB94D-202A-4210-8987-9CBD8668BC76}"); // NOLINT
+    AZ_TYPE_INFO_SPECIALIZE(
+        ConversationEditor::NodeAndSlotNames,
+        "{543AB94D-202A-4210-8987-9CBD8668BC76}"); // NOLINT
 }

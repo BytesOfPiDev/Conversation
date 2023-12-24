@@ -15,8 +15,8 @@ namespace Conversation
     /**
      * Represents a locally unique identifier for various data types.
      *
-     * @note Currently, it is primarily used with DialogueData instances, but it will be used for
-     * any object instance that needs a unique ID.
+     * @note Currently, it is primarily used with DialogueData instances, but it
+     * will be used for any object instance that needs a unique ID.
      */
     struct UniqueId
     {

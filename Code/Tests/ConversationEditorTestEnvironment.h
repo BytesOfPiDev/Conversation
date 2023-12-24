@@ -7,7 +7,8 @@
 
 namespace ConversationEditorTest
 {
-    class ConversationEditorTestEnvironment : public AZ::Test::GemTestEnvironment
+    class ConversationEditorTestEnvironment
+        : public AZ::Test::GemTestEnvironment
     {
     public:
         AZ_DISABLE_COPY_MOVE(ConversationEditorTestEnvironment); // NOLINT

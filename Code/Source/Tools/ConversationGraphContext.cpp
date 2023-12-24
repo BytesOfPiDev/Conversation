@@ -11,9 +11,12 @@ namespace ConversationEditor
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ConversationGraphContext, GraphModel::GraphContext>()->Version(0);
+            serializeContext
+                ->Class<ConversationGraphContext, GraphModel::GraphContext>()
+                ->Version(0);
 
-            serializeContext->RegisterGenericType<ConversationGraphContextPtr>();
+            serializeContext
+                ->RegisterGenericType<ConversationGraphContextPtr>();
         }
     }
 
@@ -22,7 +25,8 @@ namespace ConversationEditor
     {
     }
 
-    ConversationGraphContext::ConversationGraphContext(GraphModel::DataTypeList const& dataTypes)
+    ConversationGraphContext::ConversationGraphContext(
+        GraphModel::DataTypeList const& dataTypes)
         : GraphContext(SystemName, ModuleExtension, dataTypes)
     {
     }

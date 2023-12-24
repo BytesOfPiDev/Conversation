@@ -8,7 +8,8 @@ namespace ConversationEditor
 {
     struct EditorActorText
     {
-        AZ_TYPE_INFO(EditorActorText, "E57F6CA0-9280-435A-A4C3-4A4A277A1A25"); // NOLINT
+        AZ_TYPE_INFO(
+            EditorActorText, "E57F6CA0-9280-435A-A4C3-4A4A277A1A25"); // NOLINT
         AZ_CLASS_ALLOCATOR(EditorActorText, AZ::SystemAllocator, 0); // NOLINT
 
         static void Reflect(AZ::ReflectContext* context);

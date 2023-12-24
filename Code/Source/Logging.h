@@ -7,7 +7,10 @@
 namespace Conversation
 {
     template<typename ComponentType>
-    void LOG_EntityComponent(AZStd::string_view logTag, ComponentType const& dialogueComponent, AZStd::string_view logMessage)
+    void LOG_EntityComponent(
+        AZStd::string_view logTag,
+        ComponentType const& dialogueComponent,
+        AZStd::string_view logMessage)
     {
         AZLOG( // NOLINT
             logTag.data(),

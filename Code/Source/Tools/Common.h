@@ -5,7 +5,8 @@
 
 namespace ConversationEditor
 {
-	static const GraphCanvas::EditorId AssetEditorId = AZ_CRC("ConversationEditorApp", 0x9d94345e);
+    static GraphCanvas::EditorId const AssetEditorId =
+        AZ_CRC("ConversationEditorApp", 0x9d94345e);
 
-	static const char* SAVE_IDENTIFIER = "DialogueDocumentEditorSaveIdentifier";
-}
+    static char const* SAVE_IDENTIFIER = "DialogueDocumentEditorSaveIdentifier";
+} // namespace ConversationEditor

@@ -34,17 +34,19 @@ namespace ConversationEditor
     {
         using namespace NodeAndSlotNamesNamespace;
 
-        AZStd::shared_ptr<GraphModel::DataType> const dialogueIdDataType = GetGraphContext()->GetDataType(AZ_CRC_CE("dialogue_id"));
+        AZStd::shared_ptr<GraphModel::DataType> const dialogueIdDataType =
+            GetGraphContext()->GetDataType(AZ_CRC_CE("dialogue_id"));
         auto const dialogueId = Conversation::UniqueId::CreateRandomId();
 
-        auto dialogueIdProperty = AZStd::make_shared<GraphModel::SlotDefinition>(
-            GraphModel::SlotDirection::Input,
-            GraphModel::SlotType::Property,
-            ToString(NodeAndSlotNames::NodeIdProperty),
-            CommonSlotDisplayNames::DialogueId,
-            CommonSlotDescriptions::DialogueId,
-            GraphModel::DataTypeList{ dialogueIdDataType },
-            AZStd::any(dialogueId));
+        auto dialogueIdProperty =
+            AZStd::make_shared<GraphModel::SlotDefinition>(
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Property,
+                ToString(NodeAndSlotNames::NodeIdProperty),
+                CommonSlotDisplayNames::DialogueId,
+                CommonSlotDescriptions::DialogueId,
+                GraphModel::DataTypeList{ dialogueIdDataType },
+                AZStd::any(dialogueId));
 
         auto outputs = AZStd::make_shared<GraphModel::SlotDefinition>(
             GraphModel::SlotDirection::Output,
@@ -73,11 +75,18 @@ namespace ConversationEditor
         {
             serializeContext->Class<RootNode, GraphModel::Node>()->Version(0);
 
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            if (AZ::EditContext* editContext =
+                    serializeContext->GetEditContext())
             {
-                editContext->Class<RootNode>("RootNode", "Node that represents a conversation at the highest level.")
+                editContext
+                    ->Class<RootNode>(
+                        "RootNode",
+                        "Node that represents a conversation at the highest "
+                        "level.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "Root");
+                    ->Attribute(
+                        GraphModelIntegration::Attributes::TitlePaletteOverride,
+                        "Root");
             }
         }
     }

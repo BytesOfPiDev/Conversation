@@ -18,18 +18,33 @@ namespace Conversation
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<ConversationAssetRefComponentRequests>()->Version(1);
-            serialize->Class<ConversationAssetRefComponent, AZ::Component, ConversationAssetRefComponentRequests>()->Version(0)->Field(
-                "Asset", &ConversationAssetRefComponent::m_asset);
+            serialize->Class<ConversationAssetRefComponentRequests>()->Version(
+                1);
+            serialize
+                ->Class<
+                    ConversationAssetRefComponent,
+                    AZ::Component,
+                    ConversationAssetRefComponentRequests>()
+                ->Version(0)
+                ->Field("Asset", &ConversationAssetRefComponent::m_asset);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<ConversationAssetRefComponent>("Conversation Asset Ref", "")
+                editContext
+                    ->Class<ConversationAssetRefComponent>(
+                        "Conversation Asset Ref", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                    ->Attribute(
+                        AZ::Edit::Attributes::AppearsInAddComponentMenu,
+                        AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::Category, DialogueSystemCategory)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ConversationAssetRefComponent::m_asset, "Asset", "");
+                    ->Attribute(
+                        AZ::Edit::Attributes::Category, DialogueSystemCategory)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ConversationAssetRefComponent::m_asset,
+                        "Asset",
+                        "");
             }
         }
     }
@@ -40,36 +55,42 @@ namespace Conversation
             GetEntity() != nullptr,
             "Init should not be called if we're not connected to an entity!");
 
-        ConversationAssetRefComponentRequestBus::Handler::BusConnect(GetEntityId());
+        ConversationAssetRefComponentRequestBus::Handler::BusConnect(
+            GetEntityId());
     }
 
     void ConversationAssetRefComponent::Activate()
     {
         AZ_Assert( // NOLINT
             GetEntity() != nullptr,
-            "Activate should not be called if we're not connected to an entity!");
+            "Activate should not be called if we're not connected to an "
+            "entity!");
     }
 
     void ConversationAssetRefComponent::Deactivate()
     {
         AZ_Assert( // NOLINT
             GetEntity() != nullptr,
-            "Deactivate should not be called if we're not connected to an entity!");
+            "Deactivate should not be called if we're not connected to an "
+            "entity!");
     }
 
-    auto ConversationAssetRefComponent::GetConversationAsset() const -> AZ::Data::Asset<ConversationAsset>
+    auto ConversationAssetRefComponent::GetConversationAsset() const
+        -> AZ::Data::Asset<ConversationAsset>
     {
         return m_asset;
     }
 
-    auto ConversationAssetRefComponent::SetConversationAsset(AZ::Data::Asset<ConversationAsset> replacementAsset) -> bool
+    auto ConversationAssetRefComponent::SetConversationAsset(
+        AZ::Data::Asset<ConversationAsset> replacementAsset) -> bool
     {
         if (GetEntity()->GetState() == AZ::Entity::State::Active)
         {
             LOG_EntityComponent(
                 "LOG_ConversationAssetRefComponent",
                 *this,
-                "Failed to set asset. The asset cannot be changed while our entity is in the active state.");
+                "Failed to set asset. The asset cannot be changed while our "
+                "entity is in the active state.");
 
             return false;
         }
@@ -79,22 +100,27 @@ namespace Conversation
         return true;
     }
 
-    void ConversationAssetRefComponent::GetProvidedServices [[maybe_unused]] (AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void ConversationAssetRefComponent::GetProvidedServices [[maybe_unused]] (
+        AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("ConversationAssetRefService"));
     }
 
-    void ConversationAssetRefComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void ConversationAssetRefComponent::GetIncompatibleServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType&
+            incompatible)
     {
-        // Multiple asset references are allowed on a single entity, for now. As a result, we don't add our provided service to the
-        // incompatible list.
+        // Multiple asset references are allowed on a single entity, for now. As
+        // a result, we don't add our provided service to the incompatible list.
     }
 
-    void ConversationAssetRefComponent::GetRequiredServices [[maybe_unused]] (AZ::ComponentDescriptor::DependencyArrayType& required)
+    void ConversationAssetRefComponent::GetRequiredServices [[maybe_unused]] (
+        AZ::ComponentDescriptor::DependencyArrayType& required)
     {
     }
 
-    void ConversationAssetRefComponent::GetDependentServices [[maybe_unused]] (AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void ConversationAssetRefComponent::GetDependentServices [[maybe_unused]] (
+        AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
     }
 
@@ -108,46 +134,56 @@ namespace Conversation
         return m_asset ? m_asset->CountDialogues() : 0;
     }
 
-    auto ConversationAssetRefComponent::CopyStartingIds() const -> AZStd::vector<UniqueId>
+    auto ConversationAssetRefComponent::CopyStartingIds() const
+        -> AZStd::vector<UniqueId>
     {
         return m_asset ? m_asset->CopyStartingIds() : AZStd::vector<UniqueId>{};
     }
 
-    auto ConversationAssetRefComponent::CopyDialogues() const -> DialogueDataContainer
+    auto ConversationAssetRefComponent::CopyDialogues() const
+        -> DialogueDataContainer
     {
         return m_asset ? m_asset->CopyDialogues() : DialogueDataContainer{};
     }
 
-    void ConversationAssetRefComponent::AddStartingId(UniqueId const& newStartingId)
+    void ConversationAssetRefComponent::AddStartingId(
+        UniqueId const& newStartingId)
     {
         m_asset ? m_asset->AddStartingId(newStartingId) : void();
     }
 
-    void ConversationAssetRefComponent::AddDialogue(DialogueData const& newDialogueData)
+    void ConversationAssetRefComponent::AddDialogue(
+        DialogueData const& newDialogueData)
     {
         m_asset ? m_asset->AddDialogue(newDialogueData) : void();
     }
 
-    void ConversationAssetRefComponent::AddResponse(ResponseData const& responseData)
+    void ConversationAssetRefComponent::AddResponse(
+        ResponseData const& responseData)
     {
         m_asset ? m_asset->AddResponse(responseData) : void();
     }
 
-    auto ConversationAssetRefComponent::GetDialogueById(UniqueId const& dialogueId) -> AZ::Outcome<DialogueData>
+    auto ConversationAssetRefComponent::GetDialogueById(
+        UniqueId const& dialogueId) -> AZ::Outcome<DialogueData>
     {
         return m_asset ? m_asset->GetDialogueById(dialogueId) : AZ::Failure();
     }
-    auto ConversationAssetRefComponent::CheckDialogueExists(UniqueId const& dialogueId) -> bool
+    auto ConversationAssetRefComponent::CheckDialogueExists(
+        UniqueId const& dialogueId) -> bool
     {
         return m_asset ? m_asset->CheckDialogueExists(dialogueId) : false;
     }
 
-    auto ConversationAssetRefComponent::GetMainScriptAsset() const -> AZ::Data::Asset<AZ::ScriptAsset>
+    auto ConversationAssetRefComponent::GetMainScriptAsset() const
+        -> AZ::Data::Asset<AZ::ScriptAsset>
     {
-        return m_asset ? m_asset->GetMainScriptAsset() : AZ::Data::Asset<AZ::ScriptAsset>{};
+        return m_asset ? m_asset->GetMainScriptAsset()
+                       : AZ::Data::Asset<AZ::ScriptAsset>{};
     }
 
-    void ConversationAssetRefComponent::AddChunk(DialogueChunk const& dialogueChunk)
+    void ConversationAssetRefComponent::AddChunk(
+        DialogueChunk const& dialogueChunk)
     {
         m_asset ? m_asset->AddChunk(dialogueChunk) : void();
     }

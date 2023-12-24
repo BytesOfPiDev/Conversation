@@ -10,11 +10,13 @@ namespace ConversationEditor
     /**
      * Represents a link to a dialogue node within the graph.
      *
-     * Links are used to jump between parts of a dialogue tree. This is useful for avoiding
-     * duplicate dialogue options that represent the exact same thing/scenario.
+     * Links are used to jump between parts of a dialogue tree. This is useful
+     * for avoiding duplicate dialogue options that represent the exact same
+     * thing/scenario.
      *
-     * A link has no exit function because the conversation continues from whatever dialogue
-     * is jumped to - as if it arrived there through the preceding branches.
+     * A link has no exit function because the conversation continues from
+     * whatever dialogue is jumped to - as if it arrived there through the
+     * preceding branches.
      */
     class LinkNode
         : public GraphModel::Node
@@ -38,7 +40,8 @@ namespace ConversationEditor
         }
 
     protected:
-        void PostLoadSetup(GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
+        void PostLoadSetup(
+            GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
         void PostLoadSetup() override;
         void RegisterSlots() override;
 

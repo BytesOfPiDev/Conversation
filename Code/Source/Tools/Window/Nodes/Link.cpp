@@ -17,7 +17,8 @@
 
 namespace ConversationEditor
 {
-    AZ_RTTI_NO_TYPE_INFO_IMPL(LinkNode, GraphModel::Node, NodeRequests); // NOLINT
+    AZ_RTTI_NO_TYPE_INFO_IMPL(
+        LinkNode, GraphModel::Node, NodeRequests); // NOLINT
     AZ_TYPE_INFO_WITH_NAME_IMPL(LinkNode, "LinkNode", LinkNodeTypeId); // NOLINT
     AZ_CLASS_ALLOCATOR_IMPL(LinkNode, AZ::SystemAllocator); // NOLINT
 
@@ -30,20 +31,29 @@ namespace ConversationEditor
 
     void LinkNode::Reflect(AZ::ReflectContext* context)
     {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext =
+                azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<LinkNode, GraphModel::Node, NodeRequests>()->Version(0);
+            serializeContext->Class<LinkNode, GraphModel::Node, NodeRequests>()
+                ->Version(0);
 
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            if (AZ::EditContext* editContext =
+                    serializeContext->GetEditContext())
             {
-                editContext->Class<LinkNode>("Link", "Node that links/jumps from one dialogue to another.")
+                editContext
+                    ->Class<LinkNode>(
+                        "Link",
+                        "Node that links/jumps from one dialogue to another.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "Link");
+                    ->Attribute(
+                        GraphModelIntegration::Attributes::TitlePaletteOverride,
+                        "Link");
             }
         }
     }
 
-    void LinkNode::PostLoadSetup(GraphModel::GraphPtr graph, GraphModel::NodeId id)
+    void LinkNode::PostLoadSetup(
+        GraphModel::GraphPtr graph, GraphModel::NodeId id)
     {
         GraphModel::Node::PostLoadSetup(graph, id);
     }
@@ -55,40 +65,44 @@ namespace ConversationEditor
 
     void LinkNode::RegisterSlots()
     {
-        GraphModel::DataTypePtr uniqueIdDataType = GetGraphContext()->GetDataType<AZ::Uuid>();
-        auto dialogueIdDataType{ GetGraphContext()->GetDataType(AZ_CRC_CE(DialogueIdTypeName)) };
+        GraphModel::DataTypePtr uniqueIdDataType =
+            GetGraphContext()->GetDataType<AZ::Uuid>();
+        auto dialogueIdDataType{ GetGraphContext()->GetDataType(
+            AZ_CRC_CE(DialogueIdTypeName)) };
 
-        auto to = AZStd::make_shared<GraphModel::SlotDefinition>(GraphModel::SlotDefinition(
-            GraphModel::SlotDirection::Input,
-            GraphModel::SlotType::Data,
-            ToString(LinkNodeSlots::inFrom),
-            "From",
-            "The node to link from.",
-            { dialogueIdDataType },
-            dialogueIdDataType->GetDefaultValue(),
-            {},
-            {},
-            {},
-            {},
-            {},
-            true,
-            false));
+        auto to = AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDefinition(
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Data,
+                ToString(LinkNodeSlots::inFrom),
+                "From",
+                "The node to link from.",
+                { dialogueIdDataType },
+                dialogueIdDataType->GetDefaultValue(),
+                {},
+                {},
+                {},
+                {},
+                {},
+                true,
+                false));
 
-        auto from = AZStd::make_shared<GraphModel::SlotDefinition>(GraphModel::SlotDefinition(
-            GraphModel::SlotDirection::Input,
-            GraphModel::SlotType::Data,
-            ToString(LinkNodeSlots::inTo),
-            "To",
-            "The node to link to.",
-            { dialogueIdDataType },
-            dialogueIdDataType->GetDefaultValue(),
-            {},
-            {},
-            {},
-            {},
-            {},
-            true,
-            false));
+        auto from = AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDefinition(
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Data,
+                ToString(LinkNodeSlots::inTo),
+                "To",
+                "The node to link to.",
+                { dialogueIdDataType },
+                dialogueIdDataType->GetDefaultValue(),
+                {},
+                {},
+                {},
+                {},
+                {},
+                true,
+                false));
 
         RegisterSlot(AZStd::move(from));
         RegisterSlot(AZStd::move(to));
@@ -102,7 +116,8 @@ namespace ConversationEditor
 
         // The connection to our 'From' input slot
         GraphModel::ConstConnectionPtr const fromSlotConnection =
-            [fromSlot, thisNode = azrtti_cast<GraphModel::Node const*>(this)]() -> GraphModel::ConstConnectionPtr
+            [fromSlot, thisNode = azrtti_cast<GraphModel::Node const*>(this)]()
+            -> GraphModel::ConstConnectionPtr
         {
             auto const fromSlotConnections = fromSlot->GetConnections();
 
@@ -111,7 +126,8 @@ namespace ConversationEditor
                 return nullptr;
             }
 
-            GraphModel::ConstConnectionPtr const fromSlotConnection = fromSlotConnections.front();
+            GraphModel::ConstConnectionPtr const fromSlotConnection =
+                fromSlotConnections.front();
             // The source should not be us, we should be the target
             if (fromSlotConnection->GetSourceNode().get() == thisNode)
             {
@@ -123,7 +139,8 @@ namespace ConversationEditor
 
         // The connection to our 'To' input slot
         GraphModel::ConstConnectionPtr const toSlotConnection =
-            [toSlot, thisNode = azrtti_cast<GraphModel::Node const*>(this)]() -> GraphModel::ConstConnectionPtr
+            [toSlot, thisNode = azrtti_cast<GraphModel::Node const*>(this)]()
+            -> GraphModel::ConstConnectionPtr
         {
             auto const toSlotConnections = toSlot->GetConnections();
 
@@ -132,7 +149,8 @@ namespace ConversationEditor
                 return nullptr;
             }
 
-            GraphModel::ConstConnectionPtr const toSlotConnection = toSlotConnections.front();
+            GraphModel::ConstConnectionPtr const toSlotConnection =
+                toSlotConnections.front();
             // The source should not be us, we should be the target
             if (toSlotConnection->GetSourceNode().get() == thisNode)
             {
@@ -146,7 +164,8 @@ namespace ConversationEditor
         {
             AZ_Assert( // NOLINT
                 false,
-                "There was an issue getting valid connections to our 'From' and 'To' input slots.");
+                "There was an issue getting valid connections to our 'From' "
+                "and 'To' input slots.");
             return;
         }
 

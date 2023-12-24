@@ -23,20 +23,22 @@ namespace ConversationEditor
             WaypointNode(GraphModel::GraphPtr graph);
             ~WaypointNode() override = default;
 
-            auto GetSubTitle() const -> const char* override
+            auto GetSubTitle() const -> char const* override
             {
                 return "A waypoint";
             }
-            auto GetTitle() const -> const char* override
+            auto GetTitle() const -> char const* override
             {
                 return "Waypoint";
             }
 
         protected:
-            auto CanExtendSlot(GraphModel::SlotDefinitionPtr slotDefinition) const -> bool override;
+            auto CanExtendSlot(GraphModel::SlotDefinitionPtr slotDefinition)
+                const -> bool override;
             void RegisterSlots() override;
 
-            void PostLoadSetup(GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
+            void PostLoadSetup(
+                GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
             void PostLoadSetup() override;
         };
 

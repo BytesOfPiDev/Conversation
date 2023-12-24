@@ -22,9 +22,11 @@ namespace ConversationEditorTest
         ConversationEditorTestApplication() = default;
         ~ConversationEditorTestApplication() override = default;
 
-        auto GetRequiredSystemComponents() const -> AZ::ComponentTypeList override
+        auto GetRequiredSystemComponents() const
+            -> AZ::ComponentTypeList override
         {
-            AZ::ComponentTypeList components = AzFramework::Application::GetRequiredSystemComponents();
+            AZ::ComponentTypeList components =
+                AzFramework::Application::GetRequiredSystemComponents();
 
             components.insert(
                 components.end(),
@@ -35,7 +37,8 @@ namespace ConversationEditorTest
 
                     azrtti_typeid<AzFramework::AssetCatalogComponent>(),
                     azrtti_typeid<AzFramework::GameEntityContextComponent>(),
-                    azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
+                    azrtti_typeid<
+                        AzFramework::AssetSystem::AssetSystemComponent>(),
                 });
 
             return components;
@@ -46,13 +49,18 @@ namespace ConversationEditorTest
     {
         AddDynamicModulePaths({ "LmbrCentral" });
 
-        AddComponentDescriptors({ ConversationEditor::ConversationEditorSystemComponent::CreateDescriptor() });
-        AddComponentDescriptors({ Conversation::DialogueComponent::CreateDescriptor() });
+        AddComponentDescriptors(
+            { ConversationEditor::ConversationEditorSystemComponent::
+                  CreateDescriptor() });
+        AddComponentDescriptors(
+            { Conversation::DialogueComponent::CreateDescriptor() });
 
-        AddRequiredComponents({ azrtti_typeid<ConversationEditor::ConversationEditorSystemComponent>() });
+        AddRequiredComponents({ azrtti_typeid<
+            ConversationEditor::ConversationEditorSystemComponent>() });
     }
 
-    auto ConversationEditorTestEnvironment::CreateApplicationInstance() -> AZ::ComponentApplication*
+    auto ConversationEditorTestEnvironment::CreateApplicationInstance()
+        -> AZ::ComponentApplication*
     {
         return aznew ConversationEditorTestApplication;
     }

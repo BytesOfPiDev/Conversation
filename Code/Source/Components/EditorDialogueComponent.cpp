@@ -21,17 +21,28 @@ namespace ConversationEditor
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<EditorDialogueComponent, AzToolsFramework::Components::EditorComponentBase>()->Version(1)->Field(
-                "Config", &EditorDialogueComponent::m_config);
+            serialize
+                ->Class<
+                    EditorDialogueComponent,
+                    AzToolsFramework::Components::EditorComponentBase>()
+                ->Version(1)
+                ->Field("Config", &EditorDialogueComponent::m_config);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
                 editContext->Class<EditorDialogueComponent>("Dialogue", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "BoP/Conversation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                    ->Attribute(
+                        AZ::Edit::Attributes::Category, "BoP/Conversation")
+                    ->Attribute(
+                        AZ::Edit::Attributes::AppearsInAddComponentMenu,
+                        AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDialogueComponent::m_config, "Configuration", "");
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorDialogueComponent::m_config,
+                        "Configuration",
+                        "");
             }
         }
     }
@@ -49,23 +60,28 @@ namespace ConversationEditor
     }
 
     void EditorDialogueComponent::DisplayEntityViewport(
-        AzFramework::ViewportInfo const& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+        AzFramework::ViewportInfo const& viewportInfo,
+        AzFramework::DebugDisplayRequests& debugDisplay)
     {
     }
 
-    void EditorDialogueComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void EditorDialogueComponent::GetProvidedServices(
+        AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("EditorDialogueService"));
         provided.push_back(AZ_CRC_CE("DialogueService"));
     }
-    void EditorDialogueComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
+    void EditorDialogueComponent::GetDependentServices(
+        AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
     {
     }
-    void EditorDialogueComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void EditorDialogueComponent::GetRequiredServices(
+        AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TagService"));
     }
-    void EditorDialogueComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void EditorDialogueComponent::GetIncompatibleServices(
+        AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("EditorDialogueService"));
         incompatible.push_back(AZ_CRC_CE("DialogueService"));
@@ -77,11 +93,13 @@ namespace ConversationEditor
             gameEntity,
             "The game entity should not be null!");
 
-        auto* dialogueComponent = gameEntity->CreateComponent<Conversation::DialogueComponent>();
+        auto* dialogueComponent =
+            gameEntity->CreateComponent<Conversation::DialogueComponent>();
         if (!dialogueComponent)
         {
             AZLOG_FATAL( // NOLINT
-                "An EditorDialogueComponent is unable to build a game entity because it could not create a Dialogue Component instance.");
+                "An EditorDialogueComponent is unable to build a game entity "
+                "because it could not create a Dialogue Component instance.");
             return;
         }
 

@@ -32,12 +32,18 @@ namespace ConversationEditor
         void Activate() override;
         void Deactivate() override;
 
-        void DisplayEntityViewport(AzFramework::ViewportInfo const& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+        void DisplayEntityViewport(
+            AzFramework::ViewportInfo const& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetProvidedServices(
+            AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetDependentServices(
+            AZ::ComponentDescriptor::DependencyArrayType& dependent);
+        static void GetRequiredServices(
+            AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetIncompatibleServices(
+            AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     protected:
         // Turn an editor component into a runtime component.

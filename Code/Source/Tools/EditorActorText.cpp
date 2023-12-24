@@ -10,13 +10,18 @@ namespace ConversationEditor
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<EditorActorText>()->Version(0)->Field("Text", &EditorActorText::m_text);
+            serialize->Class<EditorActorText>()->Version(0)->Field(
+                "Text", &EditorActorText::m_text);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
                 editContext->Class<EditorActorText>("Actor Text", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorActorText::m_text, "Text", "");
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::MultiLineEdit,
+                        &EditorActorText::m_text,
+                        "Text",
+                        "");
             }
         }
     }

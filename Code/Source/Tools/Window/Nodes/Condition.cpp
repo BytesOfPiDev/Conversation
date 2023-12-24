@@ -22,7 +22,8 @@ namespace ConversationEditor
             : GraphModel::Node(AZStd::move(graph))
         {
         }
-        auto ConditionNode::CanExtendSlot(GraphModel::SlotDefinitionPtr slotDefinition) const -> bool
+        auto ConditionNode::CanExtendSlot(
+            GraphModel::SlotDefinitionPtr slotDefinition) const -> bool
         {
             return false;
         };
@@ -31,7 +32,8 @@ namespace ConversationEditor
         {
         }
 
-        void ConditionNode::PostLoadSetup(GraphModel::GraphPtr graph, GraphModel::NodeId id)
+        void ConditionNode::PostLoadSetup(
+            GraphModel::GraphPtr graph, GraphModel::NodeId id)
         {
             GraphModel::Node::PostLoadSetup(graph, id);
         }

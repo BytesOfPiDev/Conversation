@@ -8,13 +8,15 @@
 
 namespace Conversation
 {
-    constexpr static const char* const SPEAKERTAG_PLAYER = "player";
-    constexpr static const char* const SPEAKERTAG_OWNER = "owner";
+    constexpr static char const* const SPEAKERTAG_PLAYER = "player";
+    constexpr static char const* const SPEAKERTAG_OWNER = "owner";
 
     class ConversationRequests
     {
     public:
-        AZ_RTTI(ConversationRequests, "{7E8571F3-9429-4224-8046-E0DC8BD62E0C}"); // NOLINT
+        AZ_RTTI(
+            ConversationRequests,
+            "{7E8571F3-9429-4224-8046-E0DC8BD62E0C}"); // NOLINT
         AZ_DISABLE_COPY_MOVE(ConversationRequests); // NOLINT
 
         ConversationRequests() = default;
@@ -27,12 +29,15 @@ namespace Conversation
     public:
         //////////////////////////////////////////////////////////////////////////
         // EBusTraits overrides
-        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy =
+            AZ::EBusHandlerPolicy::Single;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
     };
 
-    using ConversationRequestBus = AZ::EBus<ConversationRequests, ConversationBusTraits>;
+    using ConversationRequestBus =
+        AZ::EBus<ConversationRequests, ConversationBusTraits>;
     using ConversationInterface = AZ::Interface<ConversationRequests>;
 
 } // namespace Conversation

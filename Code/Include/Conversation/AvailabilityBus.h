@@ -9,7 +9,8 @@ namespace Conversation
     {
     public:
         AZ_DISABLE_COPY_MOVE(AvailabilityRequests); // NOLINT
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
         AvailabilityRequests() = default;
@@ -34,7 +35,8 @@ namespace Conversation
             AZ::SystemAllocator,
             IsAvailable);
 
-        auto IsAvailable(AZStd::string_view const availabilityId) -> bool override
+        auto IsAvailable(AZStd::string_view const availabilityId)
+            -> bool override
         {
             bool result{};
             CallResult(result, FN_IsAvailable, availabilityId);

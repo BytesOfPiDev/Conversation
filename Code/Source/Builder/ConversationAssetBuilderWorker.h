@@ -8,7 +8,9 @@
 namespace ConversationEditor
 {
     class ConversationAssetBuilderWorker
-        : public AssetBuilderSDK::AssetBuilderCommandBus::Handler // this will deliver you the "shut down!" message on another thread.
+        : public AssetBuilderSDK::AssetBuilderCommandBus::
+              Handler // this will deliver you the "shut down!" message on
+                      // another thread.
     {
     public:
         AZ_RTTI( // NOLINT
@@ -22,15 +24,24 @@ namespace ConversationEditor
         ~ConversationAssetBuilderWorker() override;
 
         //! Asset Builder Callback Functions
-        void CreateJobs(AssetBuilderSDK::CreateJobsRequest const& request, AssetBuilderSDK::CreateJobsResponse& response);
-        void ProcessJob(AssetBuilderSDK::ProcessJobRequest const& request, AssetBuilderSDK::ProcessJobResponse& response);
+        void CreateJobs(
+            AssetBuilderSDK::CreateJobsRequest const& request,
+            AssetBuilderSDK::CreateJobsResponse& response);
+        void ProcessJob(
+            AssetBuilderSDK::ProcessJobRequest const& request,
+            AssetBuilderSDK::ProcessJobResponse& response);
 
-        void HandleCompileKey(AssetBuilderSDK::ProcessJobRequest const& request, AssetBuilderSDK::ProcessJobResponse& response);
-        void HandleCopyKey(AssetBuilderSDK::ProcessJobRequest const& request, AssetBuilderSDK::ProcessJobResponse& response);
+        void HandleCompileKey(
+            AssetBuilderSDK::ProcessJobRequest const& request,
+            AssetBuilderSDK::ProcessJobResponse& response);
+        void HandleCopyKey(
+            AssetBuilderSDK::ProcessJobRequest const& request,
+            AssetBuilderSDK::ProcessJobResponse& response);
 
         //////////////////////////////////////////////////////////////////////////
         //! AssetBuilderSDK::AssetBuilderCommandBus interface
-        void ShutDown() override; // if you get this you must fail all existing jobs and return.
+        void ShutDown() override; // if you get this you must fail all existing
+                                  // jobs and return.
         //////////////////////////////////////////////////////////////////////////
 
     private:

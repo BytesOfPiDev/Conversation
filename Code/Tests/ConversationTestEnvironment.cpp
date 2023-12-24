@@ -18,11 +18,13 @@ namespace ConversationTest
     class ConversationTestApplication : public AzFramework::Application
     {
     public:
-        auto GetRequiredSystemComponents() const -> AZ::ComponentTypeList override
+        auto GetRequiredSystemComponents() const
+            -> AZ::ComponentTypeList override
         {
             using namespace Conversation;
 
-            AZ::ComponentTypeList components = AzFramework::Application::GetRequiredSystemComponents();
+            AZ::ComponentTypeList components =
+                AzFramework::Application::GetRequiredSystemComponents();
 
             components.insert(
                 components.end(),
@@ -33,7 +35,8 @@ namespace ConversationTest
 
                     azrtti_typeid<AzFramework::AssetCatalogComponent>(),
                     azrtti_typeid<AzFramework::GameEntityContextComponent>(),
-                    azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
+                    azrtti_typeid<
+                        AzFramework::AssetSystem::AssetSystemComponent>(),
                 });
 
             return components;
@@ -46,14 +49,17 @@ namespace ConversationTest
 
         AddDynamicModulePaths({ "LmbrCentral" });
 
-        AddComponentDescriptors({ ConversationSystemComponent::CreateDescriptor() });
+        AddComponentDescriptors(
+            { ConversationSystemComponent::CreateDescriptor() });
         AddComponentDescriptors({ DialogueComponent::CreateDescriptor() });
-        AddComponentDescriptors({ ConversationAssetRefComponent::CreateDescriptor() });
+        AddComponentDescriptors(
+            { ConversationAssetRefComponent::CreateDescriptor() });
 
         AddRequiredComponents({ azrtti_typeid<ConversationSystemComponent>() });
     }
 
-    auto ConversationTestEnvironment::CreateApplicationInstance() -> AZ::ComponentApplication*
+    auto ConversationTestEnvironment::CreateApplicationInstance()
+        -> AZ::ComponentApplication*
     {
         return aznew ConversationTestApplication;
     }

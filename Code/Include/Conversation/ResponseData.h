@@ -19,7 +19,8 @@ namespace Conversation
 
         [[nodiscard]] auto IsValid() const -> bool
         {
-            return m_parentDialogueId.IsValid() && m_responseDialogueId.IsValid();
+            return m_parentDialogueId.IsValid() &&
+                m_responseDialogueId.IsValid();
         }
 
         // The Id of the dialogue to create a response to.

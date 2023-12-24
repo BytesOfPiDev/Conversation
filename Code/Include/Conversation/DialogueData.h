@@ -25,7 +25,8 @@ namespace Conversation
     struct DialogueChunk
     {
     public:
-        AZ_TYPE_INFO(DialogueChunk, "{81C04F0E-BA10-4D66-A3E8-0304FB8EB545}"); // NOLINT
+        AZ_TYPE_INFO(
+            DialogueChunk, "{81C04F0E-BA10-4D66-A3E8-0304FB8EB545}"); // NOLINT
         AZ_DEFAULT_COPY_MOVE(DialogueChunk); // NOLINT
 
         static void Reflect(AZ::ReflectContext* reflect);
@@ -76,7 +77,8 @@ namespace Conversation
         static void Reflect(AZ::ReflectContext* context);
 
         // There's a limit to the maximum amount of dialogue responses.
-        // Attempting to go beyond this will likely result in it not being added.
+        // Attempting to go beyond this will likely result in it not being
+        // added.
         static constexpr auto const MaxResponses = 10;
         static constexpr auto const DefaultEntryDelay = 0;
         static constexpr auto const ChunkArraySize = 4;
@@ -89,7 +91,8 @@ namespace Conversation
          * @param dialogueData The dialogue to initialize
          * @return DialogueId The dialogue's ID.
          *
-         * @note The ID should generally never be changed once it is set. Not currently enforced.
+         * @note The ID should generally never be changed once it is set. Not
+         * currently enforced.
          */
         static auto InitId(DialogueData& dialogueData) -> UniqueId
         {
@@ -106,9 +109,14 @@ namespace Conversation
         /**
          * @brief Setup a valid dialogue
          *
-         * @warning Ensure that the given id is valid. It is currently enforced, but might not be in the future.
+         * @warning Ensure that the given id is valid. It is currently enforced,
+         * but might not be in the future.
          */
-        DialogueData(UniqueId const id, AZStd::string actorText, AZStd::string speaker = {}, AZStd::vector<UniqueId> responses = {});
+        DialogueData(
+            UniqueId const id,
+            AZStd::string actorText,
+            AZStd::string speaker = {},
+            AZStd::vector<UniqueId> responses = {});
         ~DialogueData() = default;
 
         constexpr auto operator==(DialogueData const& other) const -> bool
@@ -130,9 +138,12 @@ namespace Conversation
 
             AZStd::string description{};
             description += header;
-            description += AZStd::string::format(idFormat, GetDialogueId().GetHash()); // NOLINT
-            description += AZStd::string::format(textFormat, GetDialogueActorText().data()); // NOLINT
-            description += AZStd::string::format(speakerFormat, GetDialogueSpeaker().data()); // NOLINT
+            description += AZStd::string::format(
+                idFormat, GetDialogueId().GetHash()); // NOLINT
+            description += AZStd::string::format(
+                textFormat, GetDialogueActorText().data()); // NOLINT
+            description += AZStd::string::format(
+                speakerFormat, GetDialogueSpeaker().data()); // NOLINT
 
             return description;
         }
@@ -147,47 +158,56 @@ namespace Conversation
             return m_id;
         }
 
-        [[nodiscard]] constexpr auto GetDialogueActorText() const -> AZStd::string_view
+        [[nodiscard]] constexpr auto GetDialogueActorText() const
+            -> AZStd::string_view
         {
             return m_actorText;
         }
 
-        [[nodiscard]] constexpr auto GetDialogueSpeaker() const -> AZStd::string_view
+        [[nodiscard]] constexpr auto GetDialogueSpeaker() const
+            -> AZStd::string_view
         {
             return m_speaker;
         }
 
-        [[nodiscard]] constexpr auto GetResponseIds() const -> AZStd::vector<UniqueId> const&
+        [[nodiscard]] constexpr auto GetResponseIds() const
+            -> AZStd::vector<UniqueId> const&
         {
             return m_responseIds;
         }
 
-        [[nodiscard]] constexpr auto GetDialogueAudioTrigger() const -> AZStd::string_view
+        [[nodiscard]] constexpr auto GetDialogueAudioTrigger() const
+            -> AZStd::string_view
         {
             return m_audioTrigger;
         }
 
-        [[nodiscard]] constexpr auto GetDialogueScriptIds() const -> AZStd::vector<AZStd::string> const&
+        [[nodiscard]] constexpr auto GetDialogueScriptIds() const
+            -> AZStd::vector<AZStd::string> const&
         {
             return m_scriptIds;
         }
 
-        [[nodiscard]] auto GetDialogueAvailabilityId() const -> AvailabilityIdAsString
+        [[nodiscard]] auto GetDialogueAvailabilityId() const
+            -> AvailabilityIdAsString
         {
             return m_availabilityId;
         }
 
-        [[nodiscard]] constexpr auto GetDialogueComment() const -> AZStd::string_view
+        [[nodiscard]] constexpr auto GetDialogueComment() const
+            -> AZStd::string_view
         {
             return m_comment;
         }
 
-        constexpr void SetDialogueAvailabilityId(AvailabilityIdAsString const& newAvailabilityId)
+        constexpr void SetDialogueAvailabilityId(
+            AvailabilityIdAsString const& newAvailabilityId)
         {
             m_availabilityId = newAvailabilityId;
         }
 
-        constexpr void SetDialogueAvailabilityId(AvailabilityIdAsName const& newAvailabilityId)
+        constexpr void SetDialogueAvailabilityId(
+            AvailabilityIdAsName const& newAvailabilityId)
         {
             m_availabilityId = newAvailabilityId.GetStringView();
         }
@@ -202,7 +222,8 @@ namespace Conversation
             m_speaker = speaker;
         }
 
-        constexpr void SetDialogueAudioTrigger(AZStd::string const& audioTrigger)
+        constexpr void SetDialogueAudioTrigger(
+            AZStd::string const& audioTrigger)
         {
             m_audioTrigger = audioTrigger;
         }
@@ -235,14 +256,16 @@ namespace Conversation
         /**
          * @brief Add a response ID that can follow this dialogue.
          *
-         * The response ID should match an existing DialogueData located elsewhere
-         * in the dialogue asset that houses this dialogue, but it doesn't have to.
+         * The response ID should match an existing DialogueData located
+         * elsewhere in the dialogue asset that houses this dialogue, but it
+         * doesn't have to.
          *
          * TODO: Review having a limit
          *
-         * There is a maximum amount of responses that can be added to a dialogue.
-         * This limit is set in DialogueData::MaxResponses Attempting to go beyond
-         * that will result in the response not being added. Don't do it.
+         * There is a maximum amount of responses that can be added to a
+         * dialogue. This limit is set in DialogueData::MaxResponses Attempting
+         * to go beyond that will result in the response not being added. Don't
+         * do it.
          *
          * @param responseId The DialogueId of the potential reponse.
          *
@@ -255,7 +278,8 @@ namespace Conversation
         {
             auto& responseIds = GetResponseIds();
             // Only add the response if we're within the limit.
-            if (responseId.IsValid() && responseIds.size() < DialogueData::MaxResponses)
+            if (responseId.IsValid() &&
+                responseIds.size() < DialogueData::MaxResponses)
             {
                 m_responseIds.push_back(responseId);
             }
@@ -263,7 +287,8 @@ namespace Conversation
 
         void AddResponses(AZStd::span<UniqueId> responses)
         {
-            m_responseIds.insert(m_responseIds.end(), responses.begin(), responses.end());
+            m_responseIds.insert(
+                m_responseIds.end(), responses.begin(), responses.end());
         }
 
         void AddDialogueResponseId(ResponseData const& responseData)
@@ -298,15 +323,19 @@ namespace Conversation
     using DialogueDataContainer = AZStd::unordered_set<DialogueData>;
 
     /**
-     * @brief Creates a string containing lua code that creates a matching object in Lua.
+     * @brief Creates a string containing lua code that creates a matching
+     * object in Lua.
      * @param dialogueData The dialogue to create a lua snippet for.
      * @param variableName The variable name that will be set in the script.
-     * @param isLocal If the variable should be prefaced with the 'local' Lua keyword.
+     * @param isLocal If the variable should be prefaced with the 'local' Lua
+     * keyword.
      *
      * @note This is meant to be used by tools.
      */
     [[nodiscard]] auto ConvertToLua(
-        DialogueData const& dialogueData, AZStd::string_view variableName = "tmpConvertToLua", bool isLocal = true) -> AZStd::string;
+        DialogueData const& dialogueData,
+        AZStd::string_view variableName = "tmpConvertToLua",
+        bool isLocal = true) -> AZStd::string;
 
 } // namespace Conversation
 

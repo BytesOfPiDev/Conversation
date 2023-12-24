@@ -8,10 +8,12 @@ namespace Conversation
 
 namespace ConversationEditor
 {
-    // NOTE: Keys *MUST* begin with either "/O3DE/AtomToolsFramework", "/O3DE/Atom/Tools", or "/O3DE/Atom/LY_CMAKE_TARGET"
-    // LY_CAKE_TARGET is set in this gem's Code/CMakeLists.txt file
+    // NOTE: Keys *MUST* begin with either "/O3DE/AtomToolsFramework",
+    // "/O3DE/Atom/Tools", or "/O3DE/Atom/LY_CMAKE_TARGET" LY_CAKE_TARGET is set
+    // in this gem's Code/CMakeLists.txt file
     // @see AtomToolsApplication::Destroy()
-    // @note An alternative would be to save the file ourselves, which I'd rather not do unless necessary.
+    // @note An alternative would be to save the file ourselves, which I'd
+    // rather not do unless necessary.
     //
     // clang-format off
     inline constexpr auto ConversationCanvasGraphViewSettingsKey                     = "/O3DE/Atom/ConversationCanvas/GraphView/ViewSettings";

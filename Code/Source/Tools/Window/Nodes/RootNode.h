@@ -7,10 +7,13 @@ namespace ConversationEditor
     /**
      * The first node of a dialogue tree.
      *
-     * This node holds the list of greetings that an NPC can use at the start of a conversation.
+     * This node holds the list of greetings that an NPC can use at the start of
+     * a conversation.
      *
-     * @todo Implement restricting only one of these per graph. Possibly by having it present be default.
-     * @todo Add additional information that describes the dialogue tree as a whole, such as comments.
+     * @todo Implement restricting only one of these per graph. Possibly by
+     * having it present be default.
+     * @todo Add additional information that describes the dialogue tree as a
+     * whole, such as comments.
      */
     class RootNode : public GraphModel::Node
     {

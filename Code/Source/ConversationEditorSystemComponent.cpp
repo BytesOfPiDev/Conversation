@@ -20,23 +20,35 @@
 
 namespace ConversationEditor
 {
-    constexpr auto ConversationCanvasActionIdentifier = "bop.action.tools.conversation_canvas";
+    constexpr auto ConversationCanvasActionIdentifier =
+        "bop.action.tools.conversation_canvas";
 
     void ConversationEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ConversationEditorSystemComponent, ConversationSystemComponent>()->Version(0)->Attribute(
-                AZ::Edit::Attributes::SystemComponentTags,
-                AZStd::vector<AZ::Crc32>({
-                    AssetBuilderSDK::ComponentTags::AssetBuilder,
-                }));
+            serializeContext
+                ->Class<
+                    ConversationEditorSystemComponent,
+                    ConversationSystemComponent>()
+                ->Version(0)
+                ->Attribute(
+                    AZ::Edit::Attributes::SystemComponentTags,
+                    AZStd::vector<AZ::Crc32>({
+                        AssetBuilderSDK::ComponentTags::AssetBuilder,
+                    }));
 
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            if (AZ::EditContext* editContext =
+                    serializeContext->GetEditContext())
             {
-                editContext->Class<ConversationEditorSystemComponent>("ConversationEditor", "Handles editing conversation files.")
+                editContext
+                    ->Class<ConversationEditorSystemComponent>(
+                        "ConversationEditor",
+                        "Handles editing conversation files.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
+                    ->Attribute(
+                        AZ::Edit::Attributes::AppearsInAddComponentMenu,
+                        AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -47,26 +59,32 @@ namespace ConversationEditor
     {
     }
 
-    ConversationEditorSystemComponent::~ConversationEditorSystemComponent() = default;
+    ConversationEditorSystemComponent::~ConversationEditorSystemComponent() =
+        default;
 
-    void ConversationEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void ConversationEditorSystemComponent::GetProvidedServices(
+        AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         BaseSystemComponent::GetProvidedServices(provided);
         provided.push_back(AZ_CRC_CE("ConversationEditorService"));
     }
 
-    void ConversationEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void ConversationEditorSystemComponent::GetIncompatibleServices(
+        AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         BaseSystemComponent::GetIncompatibleServices(incompatible);
         incompatible.push_back(AZ_CRC_CE("ConversationEditorService"));
     }
 
-    void ConversationEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    void ConversationEditorSystemComponent::GetRequiredServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         BaseSystemComponent::GetRequiredServices(required);
     }
 
-    void ConversationEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void ConversationEditorSystemComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType&
+            dependent)
     {
         BaseSystemComponent::GetDependentServices(dependent);
         dependent.push_back(AZ_CRC_CE("ConversationAssetBuilderService"));
@@ -81,28 +99,39 @@ namespace ConversationEditor
     {
         ConversationSystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::
+            BusConnect();
     }
 
     void ConversationEditorSystemComponent::Deactivate()
     {
         ConversationSystemComponent::Deactivate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::
+            BusDisconnect();
     }
 
     void ConversationEditorSystemComponent::OnActionRegistrationHook()
     {
-        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "EditorConversationSystemComponent - could not get ActionManagerInterface");
+        auto actionManagerInterface =
+            AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(
+            actionManagerInterface,
+            "EditorConversationSystemComponent - could not get "
+            "ActionManagerInterface");
 
-        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
-        AZ_Assert(hotKeyManagerInterface, "EditorConversationSystemComponent - could not get HotKeyManagerInterface");
+        auto hotKeyManagerInterface =
+            AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(
+            hotKeyManagerInterface,
+            "EditorConversationSystemComponent - could not get "
+            "HotKeyManagerInterface");
 
         {
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Conversation Canvas (prototype)";
-            actionProperties.m_iconPath = ":/ConversationCanvas/toolbar_icon.svg";
+            actionProperties.m_iconPath =
+                ":/ConversationCanvas/toolbar_icon.svg";
 
             auto outcome = actionManagerInterface->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -113,26 +142,42 @@ namespace ConversationEditor
                     OpenConversationCanvas("");
                 });
 
-            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", ConversationCanvasActionIdentifier);
+            AZ_Assert(
+                outcome.IsSuccess(),
+                "Failed to RegisterAction %s",
+                ConversationCanvasActionIdentifier);
 
-            outcome = hotKeyManagerInterface->SetActionHotKey(ConversationCanvasActionIdentifier, "Ctrl+Shift+D");
-            AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", ConversationCanvasActionIdentifier);
+            outcome = hotKeyManagerInterface->SetActionHotKey(
+                ConversationCanvasActionIdentifier, "Ctrl+Shift+D");
+            AZ_Assert(
+                outcome.IsSuccess(),
+                "Failed to ActionHotKey for %s",
+                ConversationCanvasActionIdentifier);
         }
     }
 
     void ConversationEditorSystemComponent::OnMenuBindingHook()
     {
-        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "EditorConversationSystemComponent - could not get ActionManagerInterface");
+        auto actionManagerInterface =
+            AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(
+            actionManagerInterface,
+            "EditorConversationSystemComponent - could not get "
+            "ActionManagerInterface");
 
-        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        AZ_Assert(menuManagerInterface, "EditorConversationSystemComponent - could not get MenuManagerInterface");
+        auto menuManagerInterface =
+            AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(
+            menuManagerInterface,
+            "EditorConversationSystemComponent - could not get "
+            "MenuManagerInterface");
 
         {
             auto outcome = menuManagerInterface->AddActionToMenu(
                 EditorIdentifiers::ToolsMenuIdentifier,
                 ConversationCanvasActionIdentifier,
-                actionManagerInterface->GenerateActionAlphabeticalSortKey(ConversationCanvasActionIdentifier));
+                actionManagerInterface->GenerateActionAlphabeticalSortKey(
+                    ConversationCanvasActionIdentifier));
 
             AZ_Assert(
                 outcome.IsSuccess(),
@@ -142,7 +187,8 @@ namespace ConversationEditor
         }
     }
 
-    void ConversationEditorSystemComponent::OpenConversationCanvas(AZStd::string const& sourcePath)
+    void ConversationEditorSystemComponent::OpenConversationCanvas(
+        AZStd::string const& sourcePath)
     {
         QStringList arguments;
         arguments.append(sourcePath.c_str());
@@ -157,7 +203,8 @@ namespace ConversationEditor
         AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
         if (!projectPath.empty())
         {
-            arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+            arguments.append(
+                QString("--project-path=%1").arg(projectPath.c_str()));
         }
 
         AZ_Info( // NOLINT

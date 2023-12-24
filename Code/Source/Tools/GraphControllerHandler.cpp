@@ -13,7 +13,8 @@ namespace ConversationEditor
     {
     }
 
-    void GraphControllerHandler::OnGraphModelGraphModified(GraphModel::NodePtr node)
+    void GraphControllerHandler::OnGraphModelGraphModified(
+        GraphModel::NodePtr node)
     {
     }
 } // namespace ConversationEditor

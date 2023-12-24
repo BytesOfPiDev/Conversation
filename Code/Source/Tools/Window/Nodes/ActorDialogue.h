@@ -12,7 +12,10 @@ namespace ConversationEditor
         {
         public:
             AZ_CLASS_ALLOCATOR(ActorDialogue, AZ::SystemAllocator, 0); // NOLINT
-            AZ_RTTI(ActorDialogue, ActorDialogueNodeTypeId, GraphModel::Node); // NOLINT
+            AZ_RTTI(
+                ActorDialogue,
+                ActorDialogueNodeTypeId,
+                GraphModel::Node); // NOLINT
             AZ_DISABLE_COPY_MOVE(ActorDialogue); // NOLINT
 
             static void Reflect(AZ::ReflectContext* context);
@@ -32,10 +35,12 @@ namespace ConversationEditor
             }
 
         protected:
-            auto CanExtendSlot(GraphModel::SlotDefinitionPtr slotDefinition) const -> bool override;
+            auto CanExtendSlot(GraphModel::SlotDefinitionPtr slotDefinition)
+                const -> bool override;
             void RegisterSlots() override;
 
-            void PostLoadSetup(GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
+            void PostLoadSetup(
+                GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
             void PostLoadSetup() override;
 
         private:

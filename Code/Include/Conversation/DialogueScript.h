@@ -9,7 +9,8 @@ namespace Conversation
     class DialogueScriptRequests : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::ById;
         typedef AZ::Crc32 BusIdType;
 
         virtual ~DialogueScriptRequests() = default;

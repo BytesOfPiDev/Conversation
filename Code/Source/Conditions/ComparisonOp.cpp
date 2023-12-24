@@ -11,7 +11,8 @@ namespace Conversation
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<ComparisonOp>()->Version(0)->Field("Op", &ComparisonOp::m_opNames);
+            serialize->Class<ComparisonOp>()->Version(0)->Field(
+                "Op", &ComparisonOp::m_opNames);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {

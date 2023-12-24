@@ -15,14 +15,21 @@ namespace Conversation
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<DialogueChunk>()->Version(1)->Field("Data", &DialogueChunk::m_data);
+            serialize->Class<DialogueChunk>()->Version(1)->Field(
+                "Data", &DialogueChunk::m_data);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
                 editContext->Class<DialogueChunk>("DialogueChunk", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &DialogueChunk::m_data, "Text Chunk", "");
+                    ->Attribute(
+                        AZ::Edit::Attributes::Visibility,
+                        AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::MultiLineEdit,
+                        &DialogueChunk::m_data,
+                        "Text Chunk",
+                        "");
             }
         }
     }
@@ -34,7 +41,8 @@ namespace Conversation
             serialize->Class<ResponseData>()
                 ->Version(0)
                 ->Field("ParentDialogueId", &ResponseData::m_parentDialogueId)
-                ->Field("ResponseDialogueId", &ResponseData::m_responseDialogueId);
+                ->Field(
+                    "ResponseDialogueId", &ResponseData::m_responseDialogueId);
         }
     }
 
@@ -43,7 +51,8 @@ namespace Conversation
         ResponseData::Reflect(context);
         DialogueChunk::Reflect(context);
 
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext =
+                azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DialogueData>()
                 ->Version(8) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
@@ -57,15 +66,26 @@ namespace Conversation
                 ->Field("Speaker", &DialogueData::m_speaker);
 
             serializeContext->RegisterGenericType<DialogueDataPtr>();
-            serializeContext->RegisterGenericType<AZStd::vector<DialogueData>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
+            serializeContext
+                ->RegisterGenericType<AZStd::vector<DialogueData>>();
+            serializeContext
+                ->RegisterGenericType<AZStd::unordered_set<DialogueData>>();
 
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            if (AZ::EditContext* editContext =
+                    serializeContext->GetEditContext())
             {
-                editContext->Class<DialogueData>("Dialogue Data", "Data describing a dialogue option.")
+                editContext
+                    ->Class<DialogueData>(
+                        "Dialogue Data", "Data describing a dialogue option.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &DialogueData::m_actorText, "Actor Text", "What the actor will say.")
+                    ->Attribute(
+                        AZ::Edit::Attributes::Visibility,
+                        AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::MultiLineEdit,
+                        &DialogueData::m_actorText,
+                        "Actor Text",
+                        "What the actor will say.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &DialogueData::m_speaker,
@@ -85,30 +105,53 @@ namespace Conversation
                         AZ::Edit::UIHandlers::Default,
                         &DialogueData::m_availabilityId,
                         "AvailabilityId",
-                        "Id to be called when determining dialogue availability.")
+                        "Id to be called when determining dialogue "
+                        "availability.")
 
-                    ->DataElement(AZ::Edit::UIHandlers::Button, &DialogueData::m_id, "Id", "");
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Button,
+                        &DialogueData::m_id,
+                        "Id",
+                        "");
             }
         }
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<DialogueData>("Dialogue Data")
-                ->Attribute(AZ::Script::Attributes::Category, DialogueSystemCategory)
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(
+                    AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(
+                    AZ::Script::Attributes::Scope,
+                    AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(
+                    AZ::Script::Attributes::Module, DialogueSystemModule)
                 ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
-                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::LessThan)
-                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::LessEqualThan)
-                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
-                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventReturnType, true)
+                ->Attribute(
+                    AZ::Script::Attributes::Operator,
+                    AZ::Script::Attributes::OperatorType::LessThan)
+                ->Attribute(
+                    AZ::Script::Attributes::Operator,
+                    AZ::Script::Attributes::OperatorType::LessEqualThan)
+                ->Attribute(
+                    AZ::Script::Attributes::EnableAsScriptEventParamType, true)
+                ->Attribute(
+                    AZ::Script::Attributes::EnableAsScriptEventReturnType, true)
                 ->Constructor()
-                ->Property("Text", BehaviorValueProperty(&DialogueData::m_actorText))
+                ->Property(
+                    "Text", BehaviorValueProperty(&DialogueData::m_actorText))
                 ->Property("ID", &DialogueData::GetDialogueId, nullptr)
-                ->Property("Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
-                ->Property("AudioTrigger", BehaviorValueProperty(&DialogueData::m_audioTrigger))
-                ->Property("ResponseIds", &DialogueData::GetResponseIds, nullptr)
-                ->Property("ScriptIds", BehaviorValueGetter(&DialogueData::m_scriptIds), nullptr);
+                ->Property(
+                    "Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
+                ->Property(
+                    "AudioTrigger",
+                    BehaviorValueProperty(&DialogueData::m_audioTrigger))
+                ->Property(
+                    "ResponseIds", &DialogueData::GetResponseIds, nullptr)
+                ->Property(
+                    "ScriptIds",
+                    BehaviorValueGetter(&DialogueData::m_scriptIds),
+                    nullptr);
         }
     }
 
@@ -117,10 +160,16 @@ namespace Conversation
     {
     }
 
-    [[nodiscard]] auto ConvertToLua(DialogueData const& dialogueData, AZStd::string_view variableName, bool isLocal) -> AZStd::string
+    [[nodiscard]] auto ConvertToLua(
+        DialogueData const& dialogueData,
+        AZStd::string_view variableName,
+        bool isLocal) -> AZStd::string
     {
         AZStd::string luaSource{};
-        AZStd::string::format("{%s}{%s} = DialogueData()", (isLocal ? "local " : ""), variableName.data());
+        AZStd::string::format(
+            "{%s}{%s} = DialogueData()",
+            (isLocal ? "local " : ""),
+            variableName.data());
 
         return luaSource;
     }

@@ -16,7 +16,9 @@ namespace Conversation
         , public ConversationAssetRefComponentRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(ConversationAssetRefComponent, ConversationAssetRefComponentTypeId); // NOLINT
+        AZ_COMPONENT(
+            ConversationAssetRefComponent,
+            ConversationAssetRefComponentTypeId); // NOLINT
         AZ_DISABLE_COPY_MOVE(ConversationAssetRefComponent); // NOLINT
 
         static void Reflect(AZ::ReflectContext* context);
@@ -24,26 +26,35 @@ namespace Conversation
         ConversationAssetRefComponent() = default;
         ~ConversationAssetRefComponent() override = default;
 
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+        static void GetProvidedServices(
+            AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(
+            AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetRequiredServices(
+            AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetDependentServices(
+            AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         [[nodiscard]] auto CountStartingIds() const -> size_t override;
 
         [[nodiscard]] auto CountDialogues() const -> size_t override;
 
-        [[nodiscard]] auto CopyStartingIds() const -> AZStd::vector<UniqueId> override;
+        [[nodiscard]] auto CopyStartingIds() const
+            -> AZStd::vector<UniqueId> override;
 
-        [[nodiscard]] auto CopyDialogues() const -> AZStd::unordered_set<DialogueData> override;
+        [[nodiscard]] auto CopyDialogues() const
+            -> AZStd::unordered_set<DialogueData> override;
 
         void AddStartingId(UniqueId const& newStartingId) override;
         void AddDialogue(DialogueData const& newDialogueData) override;
         void AddResponse(ResponseData const& responseData) override;
 
-        [[nodiscard]] auto GetDialogueById(UniqueId const& dialogueId) -> AZ::Outcome<DialogueData> override;
-        [[nodiscard]] auto CheckDialogueExists(UniqueId const& dialogueId) -> bool override;
-        [[nodiscard]] auto GetMainScriptAsset() const -> AZ::Data::Asset<AZ::ScriptAsset> override;
+        [[nodiscard]] auto GetDialogueById(UniqueId const& dialogueId)
+            -> AZ::Outcome<DialogueData> override;
+        [[nodiscard]] auto CheckDialogueExists(UniqueId const& dialogueId)
+            -> bool override;
+        [[nodiscard]] auto GetMainScriptAsset() const
+            -> AZ::Data::Asset<AZ::ScriptAsset> override;
 
         void AddChunk(DialogueChunk const& dialogueChunk) override;
 
@@ -52,8 +63,11 @@ namespace Conversation
         void Activate() override;
         void Deactivate() override;
 
-        [[nodiscard]] auto GetConversationAsset() const -> AZ::Data::Asset<ConversationAsset> override;
-        auto SetConversationAsset(AZ::Data::Asset<ConversationAsset> replacementAsset) -> bool override;
+        [[nodiscard]] auto GetConversationAsset() const
+            -> AZ::Data::Asset<ConversationAsset> override;
+        auto SetConversationAsset(
+            AZ::Data::Asset<ConversationAsset> replacementAsset)
+            -> bool override;
 
     private:
         AZ::Data::Asset<ConversationAsset> m_asset{};

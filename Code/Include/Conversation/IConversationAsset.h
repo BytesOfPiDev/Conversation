@@ -17,10 +17,12 @@ namespace Conversation
     struct DialogueChunk;
 
     /*
-     * The interface that objects that manage ConversationAsset or ConversationAsset-like objects implement.
+     * The interface that objects that manage ConversationAsset or
+     * ConversationAsset-like objects implement.
      *
-     * TODO: There's a "Get" and "Copy" version of some functions. I'm not entirely sure how ScriptCanvas/Lua handle references, so I'm
-     * distinguing them until I find out for sure.
+     * TODO: There's a "Get" and "Copy" version of some functions. I'm not
+     * entirely sure how ScriptCanvas/Lua handle references, so I'm distinguing
+     * them until I find out for sure.
      */
     class IConversationAsset
     {
@@ -32,7 +34,8 @@ namespace Conversation
         virtual ~IConversationAsset() = default;
 
         /*
-         * @brief Returns the amount of DialogueIds that can potentially be used to start a conversation.
+         * @brief Returns the amount of DialogueIds that can potentially be used
+         * to start a conversation.
          */
         [[nodiscard]] virtual auto CountStartingIds() const -> size_t = 0;
 
@@ -42,31 +45,41 @@ namespace Conversation
         [[nodiscard]] virtual auto CountDialogues() const -> size_t = 0;
 
         /*
-         * @brief Returns a reference to the DialogueIds that can potentially be used to start a conversation.
+         * @brief Returns a reference to the DialogueIds that can potentially be
+         * used to start a conversation.
          */
-        [[nodiscard]] virtual auto GetStartingIds() const -> AZStd::vector<UniqueId> const& = delete;
+        [[nodiscard]] virtual auto GetStartingIds() const
+            -> AZStd::vector<UniqueId> const& = delete;
         /*
-         * @brief Returns a copy of the DialogueIds that can potentially be used to start a conversation.
+         * @brief Returns a copy of the DialogueIds that can potentially be used
+         * to start a conversation.
          */
-        [[nodiscard]] virtual auto CopyStartingIds() const -> AZStd::vector<UniqueId> = 0;
+        [[nodiscard]] virtual auto CopyStartingIds() const
+            -> AZStd::vector<UniqueId> = 0;
 
         /*
-         * @brief Returns a reference to the DialogueData objects within the asset.
+         * @brief Returns a reference to the DialogueData objects within the
+         * asset.
          */
-        [[nodiscard]] virtual auto GetDialogues() const -> AZStd::unordered_set<DialogueData> const& = delete;
+        [[nodiscard]] virtual auto GetDialogues() const
+            -> AZStd::unordered_set<DialogueData> const& = delete;
         /*
          * @brief Returns a copy of the DialogueData objects within the asset.
          */
-        [[nodiscard]] virtual auto CopyDialogues() const -> AZStd::unordered_set<DialogueData> = 0;
+        [[nodiscard]] virtual auto CopyDialogues() const
+            -> AZStd::unordered_set<DialogueData> = 0;
 
         virtual void AddStartingId(UniqueId const& newStartingId) = 0;
         virtual void AddDialogue(DialogueData const& newDialogueData) = 0;
         virtual void AddResponse(ResponseData const& responseData) = 0;
 
-        [[nodiscard]] virtual auto GetDialogueById(UniqueId const& dialogueId) -> AZ::Outcome<DialogueData> = 0;
-        [[nodiscard]] virtual auto CheckDialogueExists(UniqueId const& dialogueId) -> bool = 0;
+        [[nodiscard]] virtual auto GetDialogueById(UniqueId const& dialogueId)
+            -> AZ::Outcome<DialogueData> = 0;
+        [[nodiscard]] virtual auto CheckDialogueExists(
+            UniqueId const& dialogueId) -> bool = 0;
 
-        [[nodiscard]] virtual auto GetMainScriptAsset() const -> AZ::Data::Asset<AZ::ScriptAsset> = 0;
+        [[nodiscard]] virtual auto GetMainScriptAsset() const
+            -> AZ::Data::Asset<AZ::ScriptAsset> = 0;
 
         virtual void AddChunk(DialogueChunk const& dialogueChunk) = 0;
     };

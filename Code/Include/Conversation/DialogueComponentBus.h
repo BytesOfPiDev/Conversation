@@ -30,7 +30,8 @@ namespace Conversation
         ~DialogueComponentRequests() override = default;
 
     public: // Requests
-        virtual auto TryToStartConversation(const AZ::EntityId& /*initiatingEntityId*/) -> bool = 0;
+        virtual auto TryToStartConversation(
+            const AZ::EntityId& /*initiatingEntityId*/) -> bool = 0;
         /**
          * Sends out the given DialogueData, making it the active dialogue.
          *
@@ -40,9 +41,10 @@ namespace Conversation
          * exist in the assets attached to this component. Potentially, this
          * may allow injecting a dialogue if desired.
          *
-         * @note It isn't a const reference because it is possible for the referenced
-         * object to cease existence while processing the selection. It could be stored
-         * in a container or object that gets reset or deleted.
+         * @note It isn't a const reference because it is possible for the
+         * referenced object to cease existence while processing the selection.
+         * It could be stored in a container or object that gets reset or
+         * deleted.
          */
         virtual void SelectDialogue(DialogueData /*dialogueToSelect*/) = 0;
 
@@ -51,17 +53,23 @@ namespace Conversation
          *
          * Does nothing if it could not find one.
          */
-        virtual auto TryToSelectDialogue(UniqueId const dialogueIdToFindAndSelect) -> bool = 0;
+        virtual auto TryToSelectDialogue(
+            UniqueId const dialogueIdToFindAndSelect) -> bool = 0;
 
-        virtual void SelectAvailableResponse(int const availableResponseIndex) = 0;
+        virtual void SelectAvailableResponse(
+            int const availableResponseIndex) = 0;
         virtual void AbortConversation() = 0;
         virtual void EndConversation() = 0;
         virtual void ContinueConversation() = 0;
 
-        [[nodiscard]] virtual auto CheckAvailability(DialogueData const& dialogueToCheck) -> bool = 0;
-        [[nodiscard]] virtual auto CheckAvailability(UniqueId const& dialogueIdToCheck) -> bool = 0;
-        [[nodiscard]] virtual auto GetAvailableResponses() const -> AZStd::vector<DialogueData> = 0;
-        [[nodiscard]] virtual auto GetActiveDialogue() const -> AZ::Outcome<DialogueData> = 0;
+        [[nodiscard]] virtual auto CheckAvailability(
+            DialogueData const& dialogueToCheck) -> bool = 0;
+        [[nodiscard]] virtual auto CheckAvailability(
+            UniqueId const& dialogueIdToCheck) -> bool = 0;
+        [[nodiscard]] virtual auto GetAvailableResponses() const
+            -> AZStd::vector<DialogueData> = 0;
+        [[nodiscard]] virtual auto GetActiveDialogue() const
+            -> AZ::Outcome<DialogueData> = 0;
         [[nodiscard]] virtual auto GetCurrentState() const -> DialogueState = 0;
     };
 
@@ -74,13 +82,17 @@ namespace Conversation
          * Sent out when a dialogue is selected/spoken.
          *
          * @param dialogue The dialogue that was sent out and is now active.
-         * @param potentialResponses (Pending removal) A list of responses that may be sent out.
+         * @param potentialResponses (Pending removal) A list of responses that
+         * may be sent out.
          */
         virtual void OnDialogue(
-            [[maybe_unused]] DialogueData const& dialogue, [[maybe_unused]] AZStd::vector<DialogueData> const& potentialResponses)
+            [[maybe_unused]] DialogueData const& dialogue,
+            [[maybe_unused]] AZStd::vector<DialogueData> const&
+                potentialResponses)
         {
         }
-        virtual void OnConversationStarted([[maybe_unused]] const AZ::EntityId initiatingEntityId)
+        virtual void OnConversationStarted(
+            [[maybe_unused]] const AZ::EntityId initiatingEntityId)
         {
         }
         virtual void OnConversationAborted()
@@ -92,17 +104,20 @@ namespace Conversation
         /**
          * A dialogue choice that can be selected.
          *
-         * This notification may be sent zero or multiple times after a dialogue has
-         * been sent out.
+         * This notification may be sent zero or multiple times after a dialogue
+         * has been sent out.
          *
-         * @note A response can be for any entity in the game - both the player and NPCs.
+         * @note A response can be for any entity in the game - both the player
+         * and NPCs.
          */
-        virtual void OnResponseAvailable([[maybe_unused]] DialogueData const& availableDialogue)
+        virtual void OnResponseAvailable(
+            [[maybe_unused]] DialogueData const& availableDialogue)
         {
         }
     };
 
-    using DialogueComponentNotificationBus = AZ::EBus<DialogueComponentNotifications>;
+    using DialogueComponentNotificationBus =
+        AZ::EBus<DialogueComponentNotifications>;
 
     class GlobalConversationNotifications : public AZ::EBusTraits
     {
@@ -111,10 +126,13 @@ namespace Conversation
 
         GlobalConversationNotifications() = default;
         virtual ~GlobalConversationNotifications() = default;
-        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy =
+            AZ::EBusHandlerPolicy::Multiple;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::Single;
 
-        virtual void OnConversationStarted(AZ::EntityId /*initiator*/, AZ::EntityId /*target*/)
+        virtual void OnConversationStarted(
+            AZ::EntityId /*initiator*/, AZ::EntityId /*target*/)
         {
         }
 
@@ -131,6 +149,7 @@ namespace Conversation
         }
     };
 
-    using GlobalConversationNotificationBus = AZ::EBus<GlobalConversationNotifications>;
+    using GlobalConversationNotificationBus =
+        AZ::EBus<GlobalConversationNotifications>;
 
 } // namespace Conversation

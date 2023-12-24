@@ -11,7 +11,8 @@ namespace ConversationEditor
         class ConditionNode : public GraphModel::Node
         {
         public:
-            AZ_RTTI(ConditionNode, ConditionNodeTypeId, GraphModel::Node); // NOLINT
+            AZ_RTTI(
+                ConditionNode, ConditionNodeTypeId, GraphModel::Node); // NOLINT
             AZ_CLASS_ALLOCATOR(ConditionNode, AZ::SystemAllocator, 0); // NOLINT
             AZ_DISABLE_COPY_MOVE(ConditionNode); // NOLINT
 
@@ -32,10 +33,12 @@ namespace ConversationEditor
             }
 
         protected:
-            auto CanExtendSlot(GraphModel::SlotDefinitionPtr slotDefinition) const -> bool override;
+            auto CanExtendSlot(GraphModel::SlotDefinitionPtr slotDefinition)
+                const -> bool override;
             void RegisterSlots() override;
 
-            void PostLoadSetup(GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
+            void PostLoadSetup(
+                GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
             void PostLoadSetup() override;
         };
     } // namespace Nodes

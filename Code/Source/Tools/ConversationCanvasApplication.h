@@ -20,7 +20,8 @@ namespace ConversationEditor
         , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConversationCanvasApplication, AZ::SystemAllocator); // NOLINT
+        AZ_CLASS_ALLOCATOR(
+            ConversationCanvasApplication, AZ::SystemAllocator); // NOLINT
         AZ_RTTI( // NOLINT
             ConversationCanvasApplication,
             "{8417F15F-B290-47A4-9996-1954F3D153EB}",
@@ -34,13 +35,14 @@ namespace ConversationEditor
 
         // AzFramework::Application overrides...
         void Reflect(AZ::ReflectContext* context) override;
-        auto GetCurrentConfigurationName() const -> const char* override;
+        auto GetCurrentConfigurationName() const -> char const* override;
         void StartCommon(AZ::Entity* systemEntity) override;
         void Destroy() override;
 
     private:
         // AtomToolsFramework::AtomToolsApplication overrides...
-        auto GetCriticalAssetFilters() const -> AZStd::vector<AZStd::string> override;
+        auto GetCriticalAssetFilters() const
+            -> AZStd::vector<AZStd::string> override;
 
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         auto GetAppMainWindow() -> QWidget* override;
@@ -60,10 +62,14 @@ namespace ConversationEditor
 
     private:
         AZStd::unique_ptr<ConversationCanvasMainWindow> m_window;
-        AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
-        AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;
+        AZStd::unique_ptr<
+            AtomToolsFramework::EntityPreviewViewportSettingsSystem>
+            m_viewportSettingsSystem;
+        AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager>
+            m_dynamicNodeManager;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
-        AZStd::shared_ptr<AtomToolsFramework::GraphTemplateFileDataCache> m_graphTemplateFileDataCache;
+        AZStd::shared_ptr<AtomToolsFramework::GraphTemplateFileDataCache>
+            m_graphTemplateFileDataCache;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
     };
 
