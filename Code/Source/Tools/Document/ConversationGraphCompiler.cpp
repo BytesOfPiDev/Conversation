@@ -432,8 +432,8 @@ namespace ConversationEditor
     {
         if (!node)
         {
-            AZ_Error( // NOLINT(*-pro-type-vararg,
-                      // *-bounds-array-to-pointer-decay)
+            AZ_Warning( // NOLINT(*-pro-type-vararg,
+                        // *-bounds-array-to-pointer-decay)
                 "ConversationGraphCompiler",
                 false,
                 "A valid node pointer is required!");
@@ -799,6 +799,27 @@ namespace ConversationEditor
                         return lines;
                     });
 
+                // WARNING: Ensure mutex for the container is locked.
+                static constexpr auto notThreadSafeExtractFunc =
+                    [](AtomToolsFramework::GraphTemplateFileData&
+                           templateFileData,
+                       AZStd::vector<AZStd::string>& container) -> void
+                {
+                    AZStd::string luaFunc{};
+                    AZ::StringFunc::Join(
+                        luaFunc, templateFileData.GetLines(), "\n");
+                    container.emplace_back(luaFunc);
+                };
+
+                if (currentNode->GetSlot(
+                        ToString(DialogueScriptSlots::outScript)))
+                {
+                    AZStd::scoped_lock lock{ m_functionDefinitionsMutex };
+
+                    notThreadSafeExtractFunc(
+                        templateFileData, m_functionDefinitions);
+                }
+
                 // We create a string representation of the generated
                 // instructions when there's an outCondition slot. When
                 // compiling, we'll use it to add a new function to the
@@ -807,12 +828,11 @@ namespace ConversationEditor
                 if (currentNode->GetSlot(
                         ToString(ConditionNodeSlots::outCondition)))
                 {
-                    AZStd::string luaFunc{};
-                    AZ::StringFunc::Join(
-                        luaFunc, templateFileData.GetLines(), "\n");
-                    AZStd::scoped_lock lock(
-                        m_conditionFunctionDefinitionsMutex);
-                    m_conditionFunctionDefinitions.emplace_back(luaFunc);
+                    AZStd::scoped_lock lock{
+                        m_conditionFunctionDefinitionsMutex
+                    };
+                    notThreadSafeExtractFunc(
+                        templateFileData, m_conditionFunctionDefinitions);
                 }
             });
     }
@@ -1070,6 +1090,15 @@ namespace ConversationEditor
 
         for (auto& [slotId, slot] : targetDialogueNode->GetSlots())
         {
+            if (!slot->GetDataType())
+            {
+                AZ_Error(
+                    "ConversationGraphCompiler",
+                    false,
+                    "Null data type! A valid data type is required!");
+
+                continue;
+            }
             auto const value = m_slotValueTable[slot];
 
             switch (slot->GetDataType()->GetTypeEnum())

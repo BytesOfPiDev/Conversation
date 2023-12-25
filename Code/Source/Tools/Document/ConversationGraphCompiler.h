@@ -216,6 +216,7 @@ namespace ConversationEditor
     private:
         AZStd::mutex m_instructionNodesForCurrentNodeMutex{};
         AZStd::mutex m_conditionFunctionDefinitionsMutex{};
+        AZStd::mutex m_functionDefinitionsMutex{};
 
         GraphModel::ConstNodePtr m_currentNode{};
 

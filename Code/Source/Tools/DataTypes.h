@@ -11,27 +11,31 @@ namespace ConversationEditor
     constexpr auto DialogueScriptDataTypeName = "dialogue_script";
     constexpr auto StringDataTypeName = "string";
 
-    AZ_ENUM( // NOLINT
+    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         NodeTypes,
         Undefined,
         Condition,
         Dialogue,
         Link);
 
-    AZ_ENUM( // NOLINT
+    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         GeneralSlots,
         NodeName);
 
-    AZ_ENUM( // NOLINT
+    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         LinkNodeSlots,
         inFrom,
         inTo);
 
-    AZ_ENUM_CLASS( // NOLINT
+    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         ConditionNodeSlots,
         outCondition);
 
-    AZ_ENUM_CLASS( // NOLINT
+    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
+        DialogueScriptSlots,
+        outScript);
+
+    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         DialogueNodeSlots,
         inCondition,
         inIsStarter,

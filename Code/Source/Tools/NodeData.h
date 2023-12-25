@@ -2,7 +2,7 @@
 
 #include "AzCore/std/optional.h"
 #include "Conversation/DialogueData.h"
-#include "GraphModel/Model/Common.h"
+#include "GraphModel/Model/Node.h"
 
 namespace ConversationEditor
 {
@@ -10,7 +10,7 @@ namespace ConversationEditor
     {
         [[nodiscard]] auto IsValid() const
         {
-            return m_from && m_to;
+            return m_from->HasConnections() && m_to->HasConnections();
         }
 
         GraphModel::ConstNodePtr m_from;
