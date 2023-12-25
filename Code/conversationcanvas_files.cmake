@@ -27,8 +27,4 @@ set(FILES
     Source/Tools/Window/Nodes/Condition.h
     Source/Tools/Window/Nodes/Link.cpp
     Source/Tools/Window/Nodes/Link.h
-    Source/Tools/Window/Nodes/RootNode.cpp
-    Source/Tools/Window/Nodes/RootNode.h
-    Source/Tools/Window/Nodes/Waypoint.cpp
-    Source/Tools/Window/Nodes/Waypoint.h
 )

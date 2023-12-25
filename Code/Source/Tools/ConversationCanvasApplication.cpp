@@ -230,6 +230,10 @@ namespace ConversationEditor
                 AZStd::string{},
                 CommentDataTypeName),
             AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE(DialogueScriptDataTypeName),
+                AZStd::string{},
+                DialogueScriptDataTypeName),
+            AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("speaker_tag"), AZStd::string{}, "speaker_tag"),
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("dialogue_name"), AZStd::string{}, "dialogue_name"),
@@ -449,6 +453,7 @@ namespace ConversationEditor
         {
             m_window->AddDocumentTab(
                 documentId,
+                // NOLINTNEXTLINE(*-owning-memory)
                 aznew AtomToolsFramework::GraphDocumentView(
                     toolId,
                     documentId,

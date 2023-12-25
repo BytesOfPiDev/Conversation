@@ -1,46 +1,15 @@
 #pragma once
 
-#include <AzCore/Preprocessor/Enum.h>
-#include <AzCore/RTTI/TypeInfo.h>
-#include <GraphModel/Model/DataType.h>
-#include <GraphModel/Model/Slot.h>
+#include "AzCore/Preprocessor/Enum.h"
+#include "AzCore/RTTI/TypeInfoSimple.h"
 
 namespace ConversationEditor
 {
-    constexpr auto StringDataTypeName = "string";
     constexpr auto ActorTextDataTypeName = "actor_text";
     constexpr auto CommentDataTypeName = "comment";
     constexpr auto DialogueIdTypeName = "dialogue_id";
-
-    // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    AZ_ENUM_CLASS(
-        NodeAndSlotNames,
-        Undefined,
-        // Properties common to all nodes
-        NodeIdProperty,
-        NodeNameProperty,
-        CommentProperty,
-        // Root Node
-        ConversationRoot,
-        ConversationRootOutput_GreetingSlot,
-        // Actor Dialogue Node
-        ActorDialogue,
-        ActorDialogueEvent_Enter,
-        ActorDialogueEvent_Exit,
-        ActorDialogueInput_ParentId,
-        ActorDialogueInput_ConditionId,
-        ActorDialogueOutput_Id,
-        ActorDialogueProperty_Text,
-        ActorDialogueProperty_Script,
-        ActorDialogueProperty_Speaker,
-        ActorDialogueProperty_DialogueId,
-        LinkNode,
-        LinkNodeInput_LinkFrom,
-        LinkNodeInput_LinkTo,
-        Condition,
-        Waypoint,
-        Waypoint_In,
-        Waypoint_Out);
+    constexpr auto DialogueScriptDataTypeName = "dialogue_script";
+    constexpr auto StringDataTypeName = "string";
 
     AZ_ENUM( // NOLINT
         NodeTypes,
@@ -65,53 +34,33 @@ namespace ConversationEditor
     AZ_ENUM_CLASS( // NOLINT
         DialogueNodeSlots,
         inCondition,
+        inIsStarter,
+        inName,
         inParent,
-        inIsStarter);
-
-    namespace CommonSlotDisplayNames
-    {
-        inline constexpr auto AVAILABILITYSCRIPT = "ActiveScript";
-        inline constexpr char const* ActorText = "Text";
-        inline constexpr char const* DialogueId = "Id";
-        static char const* DIALOGUEDATA = "DialogueData";
-        static char const* DIALOGUESCRIPT = "DialogueScriptId";
-        static char const* ENTER = "Enter";
-        static char const* EXIT = "Exit";
-        inline constexpr char const* OutputDialogueId = "DialogueId";
-        inline constexpr char const* ResponseTo = "Response To";
-    } // namespace CommonSlotDisplayNames
-
-    namespace CommonSlotNames
-    {
-        inline constexpr char const* AVAILABILITYSCRIPT = "AvailabilityScript";
-        inline constexpr char const* DIALOGUEDATA = "DialogueData";
-        inline constexpr char const* DIALOGUESCRIPT = "DialogueScript";
-        inline constexpr char const* ENTER = "Enter";
-        inline constexpr char const* EXIT = "Exit";
-        inline constexpr char const* OutputDialogueId = "OutputDialogueId";
-        inline constexpr char const* ResponseTo = "ResponseTo";
-    } // namespace CommonSlotNames
-
-    namespace CommonSlotDescriptions
-    {
-        constexpr auto ActorText = "The text that will show up on screen.";
-        constexpr auto DialogueId =
-            "The globally unique identifier for this specific dialogue.";
-        constexpr auto DIALOGUEDATA =
-            "Stores data related to a specific dialogue node.";
-        constexpr auto DIALOGUESCRIPT =
-            "An identifier for a script that runs when the dialogue is used.";
-        constexpr auto ENTER = "";
-        constexpr auto EXIT = "";
-        constexpr auto OutputDialogueId = DialogueId;
-        constexpr auto ResponseTo = "The node that this is a response to.";
-    } // namespace CommonSlotDescriptions
-
+        inSpeaker,
+        inShortText,
+        outDialogue);
 } // namespace ConversationEditor
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(
-        ConversationEditor::NodeAndSlotNames,
-        "{543AB94D-202A-4210-8987-9CBD8668BC76}"); // NOLINT
-}
+    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
+        ConversationEditor::NodeTypes,
+        "{021346A3-C665-4577-BC4C-D540438A0813}");
+
+    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
+        ConversationEditor::GeneralSlots,
+        "{3EB468A4-96BE-48AD-A397-FC7E06D8CFA3}");
+
+    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
+        ConversationEditor::LinkNodeSlots,
+        "{920F43A3-71AB-4313-BA6D-4CDC3AEB848C}");
+
+    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
+        ConversationEditor::ConditionNodeSlots,
+        "{F996C072-DDC3-453E-8086-16239B04514D}");
+
+    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
+        ConversationEditor::DialogueNodeSlots,
+        "{06BDCFE5-C580-42EB-9A95-4199815F818D}");
+} // namespace AZ
