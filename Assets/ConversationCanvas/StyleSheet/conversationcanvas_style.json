@@ -2098,6 +2098,13 @@
     "background-color": "#AF937B"
   },
   {
+    "selectors": ["ConditionDataColorPalette"],
+    "palette-style": "solid",
+    "line-style": "dotted",
+    "line-color": "#00AEDB",
+    "background-color": "#00AEDB"
+  },
+  {
     "selectors": [ "LinkDataColorPalette" ],
     "palette-style": "solid",
     "line-style": "dotted",
