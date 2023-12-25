@@ -211,7 +211,10 @@ namespace ConversationEditor
 
         SetState(AtomToolsFramework::GraphCompiler::State::Complete);
 
-        AZLOG_INFO("Conversation graph compiled successfully.\n"); // NOLINT
+        AZ_Info( // NOLINT(*-pro-type-vararg
+            "ConversationGraphCompiler",
+            "Conversation graph compiled successfully.\n"); // NOLINT
+
         return true;
     }
 
