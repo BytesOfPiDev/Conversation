@@ -6,6 +6,7 @@
         "id": "{948D0E1B-02A9-4576-997D-DB1C2771B286}",
         "category": "Logic",
         "title": "Equal To",
+        "titlePaletteName": "LogicNodeTitlePalette",
         "slotDataTypeGroups": [
             "left_value|right_value"
         ],

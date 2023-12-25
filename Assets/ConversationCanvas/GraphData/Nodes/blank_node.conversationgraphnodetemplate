@@ -4,5 +4,6 @@
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
         "category": "Default"
+        "titlePaletteName": "DefaultNodeTitlePalette",
     }
 }

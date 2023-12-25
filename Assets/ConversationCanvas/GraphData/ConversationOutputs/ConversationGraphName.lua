@@ -7,10 +7,6 @@ local dcLib = require("conversation.dialogue_component")
 
 -- BOP_GENERATED_INCLUDES_END
 
--- BOP_GENERATED_FUNCTIONS_BEGIN
-
--- BOP_GENERATED_FUNCTIONS_END
-
 local ConversationGraphName = dcLib.ScriptDialogueComponent:New()
 
 function ConversationGraphName:InitConversationScript()
@@ -38,6 +34,10 @@ function ConversationGraphName:OnDeactivate()
 			.. "'"
 	)
 end
+
+-- BOP_GENERATED_FUNCTIONS_BEGIN
+
+-- BOP_GENERATED_FUNCTIONS_END
 
 -- BOP_GENERATED_CONDITION_FUNCTIONS_BEGIN
 

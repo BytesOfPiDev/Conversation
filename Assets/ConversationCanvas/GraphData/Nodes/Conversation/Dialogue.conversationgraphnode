@@ -50,18 +50,6 @@
                 }
             },
             {
-                "name": "inScript",
-                "displayName": "Script",
-                "description": "A script that gets executed when this dialogue is chosen.",
-                "supportedDataTypeRegex": "lua_script",
-                "defaultDataType": "lua_script",
-                "defaultValue": {
-                    "$type": "{F0CB5839-52FC-5B3B-83F2-6EAFCD6DDE06} Asset<ScriptAsset>"
-                },
-                "visibleOnNode": false,
-                "editableOnNode": false
-            },
-            {
                 "name": "inComment",
                 "displayName": "Comment",
                 "supportedDataTypeRegex": "comment",
@@ -121,6 +109,18 @@
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 }
+            },
+            {
+                "name": "inScript",
+                "displayName": "Script",
+                "description": "A script that gets executed when this dialogue is chosen.",
+                "supportedDataTypeRegex": "dialogue_script",
+                "defaultDataType": "dialogue_script",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "editableOnNode": false
             }
         ],
         "outputSlots": [

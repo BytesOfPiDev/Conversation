@@ -6,6 +6,7 @@
         "id": "{7CB7C5D5-663A-4BBA-B14F-C9D083E3D498}",
         "category": "Scripting",
         "title": "Lua Script (Asset)",
+        "titlePaletteName": "DefaultNodeTitlePalette",
         "slotDataTypeGroups": [
             "inValue|outScript"
         ],

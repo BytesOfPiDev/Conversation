@@ -6,11 +6,12 @@
         "id": "{93276F9A-288A-45AF-B857-AABA17527935}",
         "category": "Conditions",
         "title": "Is Player Gender",
+        "titlePaletteName": "ConditionDataColorPalette",
         "settings": {
             "includePaths": {},
             "instructions": {},
             "templatePaths": [
-                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConversationGraphName_ConversationGraphNodeName.lua"
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConversationGraphName_ConversationGraphNodeName_CF.lua"
             ]
         },
         "propertySlots": [
