@@ -7,6 +7,7 @@
 #include "ScriptEvents/ScriptEventsAsset.h"
 
 #include "Conversation/ConversationTypeIds.h"
+#include "Conversation/DialogueChunk.h"
 #include "Conversation/ResponseData.h"
 #include "Conversation/UniqueId.h"
 
@@ -17,52 +18,9 @@ namespace AZ
 
 namespace Conversation
 {
-    using AvailabilityIdAsString = AZStd::string;
-    using AvailabilityIdAsName = AZ::Name;
+    using AvailabilityId = UniqueId;
 
     struct DialogueData;
-
-    struct DialogueChunk
-    {
-    public:
-        AZ_TYPE_INFO(
-            DialogueChunk, "{81C04F0E-BA10-4D66-A3E8-0304FB8EB545}"); // NOLINT
-        AZ_DEFAULT_COPY_MOVE(DialogueChunk); // NOLINT
-
-        static void Reflect(AZ::ReflectContext* reflect);
-
-        DialogueChunk() = default;
-        DialogueChunk(AZStd::string_view data)
-            : m_data{ data }
-        {
-        }
-
-        ~DialogueChunk() = default;
-
-        auto operator==(DialogueChunk const& rhs) const -> bool
-        {
-            return GetHash() == rhs.GetHash();
-        }
-
-        void SetData(AZStd::string_view data)
-        {
-            m_data = data;
-        }
-
-        [[nodiscard]] auto GetData() const -> AZStd::string_view
-        {
-            return m_data;
-        }
-
-        [[nodiscard]] auto GetHash() const -> size_t
-        {
-            constexpr AZStd::hash<AZStd::string> hasher;
-            return hasher(m_data);
-        }
-
-    private:
-        AZStd::string m_data;
-    };
 
     /**
      * @brief Represents a piece of dialogue in a conversation.
@@ -132,7 +90,7 @@ namespace Conversation
         [[nodiscard]] inline auto ToString() const -> AZStd::string
         {
             constexpr auto header = "[[ Dialogue Data ]]";
-            constexpr auto idFormat = "\tId: %zu\n";
+            constexpr auto idFormat = "\tId: %u\n";
             constexpr auto textFormat = "\tText: %s\n";
             constexpr auto speakerFormat = "\tSpeaker: %s\n";
 
@@ -141,7 +99,7 @@ namespace Conversation
             description += AZStd::string::format(
                 idFormat, GetDialogueId().GetHash()); // NOLINT
             description += AZStd::string::format(
-                textFormat, GetDialogueActorText().data()); // NOLINT
+                textFormat, GetShortText().data()); // NOLINT
             description += AZStd::string::format(
                 speakerFormat, GetDialogueSpeaker().data()); // NOLINT
 
@@ -156,18 +114,6 @@ namespace Conversation
         [[nodiscard]] auto GetId() const -> UniqueId
         {
             return m_id;
-        }
-
-        [[nodiscard]] constexpr auto GetDialogueActorText() const
-            -> AZStd::string_view
-        {
-            return m_actorText;
-        }
-
-        [[nodiscard]] constexpr auto GetDialogueSpeaker() const
-            -> AZStd::string_view
-        {
-            return m_speaker;
         }
 
         [[nodiscard]] constexpr auto GetResponseIds() const
@@ -188,8 +134,7 @@ namespace Conversation
             return m_scriptIds;
         }
 
-        [[nodiscard]] auto GetDialogueAvailabilityId() const
-            -> AvailabilityIdAsString
+        [[nodiscard]] auto GetDialogueAvailabilityId() const -> UniqueId
         {
             return m_availabilityId;
         }
@@ -201,29 +146,39 @@ namespace Conversation
         }
 
         constexpr void SetDialogueAvailabilityId(
-            AvailabilityIdAsString const& newAvailabilityId)
+            AvailabilityId newAvailabilityId)
         {
             m_availabilityId = newAvailabilityId;
         }
 
         constexpr void SetDialogueAvailabilityId(
-            AvailabilityIdAsName const& newAvailabilityId)
+            AZStd::string_view newAvailabilityId)
         {
-            m_availabilityId = newAvailabilityId.GetStringView();
+            m_availabilityId = UniqueId::CreateNamedId(newAvailabilityId);
         }
 
-        constexpr void SetDialogueActorText(AZStd::string const& actorText)
+        [[nodiscard]] constexpr auto GetShortText() const -> AZStd::string_view
         {
-            m_actorText = actorText;
+            return m_shortText;
         }
 
-        constexpr void SetDialogueSpeaker(AZStd::string const& speaker)
+        constexpr void SetShortText(AZStd::string_view actorText)
+        {
+            m_shortText = actorText;
+        }
+
+        [[nodiscard]] constexpr auto GetDialogueSpeaker() const
+            -> AZStd::string_view
+        {
+            return m_speaker;
+        }
+
+        constexpr void SetDialogueSpeaker(AZStd::string_view speaker)
         {
             m_speaker = speaker;
         }
 
-        constexpr void SetDialogueAudioTrigger(
-            AZStd::string const& audioTrigger)
+        constexpr void SetDialogueAudioTrigger(AZStd::string_view audioTrigger)
         {
             m_audioTrigger = audioTrigger;
         }
@@ -300,21 +255,40 @@ namespace Conversation
             }
         }
 
+        void SetChunk(AZStd::string_view chunk)
+        {
+            // FIXME: While still developing, setting a chunk when the short
+            // text is empty will also assign the chunk's value to the short
+            // text. This will change once chunks are fully implemented.
+            if (m_shortText.empty())
+            {
+                m_shortText = chunk;
+            }
+
+            m_dialogueChunk.SetData(chunk);
+        }
+
+        void SetChunk(DialogueChunk const& chunk)
+        {
+            m_dialogueChunk = chunk;
+        }
+
     private:
         // A script that is run when this dialogue is activated.
         AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> m_script{};
         [[maybe_unused]] AZStd::array<size_t, ChunkArraySize> m_chunkIds{};
+        DialogueChunk m_dialogueChunk{};
         AZStd::vector<UniqueId> m_responseIds{};
         // Contains script IDs that should be executed upon dialogue selection.
         AZStd::vector<AZStd::string> m_scriptIds{};
         AZStd::vector<AZ::Name> m_conditionIds{};
-        AZStd::string m_actorText{};
+        AZStd::string m_shortText{};
         AZStd::string m_speaker{};
         // The audio trigger to execute upon selection of this dialogue.
         AZStd::string m_audioTrigger{};
         // Any comments from the writers of this dialogue.
         AZStd::string m_comment{};
-        AZStd::string m_availabilityId{};
+        UniqueId m_availabilityId{};
         UniqueId m_id{ UniqueId::CreateInvalidId() };
         float m_entryDelay{ DefaultEntryDelay };
     };

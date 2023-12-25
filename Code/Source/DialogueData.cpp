@@ -11,29 +11,6 @@
 namespace Conversation
 {
 
-    void DialogueChunk::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serialize->Class<DialogueChunk>()->Version(1)->Field(
-                "Data", &DialogueChunk::m_data);
-
-            if (AZ::EditContext* editContext = serialize->GetEditContext())
-            {
-                editContext->Class<DialogueChunk>("DialogueChunk", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(
-                        AZ::Edit::Attributes::Visibility,
-                        AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::MultiLineEdit,
-                        &DialogueChunk::m_data,
-                        "Text Chunk",
-                        "");
-            }
-        }
-    }
-
     void ResponseData::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -49,17 +26,17 @@ namespace Conversation
     void DialogueData::Reflect(AZ::ReflectContext* context)
     {
         ResponseData::Reflect(context);
-        DialogueChunk::Reflect(context);
 
         if (auto* serializeContext =
                 azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DialogueData>()
                 ->Version(8) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                ->Field("ActorText", &DialogueData::m_actorText)
+                ->Field("ActorText", &DialogueData::m_shortText)
                 ->Field("AvailabilityId", &DialogueData::m_availabilityId)
                 ->Field("AudioTrigger", &DialogueData::m_audioTrigger)
                 ->Field("Comment", &DialogueData::m_comment)
+                ->Field("Chunk", &DialogueData::m_dialogueChunk)
                 ->Field("DialogueId", &DialogueData::m_id)
                 ->Field("ResponseIds", &DialogueData::m_responseIds)
                 ->Field("ScriptIds", &DialogueData::m_scriptIds)
@@ -82,10 +59,16 @@ namespace Conversation
                         AZ::Edit::Attributes::Visibility,
                         AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::MultiLineEdit,
-                        &DialogueData::m_actorText,
-                        "Actor Text",
-                        "What the actor will say.")
+                        AZ::Edit::UIHandlers::Default,
+                        &DialogueData::m_shortText,
+                        "Short Text",
+                        "A very short description of what will be said. e.g. "
+                        "'Agree with her'")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &DialogueData::m_dialogueChunk,
+                        "Text Chunk",
+                        "The entirety of the text that will be said.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &DialogueData::m_speaker,
@@ -139,19 +122,25 @@ namespace Conversation
                     AZ::Script::Attributes::EnableAsScriptEventReturnType, true)
                 ->Constructor()
                 ->Property(
-                    "Text", BehaviorValueProperty(&DialogueData::m_actorText))
+                    "Text",
+                    &DialogueData::GetShortText,
+                    &DialogueData::SetShortText)
                 ->Property("ID", &DialogueData::GetDialogueId, nullptr)
                 ->Property(
-                    "Speaker", BehaviorValueProperty(&DialogueData::m_speaker))
+                    "Speaker",
+                    &DialogueData::GetDialogueSpeaker,
+                    &DialogueData::SetDialogueSpeaker)
                 ->Property(
                     "AudioTrigger",
-                    BehaviorValueProperty(&DialogueData::m_audioTrigger))
+                    &DialogueData::GetDialogueAudioTrigger,
+                    &DialogueData::SetDialogueAudioTrigger)
                 ->Property(
                     "ResponseIds", &DialogueData::GetResponseIds, nullptr)
                 ->Property(
-                    "ScriptIds",
-                    BehaviorValueGetter(&DialogueData::m_scriptIds),
-                    nullptr);
+                    "ScriptIds", &DialogueData::GetDialogueScriptIds, nullptr)
+                ->Property(
+                    "Chunk",
+                    BehaviorValueProperty(&DialogueData::m_dialogueChunk));
         }
     }
 

@@ -2,7 +2,6 @@
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Component/Component.h"
-#include "AzCore/std/string/conversions.h"
 #include "AzTest/AzTest.h"
 #include "Components/ConversationAssetRefComponent.h"
 #include "Conversation/Components/ConversationAssetRefComponentBus.h"
@@ -13,7 +12,6 @@
 #include "Conversation/DialogueComponentBus.h"
 #include "Conversation/DialogueData.h"
 #include "ConversationTestEnvironment.h"
-#include <gtest/gtest.h>
 
 namespace ConversationTest
 {
@@ -86,8 +84,7 @@ namespace ConversationTest
             // Requires at least one dialogue with a valid DialogueId.
             DialogueData startingDialogue1{ UniqueId::CreateNamedId(
                 "StartableAssetDialogueId1") };
-            startingDialogue1.SetDialogueActorText(
-                "Hello, where are you from?");
+            startingDialogue1.SetShortText("Hello, where are you from?");
             startableAsset->AddDialogue(startingDialogue1);
 
             // Requires at least one valid starting Id that matches a dialogue
@@ -95,7 +92,7 @@ namespace ConversationTest
             startableAsset->AddStartingId(startingDialogue1.GetDialogueId());
 
             DialogueData earthResponseDialogue{ UniqueId::CreateRandomId() };
-            earthResponseDialogue.SetDialogueActorText("I am from Earth, duh.");
+            earthResponseDialogue.SetShortText("I am from Earth, duh.");
             startableAsset->AddResponse(
                 { startingDialogue1.GetDialogueId(),
                   earthResponseDialogue.GetDialogueId() });

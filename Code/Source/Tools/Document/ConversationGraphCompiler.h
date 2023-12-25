@@ -98,8 +98,8 @@ namespace ConversationEditor
         constexpr void ClearInstructionsForCurrentNodeAndReserveSize(
             size_t reserveAmount);
 
-        [[nodiscard]] auto BuildDependencyTables() -> AZStd::
-            expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
+        [[nodiscard]] auto BuildDependencyTables() -> AZ::
+            Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
 
         [[nodiscard]] auto ShouldUseInstructionsFromInputNode(
             GraphModel::ConstNodePtr const& outputNode,
@@ -141,10 +141,10 @@ namespace ConversationEditor
 
         void BuildInstructionsForCurrentNode(
             GraphModel::ConstNodePtr const& currentNode);
-        auto BuildConversationAsset() -> AZStd::
-            expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
-        auto BuildConversationScript() -> AZStd::
-            expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
+        auto BuildConversationAsset() -> AZ::
+            Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
+        auto BuildConversationScript() -> AZ::
+            Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
 
         [[nodiscard]] auto GetValueFromSlot(
             GraphModel::ConstSlotPtr const slot) const -> AZStd::any;
@@ -226,23 +226,33 @@ namespace ConversationEditor
          * generated.
          */
         AZStd::vector<AZStd::string> m_generatedFiles;
-        // Not currently implemented.
         AZStd::set<AZStd::string> m_includePaths{};
         // Not currently implemented.
         AZStd::vector<AZStd::string> m_classDefinitions{};
         AZStd::vector<AZStd::string> m_functionDefinitions{};
         AZStd::vector<AZStd::string> m_conditionFunctionDefinitions{};
+        /**
+         * Holds the cached value of every node in the graph.
+         *
+         * When wanting the value of a node, it should be gotten from here and
+         * *NOT* directly from the node pointer to ensure consistency.
+         */
         SlotValueTable m_slotValueTable{};
-        SlotDialogueTable m_slotDialogueTable{};
+        // Contains the UniqueId of each starting dialogue.
         StartingIdContainer m_startingIds{};
+        // The names(symbols) of any nodes we've encountered.
         AZStd::vector<AZ::Name> m_names{};
+        //  A map containing the NodeData of each node we've encountered.
         AZStd::map<GraphModel::ConstNodePtr, NodeData> m_nodeDataTable{};
+        // Contains each template associated with the current node
         AZStd::list<AtomToolsFramework::GraphTemplateFileData>
             m_templateFileDataVecForCurrentNode{};
+        // Contains the path to each template associated with the current node.
         AZStd::set<AZStd::string> m_templatePathsForCurrentNode{};
+        // Nodes that contribute to the current node's instructions.
         AZStd::vector<GraphModel::ConstNodePtr>
             m_instructionNodesForCurrentNode{};
-        AZStd::unordered_set<Conversation::DialogueChunk> m_chunks{};
+        // The template used to generate the companion script.
         AtomToolsFramework::GraphTemplateFileData m_scriptFileDataTemplate{};
 
         // Container of unique node configurations IDs visited on the graph to

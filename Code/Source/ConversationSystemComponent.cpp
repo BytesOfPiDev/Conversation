@@ -11,6 +11,7 @@
 #include "Conversation/Constants.h"
 #include "Conversation/ConversationAsset.h"
 #include "Conversation/ConversationBus.h"
+#include "Conversation/DialogueChunk.h"
 #include "Conversation/DialogueComponentBus.h"
 #include "Conversation/DialogueData.h"
 #include "Conversation/DialogueScript.h"
@@ -35,12 +36,12 @@ namespace Conversation
         }
     };
 
-    void ReflectDialogueId(AZ::ReflectContext* context)
+    void ReflectUniqueId(AZ::ReflectContext* context)
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<UniqueId>()->Version(1)->Field(
-                "Id", &UniqueId::m_id);
+            serialize->Class<UniqueId>()->Version(2)->Field(
+                "Value", &UniqueId::m_value);
         }
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -61,13 +62,53 @@ namespace Conversation
                     AZ::Script::Attributes::EnableAsScriptEventParamType, true)
                 ->Attribute(
                     AZ::Script::Attributes::EnableAsScriptEventReturnType, true)
-                ->Property("Value", BehaviorValueProperty(&UniqueId::m_id));
+                ->Property("Value", BehaviorValueProperty(&UniqueId::m_value));
+        }
+    }
+
+    void ReflectDialogueChunk(AZ::ReflectContext* context)
+    {
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<DialogueChunk>()->Version(1)->Field(
+                "Data", &DialogueChunk::m_data);
+
+            if (AZ::EditContext* editContext = serialize->GetEditContext())
+            {
+                editContext->Class<DialogueChunk>("Dialogue Chunk", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(
+                        AZ::Edit::Attributes::Visibility,
+                        AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::MultiLineEdit,
+                        &DialogueChunk::m_data,
+                        "Text Chunk",
+                        "");
+            }
+        }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<DialogueChunk>()
+                ->Attribute(
+                    AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(
+                    AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(
+                    AZ::Script::Attributes::Scope,
+                    AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
+                ->Constructor()
+                ->Property(
+                    "Data", &DialogueChunk::GetData, &DialogueChunk::SetData);
         }
     }
 
     void ConversationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        ReflectDialogueId(context);
+        ReflectUniqueId(context);
+        ReflectDialogueChunk(context);
         DialogueData::Reflect(context);
         ConditionFunction::Reflect(context);
 
@@ -198,7 +239,8 @@ namespace Conversation
         if (!AZ::Data::AssetManager::Instance().GetHandler(
                 conversationAssetTypeId))
         {
-            AZ_Assert( // NOLINT
+            AZ_Assert( // NOLINT(*-pro-type-vararg,
+                       // *-bounds-array-to-pointer-decay)
                 m_conversationAssetHandler,
                 "Conversation asset handler is null! It should have been "
                 "created in the Init function already.");

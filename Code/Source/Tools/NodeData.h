@@ -8,6 +8,11 @@ namespace ConversationEditor
 {
     struct LinkData
     {
+        [[nodiscard]] auto IsValid() const
+        {
+            return m_from && m_to;
+        }
+
         GraphModel::ConstNodePtr m_from;
         GraphModel::ConstNodePtr m_to;
     };

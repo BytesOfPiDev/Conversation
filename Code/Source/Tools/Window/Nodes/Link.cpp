@@ -17,8 +17,10 @@
 
 namespace ConversationEditor
 {
-    AZ_RTTI_NO_TYPE_INFO_IMPL(
-        LinkNode, GraphModel::Node, NodeRequests); // NOLINT
+    AZ_RTTI_NO_TYPE_INFO_IMPL( // NOLINT(modernize-use-trailing-return-type)
+        LinkNode,
+        GraphModel::Node,
+        NodeRequests);
     AZ_TYPE_INFO_WITH_NAME_IMPL(LinkNode, "LinkNode", LinkNodeTypeId); // NOLINT
     AZ_CLASS_ALLOCATOR_IMPL(LinkNode, AZ::SystemAllocator); // NOLINT
 
@@ -47,7 +49,7 @@ namespace ConversationEditor
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(
                         GraphModelIntegration::Attributes::TitlePaletteOverride,
-                        "Link");
+                        "LinkDataColorPalette");
             }
         }
     }
@@ -137,7 +139,7 @@ namespace ConversationEditor
             return fromSlotConnection;
         }();
 
-        // The connection to our 'To' input slot
+        // Finds the connection to our 'To' input slot
         GraphModel::ConstConnectionPtr const toSlotConnection =
             [toSlot, thisNode = azrtti_cast<GraphModel::Node const*>(this)]()
             -> GraphModel::ConstConnectionPtr
@@ -151,9 +153,17 @@ namespace ConversationEditor
 
             GraphModel::ConstConnectionPtr const toSlotConnection =
                 toSlotConnections.front();
+
             // The source should not be us, we should be the target
             if (toSlotConnection->GetSourceNode().get() == thisNode)
             {
+                AZ_Error( // NOLINT(*-pro-type-vararg,
+                          // *-bounds-array-to-pointer-decay)
+                    "LinkNode",
+                    false,
+                    "Invalid slot configuration. The source node should not be "
+                    "us!");
+
                 return nullptr;
             }
 
@@ -162,10 +172,6 @@ namespace ConversationEditor
 
         if (!fromSlotConnection || !toSlotConnection)
         {
-            AZ_Assert( // NOLINT
-                false,
-                "There was an issue getting valid connections to our 'From' "
-                "and 'To' input slots.");
             return;
         }
 

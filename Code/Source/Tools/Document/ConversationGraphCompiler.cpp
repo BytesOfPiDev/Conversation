@@ -17,7 +17,6 @@
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/StringFunc/StringFunc.h"
 #include "AzCore/Utils/Utils.h"
-#include "AzCore/std/ranges/filter_view.h"
 #include "AzCore/std/smart_ptr/shared_ptr.h"
 #include "AzCore/std/string/regex.h"
 #include "AzFramework/Asset/AssetSystemBus.h"
@@ -35,14 +34,16 @@
 
 namespace ConversationEditor
 {
-    AZ_RTTI_NO_TYPE_INFO_IMPL(
-        ConversationGraphCompiler, AtomToolsFramework::GraphCompiler); // NOLINT
-    AZ_TYPE_INFO_WITH_NAME_IMPL(
+    AZ_RTTI_NO_TYPE_INFO_IMPL( // NOLINT(modernize-use-trailing-return-type)
+        ConversationGraphCompiler,
+        AtomToolsFramework::GraphCompiler); // NOLINT
+    AZ_TYPE_INFO_WITH_NAME_IMPL( // NOLINT(modernize-use-trailing-return-type)
         ConversationGraphCompiler,
         "ConversationGraphCompiler",
-        ConversationGraphCompilerTypeId); // NOLINT
-    AZ_CLASS_ALLOCATOR_IMPL(
-        ConversationGraphCompiler, AZ::SystemAllocator); // NOLINT
+        ConversationGraphCompilerTypeId);
+    AZ_CLASS_ALLOCATOR_IMPL( // NOLINT
+        ConversationGraphCompiler,
+        AZ::SystemAllocator);
 
     auto UnexpectedCompilationError(
         CompilationErrorCode errorCode, AZStd::string_view errorMessage)
@@ -78,9 +79,10 @@ namespace ConversationEditor
     {
         if (IsCompileLoggingEnabled())
         {
-            AZLOG_INFO(
+            AZLOG_INFO( // NOLINT(*-pro-type-vararg,
+                        // *-bounds-array-to-pointer-decay)
                 "Compiling conversation graph '%s'...",
-                graphName.c_str()); // NOLINT
+                graphName.c_str());
         }
 
         ClearData();
@@ -193,7 +195,7 @@ namespace ConversationEditor
                 "ConversationGraphCompiler",
                 false,
                 "Failed to compile conversation script. Message: %s",
-                buildResult.error().m_errorMessage.data());
+                buildResult.GetError().m_errorMessage.data());
         }
 
         if (!ReportGeneratedFileStatus())
@@ -288,8 +290,8 @@ namespace ConversationEditor
         m_instructionNodesForCurrentNode.reserve(reserveAmount);
     }
 
-    auto ConversationGraphCompiler::BuildDependencyTables() -> AZStd::
-        expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>
+    auto ConversationGraphCompiler::BuildDependencyTables()
+        -> AZ::Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>
     {
         if (!m_graph)
         {
@@ -425,6 +427,17 @@ namespace ConversationEditor
     [[nodiscard]] auto ConversationGraphCompiler::GetSymbolNameFromNode(
         GraphModel::ConstNodePtr const& node) const -> AZStd::string
     {
+        if (!node)
+        {
+            AZ_Error( // NOLINT(*-pro-type-vararg,
+                      // *-bounds-array-to-pointer-decay)
+                "ConversationGraphCompiler",
+                false,
+                "A valid node pointer is required!");
+
+            return {};
+        }
+
         auto const nodeNameSlot =
             node->GetSlot(ToString(GeneralSlots::NodeName));
         auto const nodeNameValueAny =
@@ -554,7 +567,7 @@ namespace ConversationEditor
                 AZStd::any_cast<Conversation::UniqueId const>(&slotValue))
         {
             return AZStd::string::format(
-                "\"%zu\"",
+                "\"%u\"",
                 Conversation::UniqueId::CreateNamedId(
                     GetSymbolNameFromSlot(slot))
                     .GetHash());
@@ -802,7 +815,7 @@ namespace ConversationEditor
     }
 
     auto ConversationGraphCompiler::BuildConversationAsset()
-        -> AZStd::expected<AZStd::true_type, CompilationError>
+        -> AZ::Outcome<AZStd::true_type, CompilationError>
     {
         auto const conversationAsset =
             AZStd::make_unique<Conversation::ConversationAsset>();
@@ -863,8 +876,8 @@ namespace ConversationEditor
         return SuccessTypeWhenNoReturnDataExpected{};
     }
 
-    auto ConversationGraphCompiler::BuildConversationScript() -> AZStd::
-        expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>
+    auto ConversationGraphCompiler::BuildConversationScript()
+        -> AZ::Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>
     {
         m_scriptFileDataTemplate.ReplaceLinesInBlock(
             "BOP_GENERATED_FUNCTIONS_BEGIN",
@@ -1020,6 +1033,7 @@ namespace ConversationEditor
 
         auto const targetDialogueId{ Conversation::UniqueId::CreateNamedId(
             GetSymbolNameFromNode(targetDialogueNode)) };
+
         auto& targetNodeDataDialogue =
             m_nodeDataTable[targetDialogueNode].m_dialogue;
 
@@ -1058,26 +1072,29 @@ namespace ConversationEditor
             switch (slot->GetDataType()->GetTypeEnum())
             {
             case AZ_CRC_CE("actor_text"):
-                targetNodeDataDialogue->SetDialogueActorText(
+                targetNodeDataDialogue->SetShortText(
                     AZStd::any_cast<AZStd::string>(value));
                 break;
             case AZ_CRC_CE("speaker_tag"):
                 targetNodeDataDialogue->SetDialogueSpeaker(
                     AZStd::any_cast<AZStd::string>(value));
                 break;
+            case AZ_CRC_CE("dialogue_chunk"):
+                targetNodeDataDialogue->SetChunk(
+                    AZStd::any_cast<DialogueChunk>(value));
+                break;
             default:
                 break;
             }
         }
 
-        // Is this dialogue a starting dialogue?
         auto const isStartingDialogue = [&targetDialogueNode]() -> bool
         {
-            auto const inputSlot_isStarter = targetDialogueNode->GetSlot(
+            auto const inIsStarterSlot = targetDialogueNode->GetSlot(
                 ToString(DialogueNodeSlots::inIsStarter));
-            return (inputSlot_isStarter &&
-                    inputSlot_isStarter->GetValue().is<bool>()) //
-                ? inputSlot_isStarter->GetValue<bool>()
+
+            return (inIsStarterSlot && inIsStarterSlot->GetValue().is<bool>())
+                ? inIsStarterSlot->GetValue<bool>()
                 : false;
         }();
 
@@ -1085,17 +1102,17 @@ namespace ConversationEditor
         {
             m_startingIds.push_back(targetNodeDataDialogue->GetId());
         }
-        auto const inParentSlotPtr{ targetDialogueNode->GetSlot(
+
+        auto const inParentSlot{ targetDialogueNode->GetSlot(
             ToString(DialogueNodeSlots::inParent)) };
 
-        if (inParentSlotPtr && !inParentSlotPtr->GetConnections().empty())
+        if (inParentSlot && !inParentSlot->GetConnections().empty())
         {
-            auto const sourceNodePtr =
+            auto const sourceNode =
                 [&targetDialogueNode,
-                 &inParentSlotPtr]() -> GraphModel::ConstNodePtr
+                 &inParentSlot]() -> GraphModel::ConstNodePtr
             {
-                auto const inParentConnections =
-                    inParentSlotPtr->GetConnections();
+                auto const inParentConnections = inParentSlot->GetConnections();
                 if (inParentConnections.size() != 1)
                 {
                     AZLOG_ERROR( // NOLINT
@@ -1105,11 +1122,11 @@ namespace ConversationEditor
                     return nullptr;
                 }
 
-                auto const& connectionPtr = inParentConnections.front();
-                if (connectionPtr->GetSourceNode() != targetDialogueNode &&
-                    connectionPtr->GetTargetNode() == targetDialogueNode)
+                auto const& connection = inParentConnections.front();
+                if (connection->GetSourceNode() != targetDialogueNode &&
+                    connection->GetTargetNode() == targetDialogueNode)
                 {
-                    return connectionPtr->GetSourceNode();
+                    return connection->GetSourceNode();
                 }
 
                 AZLOG_ERROR( // NOLINT
@@ -1119,10 +1136,10 @@ namespace ConversationEditor
                 return nullptr;
             }();
 
-            if (sourceNodePtr)
+            if (sourceNode)
             {
                 auto& sourceNodeDataDialogue{
-                    m_nodeDataTable[sourceNodePtr].m_dialogue
+                    m_nodeDataTable[sourceNode].m_dialogue
                 };
                 if (!sourceNodeDataDialogue.has_value())
                 {
@@ -1134,11 +1151,11 @@ namespace ConversationEditor
                 if (IsCompileLoggingEnabled())
                 {
                     AZLOG_INFO(
-                        "Adding response [Symbol: %s | Id: %zu] to dialogue "
-                        "[Symbol: %s | Id: %zu].\n",
+                        "Adding response [Symbol: %s | Id: %u] to dialogue "
+                        "[Symbol: %s | Id: %u].\n",
                         GetSymbolNameFromNode(targetDialogueNode).c_str(),
                         targetDialogueId.GetHash(),
-                        GetSymbolNameFromNode(sourceNodePtr).c_str(),
+                        GetSymbolNameFromNode(sourceNode).c_str(),
                         sourceNodeDataDialogue->GetDialogueId().GetHash());
                 }
 
@@ -1153,6 +1170,11 @@ namespace ConversationEditor
         GraphModel::ConstNodePtr const& linkNode)
     {
         auto const& linkData = m_nodeDataTable[linkNode].m_linkData;
+
+        if (linkData.IsValid())
+        {
+            return;
+        }
         auto& fromNodeData = m_nodeDataTable[linkData.m_from];
         auto const& toNode = linkData.m_to;
 
@@ -1209,7 +1231,7 @@ namespace ConversationEditor
     {
         m_templateFileDataVecForCurrentNode.clear();
 
-        for (auto const& templatePath : m_templatePathsForCurrentNode)
+        for (auto const& templatePath : ModifyTemplatePathsForCurrentNode())
         {
             bool const isLuaTemplate = templatePath.ends_with(".lua");
             bool const isConversationTemplate =
@@ -1263,12 +1285,13 @@ namespace ConversationEditor
             templateOutputPath,
             "ConversationGraphName",
             GetUniqueGraphName().c_str());
-        // Replacing the condition symbol is only valid while processing a node.
+
+        // Replace symbols only valid when m_currentNode is valid.
         if (m_currentNode)
         {
             AZ::StringFunc::Replace(
                 templateOutputPath,
-                "ConversationGraphConditionNode",
+                "ConversationGraphNodeName",
                 GetSymbolNameFromNode(m_currentNode).c_str());
         }
         return templateOutputPath;
@@ -1277,8 +1300,7 @@ namespace ConversationEditor
     void ConversationGraphCompiler::DeleteExistingFilesForCurrentNode()
     {
         if (AtomToolsFramework::GetSettingsValue(
-                "/O3DE/Atom/ConversationCanvas/ForceDeleteGeneratedFiles",
-                true))
+                ConversationCanvasSettingsForceDeleteGeneratedFilesKey, false))
         {
             AZLOG_INFO( // NOLINT
                 "Deleting generated files.\n");
@@ -1390,6 +1412,7 @@ namespace ConversationEditor
     {
         AZStd::regex const patternRegex(
             pattern, AZStd::regex::flag_type::icase);
+
         for (auto const& templateFileData : m_templateFileDataVecForCurrentNode)
         {
             if (AZStd::regex_match(templateFileData.GetPath(), patternRegex))
@@ -1426,7 +1449,6 @@ namespace ConversationEditor
         m_functionDefinitions.clear();
         m_conditionFunctionDefinitions.clear();
         m_slotValueTable.clear();
-        m_slotDialogueTable.clear();
         m_startingIds.clear();
         m_nodeDataTable.clear();
         m_templateFileDataVecForCurrentNode.clear();

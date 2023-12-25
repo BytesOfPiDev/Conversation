@@ -10,7 +10,7 @@
             "includePaths": {},
             "instructions": {},
             "templatePaths": [
-                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConditionFunction.lua"
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConversationGraphName_ConversationGraphNodeName.lua"
             ]
         },
         "propertySlots": [

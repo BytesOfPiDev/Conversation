@@ -203,11 +203,19 @@ namespace ConversationEditor
             AtomToolsFramework::CreateSettingsPropertyGroup(
                 "Conversation Canvas Settings",
                 "Conversation Canvas Settings",
-                { AtomToolsFramework::CreateSettingsPropertyValue(
-                    ConversationCanvasSettingsEnablePreviewKey,
-                    "Enable Preview Functionality",
-                    "Just testing.",
-                    false) });
+                {
+                    AtomToolsFramework::CreateSettingsPropertyValue(
+                        ConversationCanvasSettingsEnablePreviewKey,
+                        "Enable Preview Functionality",
+                        "Just testing.",
+                        false),
+                    AtomToolsFramework::CreateSettingsPropertyValue(
+                        ConversationCanvasSettingsForceDeleteGeneratedFilesKey,
+                        "Force Delete Generated Files",
+                        "Delete all files in generated folder after compiling.",
+                        false),
+
+                });
 
         inspector->AddGroup(
             m_conversationCanvasCompileSettingsGroup->m_name,
@@ -238,9 +246,10 @@ namespace ConversationEditor
         Base::OnSettingsDialogClosed();
     }
 
-    AZStd::string ConversationCanvasMainWindow::GetHelpDialogText() const
+    auto ConversationCanvasMainWindow::GetHelpDialogText() const
+        -> AZStd::string
     {
-        return R"(Halp!)";
+        return R"(A basic conversation/dialogue system for O3DE.)";
     }
 } // namespace ConversationEditor
 

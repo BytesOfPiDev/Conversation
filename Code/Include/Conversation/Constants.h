@@ -20,6 +20,7 @@ namespace ConversationEditor
     inline constexpr auto ConversationCanvasSettingsEnablePreviewKey                 = "/O3DE/Atom/ConversationCanvas/EnablePreview";
     inline constexpr auto ConversationCanvasSettingsDocumentInspectorKey             = "/O3DE/Atom/ConversationCanvas/DocumentInspector";
     inline constexpr auto ConversationCanvasSettingsCreateDefaultDocumentOnStartKey  = "/O3DE/Atom/ConversationCanvas/CreateDefaultDocumentOnStart";
+    inline constexpr auto ConversationCanvasSettingsForceDeleteGeneratedFilesKey     = "/O3DE/Atom/ConversationCanvas/ForceDeleteGeneratedFiles";
     // clang-format on
 
     namespace NodeSettings

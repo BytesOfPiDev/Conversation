@@ -590,7 +590,7 @@ namespace Conversation
             LOG_FollowConversation,
             "[Dialogue: '%s'] \"%s\"",
             GetNamedEntityId().GetName().data(),
-            m_activeDialogue->GetDialogueActorText().data());
+            m_activeDialogue->GetShortText().data());
 
         // Since it's considered spoken, we should sent any necessary
         // notifications related to speaking a dialogue. The first thing we want
@@ -717,7 +717,7 @@ namespace Conversation
                 result,
                 GetEntityId(),
                 &AvailabilityRequestBus::Events::IsAvailable,
-                AZ::Name{ dialogueData.GetDialogueAvailabilityId() }
+                AZ::Name(dialogueData.GetDialogueAvailabilityId().GetHash())
                     .GetStringView());
             return result.value;
         }();

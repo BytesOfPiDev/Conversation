@@ -3,14 +3,12 @@
 #include "AzCore/Math/Uuid.h"
 #include "AzCore/RTTI/ReflectContext.h"
 
-#include "AzCore/StringFunc/StringFunc.h"
-#include "AzCore/std/string/conversions.h"
 #include "Conversation/ConversationTypeIds.h"
 
 namespace Conversation
 {
 
-    constexpr auto InvalidDialogueId{ 0 };
+    constexpr AZ::Name::Hash InvalidDialogueId{};
 
     /**
      * Represents a locally unique identifier for various data types.
@@ -23,7 +21,7 @@ namespace Conversation
     public:
         AZ_TYPE_INFO(UniqueId, DialogueIdTypeId); // NOLINT
 
-        friend void ReflectDialogueId(AZ::ReflectContext* context);
+        friend void ReflectUniqueId(AZ::ReflectContext* context);
 
         static auto CreateInvalidId()
         {
@@ -33,7 +31,7 @@ namespace Conversation
         static auto CreateNamedId(AZStd::string_view name)
         {
             UniqueId newDialogueId{};
-            newDialogueId.m_id = AZ::Name{ name }.GetHash();
+            newDialogueId.m_value = AZ::Name{ name }.GetHash();
 
             return newDialogueId;
         }
@@ -45,28 +43,28 @@ namespace Conversation
 
         [[nodiscard]] constexpr auto IsValid() const -> bool
         {
-            return m_id != InvalidDialogueId;
+            return m_value != InvalidDialogueId;
         }
 
         [[nodiscard]] auto operator==(UniqueId const& other) const -> bool
         {
-            return m_id == other.m_id;
+            return m_value == other.m_value;
         }
 
         [[nodiscard]] auto operator!=(UniqueId const& other) const -> bool
         {
-            return m_id != other.m_id;
+            return m_value != other.m_value;
         }
 
-        [[nodiscard]] auto GetHash() const -> size_t
+        [[nodiscard]] auto GetHash() const -> AZ::Name::Hash
         {
-            return m_id;
+            return m_value;
         }
 
     private:
         static constexpr auto MaxNameSize{ 64 };
 
-        size_t m_id;
+        AZ::Name::Hash m_value;
     };
 
     static_assert(AZStd::is_pod_v<UniqueId>, "Ensure UniqueId is POD");
