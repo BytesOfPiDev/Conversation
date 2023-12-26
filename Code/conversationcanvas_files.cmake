@@ -21,10 +21,6 @@ set(FILES
     Source/Tools/Window/ConversationCanvasMainWindow.cpp
     Source/Tools/Window/ConversationCanvasMainWindow.h
 
-    Source/Tools/Window/Nodes/ActorDialogue.cpp
-    Source/Tools/Window/Nodes/ActorDialogue.h
-    Source/Tools/Window/Nodes/Condition.cpp
-    Source/Tools/Window/Nodes/Condition.h
     Source/Tools/Window/Nodes/Link.cpp
     Source/Tools/Window/Nodes/Link.h
 )

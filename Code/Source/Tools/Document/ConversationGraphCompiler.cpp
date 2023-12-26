@@ -799,7 +799,7 @@ namespace ConversationEditor
                         return lines;
                     });
 
-                // WARNING: Ensure mutex for the container is locked.
+                // WARNING: Ensure mutex for the container is locked each call.
                 static constexpr auto notThreadSafeExtractFunc =
                     [](AtomToolsFramework::GraphTemplateFileData&
                            templateFileData,

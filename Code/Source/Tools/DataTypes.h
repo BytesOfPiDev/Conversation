@@ -1,15 +1,21 @@
 #pragma once
 
+#include "AzCore/Math/Crc.h"
 #include "AzCore/Preprocessor/Enum.h"
 #include "AzCore/RTTI/TypeInfoSimple.h"
 
 namespace ConversationEditor
 {
-    constexpr auto ActorTextDataTypeName = "actor_text";
-    constexpr auto CommentDataTypeName = "comment";
-    constexpr auto DialogueIdTypeName = "dialogue_id";
-    constexpr auto DialogueScriptDataTypeName = "dialogue_script";
-    constexpr auto StringDataTypeName = "string";
+    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
+        SlotTypes,
+        undefined,
+        actor_text,
+        dialogue_id,
+        dialogue_chunk,
+        dialogue_script,
+        speaker_tag,
+        lua_snippet,
+        condition_snippet);
 
     AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         NodeTypes,
@@ -37,6 +43,7 @@ namespace ConversationEditor
 
     AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         DialogueNodeSlots,
+        inComment,
         inCondition,
         inIsStarter,
         inName,
@@ -44,6 +51,13 @@ namespace ConversationEditor
         inSpeaker,
         inShortText,
         outDialogue);
+
+    template<typename T>
+    constexpr auto ToTag(T const type) -> auto
+    {
+        static_assert(AZStd::is_enum_v<T>, "The type must be an enum!");
+        return AZ::Crc32(ToString(type));
+    }
 } // namespace ConversationEditor
 
 namespace AZ

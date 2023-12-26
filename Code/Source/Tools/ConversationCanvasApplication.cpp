@@ -1,6 +1,5 @@
 #include "Tools/ConversationCanvasApplication.h"
 
-#include "Atom/RPI.Reflect/Image/StreamingImageAsset.h"
 #include "AtomToolsFramework/Document/AtomToolsAnyDocument.h"
 #include "AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h"
 #include "AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h"
@@ -17,16 +16,14 @@
 #include "AzCore/RTTI/RTTIMacros.h"
 #include "AzCore/Script/ScriptAsset.h"
 #include "Conversation/DialogueData.h"
-#include "Editor/Framework/Configuration.h"
+#include "Conversation/UniqueId.h"
 #include "GraphModel/Integration/NodePalette/StandardNodePaletteItem.h"
 #include "GraphModel/Model/DataType.h"
 
-#include "Conditions/ConditionFunction.h"
 #include "Conversation/Constants.h"
 #include "Tools/ConversationGraphContext.h"
 #include "Tools/DataTypes.h"
 #include "Tools/Document/ConversationGraphCompiler.h"
-#include "Tools/EditorActorText.h"
 #include "Tools/Window/ConversationCanvasMainWindow.h"
 
 #include "QLabel"
@@ -85,7 +82,6 @@ namespace ConversationEditor
     {
         Base::Reflect(context);
         ConversationGraphCompiler::Reflect(context);
-        EditorActorText::Reflect(context);
 
         GraphModelIntegration::ReflectAndCreateNodeMimeEvent<LinkNode>(context);
 
@@ -168,10 +164,6 @@ namespace ConversationEditor
             AZStd::make_unique<AtomToolsFramework::DynamicNodeManager>(
                 m_toolId);
 
-        constexpr auto dialogueIdTypeInfo{
-            AZ::AzTypeInfo<Conversation::UniqueId>()
-        };
-
         // Register all data types required by Conversation Canvas nodes with
         // the dynamic node manager
         m_dynamicNodeManager->RegisterDataTypes({
@@ -184,108 +176,47 @@ namespace ConversationEditor
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("float"), float{}, "float"),
             AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("float2"), AZ::Vector2{}, "float2"),
+                AZ_CRC_CE("string"), AZStd::string{}, "string"),
+
             AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("float3"), AZ::Vector3{}, "float3"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("float4"), AZ::Vector4{}, "float4"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("float2x2"),
-                AZStd::array<AZ::Vector2, 2>{ AZ::Vector2(1.0f, 0.0f),
-                                              AZ::Vector2(0.0f, 1.0f) },
-                "float2x2"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("float3x3"),
-                AZStd::array<AZ::Vector3, 3>{ AZ::Vector3(1.0f, 0.0f, 0.0f),
-                                              AZ::Vector3(0.0f, 1.0f, 0.0f),
-                                              AZ::Vector3(0.0f, 0.0f, 1.0f) },
-                "float3x3"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("float4x3"),
-                AZStd::array<AZ::Vector4, 3>{
-                    AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f),
-                    AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f),
-                    AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f) },
-                "float4x3"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("float4x4"),
-                AZStd::array<AZ::Vector4, 4>{
-                    AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f),
-                    AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f),
-                    AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f),
-                    AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f) },
-                "float4x4"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE(StringDataTypeName),
+                ToTag(SlotTypes::actor_text),
                 AZStd::string{},
-                StringDataTypeName),
+                ToString(SlotTypes::actor_text)),
             AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE(ActorTextDataTypeName),
+                ToTag(SlotTypes::dialogue_script),
                 AZStd::string{},
-                ActorTextDataTypeName),
+                ToString(SlotTypes::dialogue_script)),
             AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE(CommentDataTypeName),
+                ToTag(SlotTypes::speaker_tag),
                 AZStd::string{},
-                CommentDataTypeName),
+                ToString(SlotTypes::speaker_tag)),
             AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE(DialogueScriptDataTypeName),
-                AZStd::string{},
-                DialogueScriptDataTypeName),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("speaker_tag"), AZStd::string{}, "speaker_tag"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("dialogue_name"), AZStd::string{}, "dialogue_name"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("dialogue_chunk"),
+                ToTag(SlotTypes::lua_snippet),
                 Conversation::DialogueChunk{},
-                "dialogue_chunk"),
+                ToString(SlotTypes::lua_snippet)),
             AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("editor_actor_text"),
-                EditorActorText{},
-                "editor_actor_text"),
+                ToTag(SlotTypes::dialogue_chunk),
+                Conversation::DialogueChunk{},
+                ToString(SlotTypes::dialogue_chunk)),
             AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("image"),
-                AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{},
-                "image"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("lua_script"),
-                AZ::Data::Asset<AZ::ScriptAsset>{},
-                "lua_script"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("condition_id"),
+                ToTag(SlotTypes::dialogue_id),
                 Conversation::UniqueId{},
-                "condition_id"),
+                ToString(SlotTypes::dialogue_id)),
+
             AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE(DialogueIdTypeName),
-                dialogueIdTypeInfo.Uuid(),
+                ToTag(SlotTypes::condition_snippet),
+                AZStd::make_any<AZStd::string>(),
+                ToString(SlotTypes::condition_snippet)),
+
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("unique_id"),
+                Conversation::UniqueId::TYPEINFO_Uuid(),
                 AZStd::make_any<Conversation::UniqueId>(),
-                DialogueIdTypeName,
-                dialogueIdTypeInfo.Name()),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("dialogue_data"),
-                Conversation::DialogueData{},
-                "dialogue_data"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("uuid"), AZ::Uuid{}, "uuid"),
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("name"), AZ::Name{}, "name"),
+                Conversation::UniqueId::TYPEINFO_Name(),
+                Conversation::UniqueId::TYPEINFO_Name()),
+
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("crc32"), AZ::Crc32{}, "crc32"),
-
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("condition_function"),
-                Conversation::ConditionFunction{},
-                "condition_function"),
-
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("script_canvas_handle"),
-                ScriptCanvasEditor::SourceHandle{},
-                "script_canvas_handle"),
-
-            AZStd::make_shared<GraphModel::DataType>(
-                AZ_CRC_CE("entity_id"), AZ::EntityId{}, "entity_id"),
         });
 
         // Search the project and gems for dynamic node configurations and

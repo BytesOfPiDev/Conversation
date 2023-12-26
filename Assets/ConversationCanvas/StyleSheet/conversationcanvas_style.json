@@ -2110,6 +2110,13 @@
     "background-color": "#AF937B"
   },
   {
+    "selectors": ["ScriptDataColorPalette"],
+    "palette-style": "solid",
+    "line-style": "dotted",
+    "line-color": "#B33DC6",
+    "background-color": "#B33DC6"
+  },
+  {
     "selectors": ["UnknownDataColorPalette"],
     "palette-style": "solid",
     "line-color": "#AF937B",

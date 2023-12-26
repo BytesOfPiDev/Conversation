@@ -76,22 +76,21 @@
             {
                 "name": "inParent",
                 "displayName": "Parent",
-                "supportedDataTypeRegex": "dialogue_id|dialogue_data",
+                "supportedDataTypeRegex": "dialogue_id",
                 "defaultDataType": "dialogue_id",
                 "defaultValue": {
-                    "$type": "AZ::Uuid",
-                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                    "$type": "UniqueId"
                 },
                 "editableOnNode": false
             },
             {
                 "name": "inCondition",
-                "displayName": "Condition Id",
-                "supportedDataTypeRegex": "condition_id",
-                "defaultDataType": "condition_id",
+                "displayName": "Condition",
+                "supportedDataTypeRegex": "condition_snippet",
+                "defaultDataType": "condition_snippet",
                 "defaultValue": {
-                    "$type": "AZ::Uuid",
-                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
                 },
                 "editableOnNode": false,
                 "settings": {
@@ -130,8 +129,7 @@
                 "supportedDataTypeRegex": "dialogue_id",
                 "defaultDataType": "dialogue_id",
                 "defaultValue": {
-                    "$type": "AZ::Uuid",
-                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                    "$type": "UniqueId"
                 }
             }
         ]

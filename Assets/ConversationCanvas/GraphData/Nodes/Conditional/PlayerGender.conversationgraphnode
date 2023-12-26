@@ -36,11 +36,11 @@
             {
                 "name": "outCondition",
                 "displayName": "Condition",
-                "supportedDataTypeRegex": "condition_Id",
-                "defaultDataType": "condition_id",
+                "supportedDataTypeRegex": "condition_snippet",
+                "defaultDataType": "condition_snippet",
                 "defaultValue": {
-                    "$type": "AZ::Uuid",
-                    "Value": "{00000000-0000-0000-0000-000000000000}"
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
                 },
                 "settings": {
                     "instructions": [

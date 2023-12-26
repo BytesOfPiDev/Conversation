@@ -70,7 +70,7 @@ namespace ConversationEditor
         GraphModel::DataTypePtr uniqueIdDataType =
             GetGraphContext()->GetDataType<AZ::Uuid>();
         auto dialogueIdDataType{ GetGraphContext()->GetDataType(
-            AZ_CRC_CE(DialogueIdTypeName)) };
+            ToTag(SlotTypes::dialogue_id)) };
 
         auto to = AZStd::make_shared<GraphModel::SlotDefinition>(
             GraphModel::SlotDefinition(

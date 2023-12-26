@@ -1,0 +1,44 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{32F499C3-B5BA-4C1F-83A2-2F812C70BA85}",
+        "category": "Scripting",
+        "title": "Lua Snippet",
+        "titlePaletteName": "FunctionNodeTitlePalette",
+        "settings": {
+            "templatePaths": [
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Scripting/ConversationGraphName_ConversationGraphNodeName_DS.lua"
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inLuaSnippet",
+                "displayName": "Code",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
+                "defaultValue": {
+                    "$type": "DialogueChunk"
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outScript",
+                "displayName": "Script",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                },
+                "settings": {
+                    "instructions": [
+                        "Debug.Log(\"NODEID\")"
+                    ]
+                }
+            }
+        ]
+    }
+}

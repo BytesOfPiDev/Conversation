@@ -4,24 +4,24 @@
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
         "category": "Conditions",
+        "titlePaletteName": "ConditionDataColorPalette",
         "settings": {
             "templatePaths": [
-                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConditionFunction.lua"
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConversationGraphName_ConversationGraphNodeName_CF.lua"
             ]
         },
         "outputSlots": [
             {
                 "name": "outCondition",
                 "displayName": "Condition",
-                "supportedDataTypeRegex": "condition_id",
-                "defaultDataType": "condition_id",
+                "supportedDataTypeRegex": "condition_snippet",
+                "defaultDataType": "condition_snippet",
                 "defaultValue": {
-                    "$type": "DialogueId"
+                    "$type": "DialogueChunk"
                 },
-                "editableOnNode": false,
                 "settings": {
                     "instructions": [
-                        "    result = true"
+                        "result =  true"
                     ]
                 }
             }
