@@ -17,17 +17,12 @@
                 "defaultValue": {
                     "$type": "int",
                     "Value": 0
-                },
-                "settings": {
-                    "instructions": [
-                        "local SLOTNAME = SLOTVALUE;"
-                    ]
                 }
             }
         ],
         "outputSlots": [
             {
-                "name": "result",
+                "name": "outValue",
                 "displayName": "Value",
                 "supportedDataTypeRegex": "int",
                 "defaultDataType": "int",
@@ -37,7 +32,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "local SLOTNAME = inValue;"
+                        "local SLOTNAME = SLOTVALUE(inValue);"
                     ]
                 }
             }

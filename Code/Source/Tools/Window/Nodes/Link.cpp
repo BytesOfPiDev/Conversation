@@ -76,7 +76,7 @@ namespace ConversationEditor
             GraphModel::SlotDefinition(
                 GraphModel::SlotDirection::Input,
                 GraphModel::SlotType::Data,
-                ToString(LinkNodeSlots::inFrom),
+                ToString(LinkNodeSlots::in_from),
                 "From",
                 "The node to link from.",
                 { dialogueIdDataType },
@@ -93,7 +93,7 @@ namespace ConversationEditor
             GraphModel::SlotDefinition(
                 GraphModel::SlotDirection::Input,
                 GraphModel::SlotType::Data,
-                ToString(LinkNodeSlots::inTo),
+                ToString(LinkNodeSlots::in_to),
                 "To",
                 "The node to link to.",
                 { dialogueIdDataType },
@@ -112,9 +112,9 @@ namespace ConversationEditor
 
     void LinkNode::UpdateNodeData(NodeData& nodeData) const
     {
-        auto const fromSlot = GetSlot(ToString(LinkNodeSlots::inFrom));
+        auto const fromSlot = GetSlot(ToString(LinkNodeSlots::in_from));
 
-        auto toSlot = GetSlot(ToString(LinkNodeSlots::inTo));
+        auto toSlot = GetSlot(ToString(LinkNodeSlots::in_to));
 
         // The connection to our 'From' input slot
         GraphModel::ConstConnectionPtr const fromSlotConnection =

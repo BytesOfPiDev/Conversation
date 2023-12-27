@@ -10,43 +10,45 @@
         "slotDataTypeGroups": [
             "left_value|right_value"
         ],
+        "settings": {
+            "templatePaths": [
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/empty.lua"
+            ]
+        },
         "inputSlots": [
             {
                 "name": "left_value",
                 "displayName": "Left",
-                "supportedDataTypeRegex": "int|bool|string|entity_id",
-                "defaultDataType": "string",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
+                    "$type": "DialogueChunk"
                 },
                 "editableOnNode": false
             },
             {
                 "name": "right_value",
                 "displayName": "Right",
-                "supportedDataTypeRegex": "int|bool|string|entity_id",
-                "defaultDataType": "string",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
+                    "$type": "DialogueChunk"
                 },
                 "editableOnNode": false
             }
         ],
         "outputSlots": [
             {
-                "name": "result",
-                "displayName": "Result",
-                "supportedDataTypeRegex": "bool",
-                "defaultDataType": "bool",
+                "name": "outScript",
+                "displayName": "Out",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "bool",
-                    "Value": false
+                    "$type": "DialogueChunk"
                 },
                 "settings": {
                     "instructions": [
-                        "(left_value == right_value);"
+                        "local SLOTNAME = SLOTVALUE(left_value) == SLOTVALUE(right_value);"
                     ]
                 }
             }

@@ -21,6 +21,7 @@
 #include "AzCore/std/string/regex.h"
 #include "AzFramework/Asset/AssetSystemBus.h"
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
+#include "Conversation/DialogueChunk.h"
 #include "Conversation/DialogueData.h"
 #include "GraphModel/Model/Common.h"
 #include "GraphModel/Model/Node.h"
@@ -36,7 +37,7 @@ namespace ConversationEditor
 {
     AZ_RTTI_NO_TYPE_INFO_IMPL( // NOLINT(modernize-use-trailing-return-type)
         ConversationGraphCompiler,
-        AtomToolsFramework::GraphCompiler); // NOLINT
+        AtomToolsFramework::GraphCompiler);
     AZ_TYPE_INFO_WITH_NAME_IMPL( // NOLINT(modernize-use-trailing-return-type)
         ConversationGraphCompiler,
         "ConversationGraphCompiler",
@@ -45,7 +46,7 @@ namespace ConversationEditor
         ConversationGraphCompiler,
         AZ::SystemAllocator);
 
-    auto UnexpectedCompilationError(
+    static auto UnexpectedCompilationError(
         CompilationErrorCode errorCode, AZStd::string_view errorMessage)
         -> AZStd::unexpected<CompilationError>
     {
@@ -168,16 +169,6 @@ namespace ConversationEditor
             DeleteExistingFilesForCurrentNode();
             PreprocessTemplatesForCurrentNode();
             BuildInstructionsForCurrentNode(currentNode);
-
-            if (!ExportTemplatesMatchingRegex(".*\\.lua\\b"))
-            {
-                AZ_Error(
-                    "ConversationGraphCompiler",
-                    false,
-                    "Compilation failed while trying to export '.lua' files."); // NOLINT
-                SetState(AtomToolsFramework::GraphCompiler::State::Failed);
-                return false;
-            }
         };
 
         if (!BuildConversationAsset())
@@ -394,7 +385,9 @@ namespace ConversationEditor
              !slot->GetConnections().empty()))
         {
             AtomToolsFramework::CollectDynamicNodeSettings(
-                slotConfig.m_settings, "instructions", instructionsForSlot);
+                slotConfig.m_settings,
+                NodeSettings::InstructionsKey,
+                instructionsForSlot);
 
             AtomToolsFramework::ReplaceSymbolsInContainer(
                 substitutionSymbols, instructionsForSlot);
@@ -586,6 +579,11 @@ namespace ConversationEditor
         {
             return AZStd::string::format("DialogueData()");
         }
+        if (auto const& v =
+                AZStd::any_cast<Conversation::DialogueChunk const>(&slotValue))
+        {
+            return v->GetData();
+        }
 
         return {};
     }
@@ -677,7 +675,7 @@ namespace ConversationEditor
                 AZStd::vector<AZStd::string> instructionsForNode;
                 AtomToolsFramework::CollectDynamicNodeSettings(
                     nodeConfig.m_settings,
-                    NodeSettings::InstructionKey,
+                    NodeSettings::InstructionsKey,
                     instructionsForNode);
 
                 AtomToolsFramework::ReplaceSymbolsInContainer(
@@ -799,40 +797,16 @@ namespace ConversationEditor
                         return lines;
                     });
 
-                // WARNING: Ensure mutex for the container is locked each call.
-                static constexpr auto notThreadSafeExtractFunc =
-                    [](AtomToolsFramework::GraphTemplateFileData&
-                           templateFileData,
-                       AZStd::vector<AZStd::string>& container) -> void
+                if (currentNode->GetSlot(
+                        ToString(DialogueScriptSlots::out_chunk)) ||
+                    currentNode->GetSlot(
+                        ToString(ConditionNodeSlots::out_condition)))
                 {
+                    AZStd::scoped_lock lock{ m_functionDefinitionsMutex };
                     AZStd::string luaFunc{};
                     AZ::StringFunc::Join(
                         luaFunc, templateFileData.GetLines(), "\n");
-                    container.emplace_back(luaFunc);
-                };
-
-                if (currentNode->GetSlot(
-                        ToString(DialogueScriptSlots::outScript)))
-                {
-                    AZStd::scoped_lock lock{ m_functionDefinitionsMutex };
-
-                    notThreadSafeExtractFunc(
-                        templateFileData, m_functionDefinitions);
-                }
-
-                // We create a string representation of the generated
-                // instructions when there's an outCondition slot. When
-                // compiling, we'll use it to add a new function to the
-                // companion script that can be called to confirm a dialogue's
-                // availability in Lua.
-                if (currentNode->GetSlot(
-                        ToString(ConditionNodeSlots::outCondition)))
-                {
-                    AZStd::scoped_lock lock{
-                        m_conditionFunctionDefinitionsMutex
-                    };
-                    notThreadSafeExtractFunc(
-                        templateFileData, m_conditionFunctionDefinitions);
+                    m_functionDefinitions.emplace_back(luaFunc);
                 }
             });
     }
@@ -908,14 +882,6 @@ namespace ConversationEditor
             [&]([[maybe_unused]] AZStd::string const& blockHeader)
             {
                 return m_functionDefinitions;
-            });
-
-        m_scriptFileDataTemplate.ReplaceLinesInBlock(
-            "BOP_GENERATED_CONDITION_FUNCTIONS_BEGIN",
-            "BOP_GENERATED_CONDITION_FUNCTIONS_END",
-            [&]([[maybe_unused]] AZStd::string const& blockHeader)
-            {
-                return m_conditionFunctionDefinitions;
             });
 
         auto const templateOutputPath =
@@ -1071,7 +1037,7 @@ namespace ConversationEditor
         // Dialogue nodes that have a connection to inCondition will need to add
         // the connected node's symbol as an availability Id.
         if (auto const inConditionSlot = targetDialogueNode->GetSlot(
-                ToString(DialogueNodeSlots::inCondition));
+                ToString(DialogueNodeSlots::in_condition));
             inConditionSlot && !inConditionSlot->GetConnections().empty())
         {
             AZ_Error( // NOLINT
@@ -1103,15 +1069,15 @@ namespace ConversationEditor
 
             switch (slot->GetDataType()->GetTypeEnum())
             {
-            case AZ_CRC_CE("actor_text"):
+            case ToTag(SlotTypes::actor_text):
                 targetNodeDataDialogue->SetShortText(
                     AZStd::any_cast<AZStd::string>(value));
                 break;
-            case AZ_CRC_CE("speaker_tag"):
+            case ToTag(SlotTypes::speaker_tag):
                 targetNodeDataDialogue->SetDialogueSpeaker(
                     AZStd::any_cast<AZStd::string>(value));
                 break;
-            case AZ_CRC_CE("dialogue_chunk"):
+            case ToTag(SlotTypes::dialogue_chunk):
                 targetNodeDataDialogue->SetChunk(
                     AZStd::any_cast<DialogueChunk>(value));
                 break;
@@ -1123,7 +1089,7 @@ namespace ConversationEditor
         auto const isStartingDialogue = [&targetDialogueNode]() -> bool
         {
             auto const inIsStarterSlot = targetDialogueNode->GetSlot(
-                ToString(DialogueNodeSlots::inIsStarter));
+                ToString(DialogueNodeSlots::in_isStarter));
 
             return (inIsStarterSlot && inIsStarterSlot->GetValue().is<bool>())
                 ? inIsStarterSlot->GetValue<bool>()
@@ -1136,7 +1102,7 @@ namespace ConversationEditor
         }
 
         auto const inParentSlot{ targetDialogueNode->GetSlot(
-            ToString(DialogueNodeSlots::inParent)) };
+            ToString(DialogueNodeSlots::in_parent)) };
 
         if (inParentSlot && !inParentSlot->GetConnections().empty())
         {
@@ -1479,7 +1445,6 @@ namespace ConversationEditor
         m_includePaths.clear();
         m_classDefinitions.clear();
         m_functionDefinitions.clear();
-        m_conditionFunctionDefinitions.clear();
         m_slotValueTable.clear();
         m_startingIds.clear();
         m_nodeDataTable.clear();

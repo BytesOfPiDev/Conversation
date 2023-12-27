@@ -36,11 +36,10 @@
             {
                 "name": "outCondition",
                 "displayName": "Condition",
-                "supportedDataTypeRegex": "condition_snippet",
-                "defaultDataType": "condition_snippet",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
+                    "$type": "DialogueChunk"
                 },
                 "settings": {
                     "instructions": [

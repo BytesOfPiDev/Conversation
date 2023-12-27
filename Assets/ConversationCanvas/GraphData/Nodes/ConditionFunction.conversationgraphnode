@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{25C7164A-E831-4360-8D91-056DE38C3220}",
+        "category": "Default",
+        "title": "Condition",
+        "titlePaletteName": "FunctionNodeTitlePalette",
+        "settings": {
+            "templatePaths": [
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/condition_function.lua"
+            ]
+        },
+        "inputSlots": [
+            {
+                "name": "in_chunk",
+                "displayName": "Source",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
+                "defaultValue": {
+                    "$type": "DialogueChunk"
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "out_chunk",
+                "displayName": "Chunk",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
+                "defaultValue": {
+                    "$type": "DialogueChunk"
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTVALUE(in_chunk)"
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{4D349B88-02BD-487C-B0B3-B519615B029B}",
+        "category": "Speakers",
+        "title": "Player",
+        "subTitle": "Speaker Tag",
+        "titlePaletteName": "DefaultNodeTitlePalette",
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Speaker Tag",
+                "supportedDataTypeRegex": "speaker_tag",
+                "defaultDataType": "speaker_tag",
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": "player"
+                },
+                "settings": {
+                    "instructions": [
+                        "\"SLOTVALUE\""
+                    ]
+                }
+            }
+        ]
+    }
+}

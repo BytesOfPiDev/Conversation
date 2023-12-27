@@ -1,0 +1,36 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Default",
+        "titlePaletteName": "DefaultNodeTitlePalette",
+        "inputSlots": [
+            {
+                "name": "in_chunk",
+                "displayName": "Source",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
+                "defaultValue": {
+                    "$type": "DialogueChunk"
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "out_chunk",
+                "displayName": "Chunk",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
+                "defaultValue": {
+                    "$type": "DialogueChunk"
+                },
+                "settings": {
+                    "instructions": [
+                        "SLOTVALUE(in_chunk)"
+                    ]
+                }
+            }
+        ]
+    }
+}

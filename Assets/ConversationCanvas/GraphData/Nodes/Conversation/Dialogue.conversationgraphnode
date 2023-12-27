@@ -3,7 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{CD9BA751-1338-44A0-AE80-2E7148F03775}",
+        "id": "{EC242BBE-AF06-4278-820D-059337B55032}",
         "category": "Conversation",
         "title": "Actor Dialogue",
         "subTitle": "Dialogue",
@@ -16,11 +16,14 @@
         "settings": {
             "nodeType": [
                 "Dialogue"
+            ],
+            "templatePaths": [
+                "@gemroot:Conversation@/Scripts/conversation/dialogue.lua"
             ]
         },
         "propertySlots": [
             {
-                "name": "inIsStarter",
+                "name": "in_isStarter",
                 "displayName": "IsStarter",
                 "supportedDataTypeRegex": "bool",
                 "defaultDataType": "bool",
@@ -30,17 +33,7 @@
                 }
             },
             {
-                "name": "inDelay",
-                "displayName": "Delay",
-                "supportedDataTypeRegex": "int",
-                "defaultDataType": "int",
-                "defaultValue": {
-                    "$type": "int",
-                    "Value": 0
-                }
-            },
-            {
-                "name": "inText",
+                "name": "in_shortText",
                 "displayName": "Short Text",
                 "supportedDataTypeRegex": "actor_text",
                 "defaultDataType": "actor_text",
@@ -50,31 +43,20 @@
                 }
             },
             {
-                "name": "inComment",
+                "name": "in_comment",
                 "displayName": "Comment",
-                "supportedDataTypeRegex": "comment",
-                "defaultDataType": "comment",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
                 "defaultValue": {
                     "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
                     "Value": ""
                 },
                 "visibleOnNode": false
-            },
-            {
-                "name": "inChunk",
-                "displayName": "Text Chunk",
-                "supportedDataTypeRegex": "dialogue_chunk",
-                "defaultDataType": "dialogue_chunk",
-                "defaultValue": {
-                    "$type": "DialogueChunk"
-                },
-                "visibleOnNode": false,
-                "editableOnNode": false
             }
         ],
         "inputSlots": [
             {
-                "name": "inParent",
+                "name": "in_parent",
                 "displayName": "Parent",
                 "supportedDataTypeRegex": "dialogue_id",
                 "defaultDataType": "dialogue_id",
@@ -84,13 +66,12 @@
                 "editableOnNode": false
             },
             {
-                "name": "inCondition",
+                "name": "in_condition",
                 "displayName": "Condition",
-                "supportedDataTypeRegex": "condition_snippet",
-                "defaultDataType": "condition_snippet",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
+                    "$type": "DialogueChunk"
                 },
                 "editableOnNode": false,
                 "settings": {
@@ -100,7 +81,7 @@
                 }
             },
             {
-                "name": "inSpeaker",
+                "name": "in_speakerTag",
                 "displayName": "Speaker",
                 "supportedDataTypeRegex": "speaker_tag",
                 "defaultDataType": "speaker_tag",
@@ -110,21 +91,30 @@
                 }
             },
             {
-                "name": "inScript",
+                "name": "in_script",
                 "displayName": "Script",
                 "description": "A script that gets executed when this dialogue is chosen.",
-                "supportedDataTypeRegex": "dialogue_script",
-                "defaultDataType": "dialogue_script",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
+                    "$type": "DialogueChunk"
                 },
                 "editableOnNode": false
+            },
+            {
+                "name": "in_entryDelay",
+                "displayName": "Entry Delay",
+                "supportedDataTypeRegex": "int",
+                "defaultDataType": "int",
+                "defaultValue": {
+                    "$type": "int",
+                    "Value": 0
+                }
             }
         ],
         "outputSlots": [
             {
-                "name": "outDialogueId",
+                "name": "out_id",
                 "displayName": "Dialogue",
                 "supportedDataTypeRegex": "dialogue_id",
                 "defaultDataType": "dialogue_id",

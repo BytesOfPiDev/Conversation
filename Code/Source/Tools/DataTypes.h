@@ -12,7 +12,6 @@ namespace ConversationEditor
         actor_text,
         dialogue_id,
         dialogue_chunk,
-        dialogue_script,
         speaker_tag,
         lua_snippet,
         condition_snippet);
@@ -30,27 +29,27 @@ namespace ConversationEditor
 
     AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         LinkNodeSlots,
-        inFrom,
-        inTo);
+        in_from,
+        in_to);
 
     AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         ConditionNodeSlots,
-        outCondition);
+        out_condition);
 
     AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         DialogueScriptSlots,
-        outScript);
+        out_chunk);
 
     AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         DialogueNodeSlots,
-        inComment,
-        inCondition,
-        inIsStarter,
-        inName,
-        inParent,
-        inSpeaker,
-        inShortText,
-        outDialogue);
+        in_comment,
+        in_condition,
+        in_isStarter,
+        in_name,
+        in_parent,
+        in_speakerTag,
+        in_shortText,
+        out_id);
 
     template<typename T>
     constexpr auto ToTag(T const type) -> auto

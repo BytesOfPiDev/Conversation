@@ -7,18 +7,28 @@
         "titlePaletteName": "FunctionNodeTitlePalette",
         "settings": {
             "templatePaths": [
-                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Scripting/ConversationGraphName_ConversationGraphNodeName_DS.lua"
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Scripting/ConversationGraphName_ConversationGraphNodeName_F.lua"
             ]
         },
+        "inputSlots": [
+            {
+                "name": "in_chunk",
+                "displayName": "Source Code",
+                "supportedDataTypeRegex": "lua_snippet",
+                "defaultDataType": "lua_snippet",
+                "defaultValue": {
+                    "$type": "DialogueChunk"
+                }
+            }
+        ],
         "outputSlots": [
             {
-                "name": "outScript",
+                "name": "out_chunk",
                 "displayName": "Script",
                 "supportedDataTypeRegex": "lua_snippet",
                 "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
+                    "$type": "DialogueChunk"
                 },
                 "settings": {
                     "instructions": [

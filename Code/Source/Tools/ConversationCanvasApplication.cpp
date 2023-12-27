@@ -183,10 +183,6 @@ namespace ConversationEditor
                 AZStd::string{},
                 ToString(SlotTypes::actor_text)),
             AZStd::make_shared<GraphModel::DataType>(
-                ToTag(SlotTypes::dialogue_script),
-                AZStd::string{},
-                ToString(SlotTypes::dialogue_script)),
-            AZStd::make_shared<GraphModel::DataType>(
                 ToTag(SlotTypes::speaker_tag),
                 AZStd::string{},
                 ToString(SlotTypes::speaker_tag)),
@@ -202,11 +198,6 @@ namespace ConversationEditor
                 ToTag(SlotTypes::dialogue_id),
                 Conversation::UniqueId{},
                 ToString(SlotTypes::dialogue_id)),
-
-            AZStd::make_shared<GraphModel::DataType>(
-                ToTag(SlotTypes::condition_snippet),
-                AZStd::make_any<AZStd::string>(),
-                ToString(SlotTypes::condition_snippet)),
 
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("unique_id"),
@@ -259,7 +250,8 @@ namespace ConversationEditor
         AtomToolsFramework::AddEditDataAttribute(
             editData,
             AZ::Edit::Attributes::StringList,
-            AZStd::vector<AZStd::string>{ "Dialogue", "Condition", "Script" });
+            AZStd::vector<AZStd::string>{
+                "Dialogue", "Condition", "Function", "Snippet" });
         m_dynamicNodeManager->RegisterEditDataForSetting("nodeType", editData);
 
         editData = {};

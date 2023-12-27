@@ -215,7 +215,6 @@ namespace ConversationEditor
 
     private:
         AZStd::mutex m_instructionNodesForCurrentNodeMutex{};
-        AZStd::mutex m_conditionFunctionDefinitionsMutex{};
         AZStd::mutex m_functionDefinitionsMutex{};
 
         GraphModel::ConstNodePtr m_currentNode{};
@@ -231,7 +230,6 @@ namespace ConversationEditor
         // Not currently implemented.
         AZStd::vector<AZStd::string> m_classDefinitions{};
         AZStd::vector<AZStd::string> m_functionDefinitions{};
-        AZStd::vector<AZStd::string> m_conditionFunctionDefinitions{};
         /**
          * Holds the cached value of every node in the graph.
          *
