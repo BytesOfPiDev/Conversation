@@ -10,7 +10,8 @@ namespace ConversationEditor
     {
         [[nodiscard]] auto IsValid() const
         {
-            return m_from->HasConnections() && m_to->HasConnections();
+            return (m_from && m_from->HasConnections()) &&
+                (m_to && m_to->HasConnections());
         }
 
         GraphModel::ConstNodePtr m_from;
