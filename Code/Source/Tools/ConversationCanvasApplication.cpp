@@ -241,15 +241,6 @@ namespace ConversationEditor
         AtomToolsFramework::AddEditDataAttribute(
             editData,
             AZ::Edit::Attributes::StringList,
-            AZStd::vector<AZStd::string>{ "==", "!=", ">=", "<=", "" });
-        m_dynamicNodeManager->RegisterEditDataForSetting(
-            "conditionFunctionOp", editData);
-
-        editData = {};
-        editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
-        AtomToolsFramework::AddEditDataAttribute(
-            editData,
-            AZ::Edit::Attributes::StringList,
             AZStd::vector<AZStd::string>{
                 "Dialogue", "Condition", "Function", "Snippet" });
         m_dynamicNodeManager->RegisterEditDataForSetting("nodeType", editData);
@@ -261,8 +252,7 @@ namespace ConversationEditor
         AtomToolsFramework::AddEditDataAttribute(
             editData,
             AZ_CRC_CE("Extensions"),
-            AZStd::vector<AZStd::string>{
-                "lua", "dlgcondition", "conversationtemplate" });
+            AZStd::vector<AZStd::string>{ "lua", "conversationtemplate" });
         m_dynamicNodeManager->RegisterEditDataForSetting(
             "templatePaths", editData);
 
