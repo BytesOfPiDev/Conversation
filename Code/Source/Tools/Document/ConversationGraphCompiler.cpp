@@ -1049,7 +1049,7 @@ namespace ConversationEditor
             {
                 auto const sourceNode =
                     inConditionSlot->GetConnections().front()->GetSourceNode();
-                targetNodeDataDialogue->SetDialogueAvailabilityId(
+                targetNodeDataDialogue->SetAvailabilityId(
                     GetSymbolNameFromNode(sourceNode));
             }
         }
@@ -1074,7 +1074,7 @@ namespace ConversationEditor
                     AZStd::any_cast<AZStd::string>(value));
                 break;
             case ToTag(SlotTypes::speaker_tag):
-                targetNodeDataDialogue->SetDialogueSpeaker(
+                targetNodeDataDialogue->SetSpeaker(
                     AZStd::any_cast<AZStd::string>(value));
                 break;
             case ToTag(SlotTypes::dialogue_chunk):
@@ -1154,10 +1154,10 @@ namespace ConversationEditor
                         GetSymbolNameFromNode(targetDialogueNode).c_str(),
                         targetDialogueId.GetHash(),
                         GetSymbolNameFromNode(sourceNode).c_str(),
-                        sourceNodeDataDialogue->GetDialogueId().GetHash());
+                        sourceNodeDataDialogue->GetId().GetHash());
                 }
 
-                sourceNodeDataDialogue->AddDialogueResponseId(targetDialogueId);
+                sourceNodeDataDialogue->AddResponseId(targetDialogueId);
             }
         }
 

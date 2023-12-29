@@ -136,8 +136,7 @@ namespace Conversation
             m_dialogues,
             [&responseData](DialogueData const& dialogueData) -> bool
             {
-                return dialogueData.GetDialogueId() ==
-                    responseData.m_parentDialogueId;
+                return dialogueData.GetId() == responseData.m_parentDialogueId;
             });
 
         // We add response data without confirming if we have a DialogueData

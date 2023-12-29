@@ -96,12 +96,12 @@ namespace Conversation
 
             AZStd::string description{};
             description += header;
-            description += AZStd::string::format(
-                idFormat, GetDialogueId().GetHash()); // NOLINT
+            description +=
+                AZStd::string::format(idFormat, GetId().GetHash()); // NOLINT
             description += AZStd::string::format(
                 textFormat, GetShortText().data()); // NOLINT
             description += AZStd::string::format(
-                speakerFormat, GetDialogueSpeaker().data()); // NOLINT
+                speakerFormat, GetSpeaker().data()); // NOLINT
 
             return description;
         }
@@ -122,37 +122,34 @@ namespace Conversation
             return m_responseIds;
         }
 
-        [[nodiscard]] constexpr auto GetDialogueAudioTrigger() const
+        [[nodiscard]] constexpr auto GetAudioTrigger() const
             -> AZStd::string_view
         {
             return m_audioTrigger;
         }
 
-        [[nodiscard]] constexpr auto GetDialogueScriptIds() const
+        [[nodiscard]] constexpr auto GetScriptIds() const
             -> AZStd::vector<AZStd::string> const&
         {
             return m_scriptIds;
         }
 
-        [[nodiscard]] auto GetDialogueAvailabilityId() const -> UniqueId
+        [[nodiscard]] auto GetAvailabilityId() const -> UniqueId
         {
             return m_availabilityId;
         }
 
-        [[nodiscard]] constexpr auto GetDialogueComment() const
-            -> AZStd::string_view
+        [[nodiscard]] constexpr auto GetComment() const -> AZStd::string_view
         {
             return m_comment;
         }
 
-        constexpr void SetDialogueAvailabilityId(
-            AvailabilityId newAvailabilityId)
+        constexpr void SetAvailabilityId(AvailabilityId newAvailabilityId)
         {
             m_availabilityId = newAvailabilityId;
         }
 
-        constexpr void SetDialogueAvailabilityId(
-            AZStd::string_view newAvailabilityId)
+        constexpr void SetAvailabilityId(AZStd::string_view newAvailabilityId)
         {
             m_availabilityId = UniqueId::CreateNamedId(newAvailabilityId);
         }
@@ -167,33 +164,32 @@ namespace Conversation
             m_shortText = actorText;
         }
 
-        [[nodiscard]] constexpr auto GetDialogueSpeaker() const
-            -> AZStd::string_view
+        [[nodiscard]] constexpr auto GetSpeaker() const -> AZStd::string_view
         {
             return m_speaker;
         }
 
-        constexpr void SetDialogueSpeaker(AZStd::string_view speaker)
+        constexpr void SetSpeaker(AZStd::string_view speaker)
         {
             m_speaker = speaker;
         }
 
-        constexpr void SetDialogueAudioTrigger(AZStd::string_view audioTrigger)
+        constexpr void SetAudioTrigger(AZStd::string_view audioTrigger)
         {
             m_audioTrigger = audioTrigger;
         }
 
-        constexpr void SetDialogueEntryDelay(float entryDelay)
+        constexpr void SetEntryDelay(float entryDelay)
         {
             m_entryDelay = entryDelay;
         }
 
-        constexpr void SetDialogueComment(AZStd::string& comment)
+        constexpr void SetComment(AZStd::string& comment)
         {
             m_comment = comment;
         }
 
-        constexpr void SetDialogueComment(AZStd::string_view comment)
+        constexpr void SetComment(AZStd::string_view comment)
         {
             m_comment = comment;
         }
@@ -202,11 +198,6 @@ namespace Conversation
         {
             return GetResponseIds().size();
         };
-
-        [[nodiscard]] auto GetDialogueId() const -> UniqueId
-        {
-            return m_id;
-        }
 
         /**
          * @brief Add a response ID that can follow this dialogue.
@@ -229,7 +220,7 @@ namespace Conversation
          *
          * @see ConversationAsset
          */
-        void AddDialogueResponseId(UniqueId const responseId)
+        void AddResponseId(UniqueId const responseId)
         {
             auto& responseIds = GetResponseIds();
             // Only add the response if we're within the limit.

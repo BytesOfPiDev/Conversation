@@ -596,7 +596,7 @@ namespace Conversation
         // notifications related to speaking a dialogue. The first thing we want
         // to do is run any provided scripts.
         AZStd::ranges::for_each(
-            m_activeDialogue->GetDialogueScriptIds(),
+            m_activeDialogue->GetScriptIds(),
             [](auto const scriptId)
             {
                 DialogueScriptRequestBus::Event(
@@ -681,8 +681,8 @@ namespace Conversation
         // Only if the first available response is the same speaker as the
         // active dialogue, select it. m_availableResponses is guaranteed to
         // have at least one element due to an earlier check.
-        if (m_activeDialogue->GetDialogueSpeaker() ==
-            m_availableResponses.front().GetDialogueSpeaker())
+        if (m_activeDialogue->GetSpeaker() ==
+            m_availableResponses.front().GetSpeaker())
         {
             SelectDialogue(*m_availableResponses.begin());
             return;
@@ -691,13 +691,12 @@ namespace Conversation
         // FIXME: If the active dialogue's speaker is the player, we
         // automatically choose an NPC response. This is just a workaround until
         // proper NPC response handling is implemented.
-        if (m_activeDialogue->GetDialogueSpeaker() == PlayerSpeakerTag)
+        if (m_activeDialogue->GetSpeaker() == PlayerSpeakerTag)
         {
             auto const firstAvailableResponseIter =
                 m_availableResponses.begin();
             if (firstAvailableResponseIter != m_availableResponses.end() &&
-                firstAvailableResponseIter->GetDialogueSpeaker() !=
-                    PlayerSpeakerTag)
+                firstAvailableResponseIter->GetSpeaker() != PlayerSpeakerTag)
             {
                 SelectDialogue(*firstAvailableResponseIter);
             }
@@ -717,7 +716,7 @@ namespace Conversation
                 result,
                 GetEntityId(),
                 &AvailabilityRequestBus::Events::IsAvailable,
-                AZ::Name(dialogueData.GetDialogueAvailabilityId().GetHash())
+                AZ::Name(dialogueData.GetAvailabilityId().GetHash())
                     .GetStringView());
             return result.value;
         }();

@@ -89,13 +89,12 @@ namespace ConversationTest
 
             // Requires at least one valid starting Id that matches a dialogue
             // inside the asset.
-            startableAsset->AddStartingId(startingDialogue1.GetDialogueId());
+            startableAsset->AddStartingId(startingDialogue1.GetId());
 
             DialogueData earthResponseDialogue{ UniqueId::CreateRandomId() };
             earthResponseDialogue.SetShortText("I am from Earth, duh.");
             startableAsset->AddResponse(
-                { startingDialogue1.GetDialogueId(),
-                  earthResponseDialogue.GetDialogueId() });
+                { startingDialogue1.GetId(), earthResponseDialogue.GetId() });
 
             return startableAsset;
         }
@@ -135,7 +134,7 @@ namespace ConversationTest
 
         auto const validId{ UniqueId::CreateRandomId() };
         DialogueData const dialogue{ validId };
-        EXPECT_EQ(dialogue.GetDialogueId(), validId);
+        EXPECT_EQ(dialogue.GetId(), validId);
     }
 
     TEST_F(DialogueDataTests, AddResponse_CorrectlyAddsResponseId)
@@ -146,14 +145,14 @@ namespace ConversationTest
 
         auto const responseId{ UniqueId::CreateNamedId("TestId") };
 
-        dialogueData.AddDialogueResponseId(responseId);
+        dialogueData.AddResponseId(responseId);
         EXPECT_EQ(dialogueData.CountResponseIds(), 1);
         EXPECT_EQ(dialogueData.GetResponseIds().front(), responseId);
 
         for (auto index = 0; index < (DialogueData::MaxResponses + 1); ++index)
         {
             static constexpr auto dialogueIdFormat = "TestDialogueId_%d";
-            dialogueData.AddDialogueResponseId(UniqueId::CreateNamedId(
+            dialogueData.AddResponseId(UniqueId::CreateNamedId(
                 AZStd::string::format(dialogueIdFormat, index)));
         }
 

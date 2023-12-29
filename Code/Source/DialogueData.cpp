@@ -125,19 +125,18 @@ namespace Conversation
                     "Text",
                     &DialogueData::GetShortText,
                     &DialogueData::SetShortText)
-                ->Property("ID", &DialogueData::GetDialogueId, nullptr)
+                ->Property("ID", &DialogueData::GetId, nullptr)
                 ->Property(
                     "Speaker",
-                    &DialogueData::GetDialogueSpeaker,
-                    &DialogueData::SetDialogueSpeaker)
+                    &DialogueData::GetSpeaker,
+                    &DialogueData::SetSpeaker)
                 ->Property(
                     "AudioTrigger",
-                    &DialogueData::GetDialogueAudioTrigger,
-                    &DialogueData::SetDialogueAudioTrigger)
+                    &DialogueData::GetAudioTrigger,
+                    &DialogueData::SetAudioTrigger)
                 ->Property(
                     "ResponseIds", &DialogueData::GetResponseIds, nullptr)
-                ->Property(
-                    "ScriptIds", &DialogueData::GetDialogueScriptIds, nullptr)
+                ->Property("ScriptIds", &DialogueData::GetScriptIds, nullptr)
                 ->Property(
                     "Chunk",
                     BehaviorValueProperty(&DialogueData::m_dialogueChunk));
