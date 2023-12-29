@@ -36,9 +36,14 @@ namespace Conversation
             return newDialogueId;
         }
 
-        static auto CreateRandomId()
+        static auto CreateRandomId() -> UniqueId
         {
             return CreateNamedId(AZ::Uuid::CreateRandom().ToFixedString());
+        }
+
+        [[nodiscard]] constexpr auto operator<(UniqueId const& other) -> bool
+        {
+            return m_value < other.m_value;
         }
 
         [[nodiscard]] constexpr auto IsValid() const -> bool
@@ -70,3 +75,15 @@ namespace Conversation
     static_assert(AZStd::is_pod_v<UniqueId>, "Ensure UniqueId is POD");
 
 } // namespace Conversation
+
+namespace AZStd
+{
+    template<>
+    struct hash<Conversation::UniqueId>
+    {
+        auto operator()(Conversation::UniqueId const& obj) const -> size_t
+        {
+            return obj.GetHash();
+        }
+    };
+} // namespace AZStd

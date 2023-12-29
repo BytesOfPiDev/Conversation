@@ -2,6 +2,8 @@
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Component/Component.h"
+#include "AzCore/std/algorithm.h"
+#include "AzCore/std/ranges/ranges_algorithm.h"
 #include "AzTest/AzTest.h"
 #include "Components/ConversationAssetRefComponent.h"
 #include "Conversation/Components/ConversationAssetRefComponentBus.h"
@@ -11,6 +13,7 @@
 #include "Conversation/DialogueComponent.h"
 #include "Conversation/DialogueComponentBus.h"
 #include "Conversation/DialogueData.h"
+#include "Conversation/UniqueId.h"
 #include "ConversationTestEnvironment.h"
 
 namespace ConversationTest
@@ -24,18 +27,6 @@ namespace ConversationTest
         Conversation::ConversationAssetRefComponentTypeId } };
     constexpr AZ::TypeId DialogueComponentType{
         Conversation::DialogueComponentTypeId
-    };
-
-    class DialogueDataTests : public ::testing::Test
-    {
-    protected:
-        void SetUp() override
-        {
-        }
-
-        void TearDown() override
-        {
-        }
     };
 
     class ConversationAssetTests : public ::testing::Test
@@ -118,7 +109,31 @@ namespace ConversationTest
     {
     };
 
-    TEST_F(DialogueDataTests, DefaultObject_HasInvalidId)
+    TEST(
+        UniqueIdStaticFunctionTests,
+        CreateRandomId_CalledMultipleTimes_EachIdIsUnique)
+    {
+        using namespace Conversation;
+
+        constexpr auto numberOfIdsToCreate = 50;
+        AZStd::array<UniqueId, numberOfIdsToCreate> idContainer{};
+
+        AZStd::generate(
+            idContainer.begin(),
+            idContainer.end(),
+            []() -> UniqueId
+            {
+                return UniqueId::CreateRandomId();
+            });
+
+        AZStd::sort(idContainer.begin(), idContainer.end());
+        auto const last = AZStd::unique(idContainer.begin(), idContainer.end());
+        auto const uniqueItems{ AZStd::distance(idContainer.begin(), last) };
+
+        EXPECT_EQ(uniqueItems, numberOfIdsToCreate);
+    }
+
+    TEST(DialogueDataConstruction, DefaultObject_HasInvalidId)
     {
         using namespace Conversation;
 
@@ -126,37 +141,84 @@ namespace ConversationTest
         EXPECT_FALSE(defaultDialogueData.IsValid());
     }
 
-    TEST_F(
-        DialogueDataTests,
-        Construction_PassingValidDialogueId_GetIdReturnsIdGivenToConstructor)
+    TEST(DialogueDataTests, HasInvalidId_InitializingId_IsAssignedValidId)
     {
         using namespace Conversation;
 
-        auto const validId{ UniqueId::CreateRandomId() };
-        DialogueData const dialogue{ validId };
-        EXPECT_EQ(dialogue.GetId(), validId);
+        DialogueData defaultDialogueData{};
+        EXPECT_FALSE(defaultDialogueData.IsValid());
+        DialogueData::InitId(defaultDialogueData);
+        EXPECT_TRUE(defaultDialogueData.IsValid());
     }
 
-    TEST_F(DialogueDataTests, AddResponse_CorrectlyAddsResponseId)
+    TEST(DialogueDataTests, HasValidId_InitializingId_IdRemainsUnchanged)
+    {
+        using namespace Conversation;
+
+        DialogueData dialogueData{ UniqueId::CreateRandomId() };
+        EXPECT_TRUE(dialogueData.IsValid());
+
+        auto givenId{ dialogueData.GetId() };
+        DialogueData::InitId(dialogueData);
+
+        EXPECT_EQ(givenId, dialogueData.GetId());
+    }
+
+    TEST(DialogueDataTests, NotAtMaxResponses_AddResponse_AddsTheResponseId)
     {
         using namespace Conversation;
 
         DialogueData dialogueData{};
 
-        auto const responseId{ UniqueId::CreateNamedId("TestId") };
+        auto const responseId{ UniqueId::CreateRandomId() };
 
         dialogueData.AddResponseId(responseId);
         EXPECT_EQ(dialogueData.CountResponseIds(), 1);
         EXPECT_EQ(dialogueData.GetResponseIds().front(), responseId);
+    }
 
-        for (auto index = 0; index < (DialogueData::MaxResponses + 1); ++index)
+    TEST(
+        DialogueDataTests,
+        NotAtMaxResponses_AddResponses_RejectsAddsThatGoPastMaxResponses)
+    {
+        using namespace Conversation;
+
+        DialogueData dialogueData{};
+
+        AZStd::array<UniqueId, DialogueData::MaxResponses> const
+            containerOfMaxResponseIds =
+                []() -> decltype(containerOfMaxResponseIds)
         {
-            static constexpr auto dialogueIdFormat = "TestDialogueId_%d";
-            dialogueData.AddResponseId(UniqueId::CreateNamedId(
-                AZStd::string::format(dialogueIdFormat, index)));
-        }
+            auto container = decltype(containerOfMaxResponseIds){};
 
+            AZStd::generate(
+                container.begin(),
+                container.end(),
+                []() -> UniqueId
+                {
+                    return UniqueId::CreateRandomId();
+                });
+
+            return AZStd::move(container);
+        }();
+
+        dialogueData.AddResponses(containerOfMaxResponseIds);
         EXPECT_EQ(dialogueData.CountResponseIds(), DialogueData::MaxResponses);
+
+        dialogueData.AddResponseId(UniqueId::CreateRandomId());
+        EXPECT_EQ(dialogueData.CountResponseIds(), DialogueData::MaxResponses);
+
+        dialogueData.AddResponses(AZStd::array{ UniqueId::CreateRandomId(),
+                                                UniqueId::CreateRandomId(),
+                                                UniqueId::CreateRandomId() });
+        EXPECT_EQ(dialogueData.CountResponseIds(), DialogueData::MaxResponses);
+
+        EXPECT_TRUE(AZStd::ranges::all_of(
+            dialogueData.GetResponseIds(),
+            [](auto const& id) -> bool
+            {
+                return id.IsValid();
+            }));
     }
 
     TEST_F(

@@ -231,7 +231,7 @@ namespace Conversation
             }
         }
 
-        void AddResponses(AZStd::span<UniqueId> responses)
+        void AddResponses(AZStd::span<UniqueId const> responses)
         {
             m_responseIds.insert(
                 m_responseIds.end(), responses.begin(), responses.end());
@@ -310,15 +310,6 @@ namespace AZStd
     struct hash<Conversation::DialogueChunk>
     {
         auto operator()(Conversation::DialogueChunk const& obj) const -> size_t
-        {
-            return obj.GetHash();
-        }
-    };
-
-    template<>
-    struct hash<Conversation::UniqueId>
-    {
-        auto operator()(Conversation::UniqueId const& obj) const -> size_t
         {
             return obj.GetHash();
         }
