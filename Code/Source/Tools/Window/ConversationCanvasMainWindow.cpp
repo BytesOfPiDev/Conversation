@@ -1,20 +1,22 @@
+#include "Tools/Window/ConversationCanvasMainWindow.h"
+
 #include "AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h"
-#include "Conversation/Constants.h"
+#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h"
+#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportInputController.h"
+#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h"
+#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h"
+#include "AtomToolsFramework/Graph/GraphDocumentRequestBus.h"
+#include "AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h"
+#include "AzQtComponents/Components/StyleManager.h"
 #include "GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h"
 #include "GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h"
-#include <Tools/Window/ConversationCanvasMainWindow.h>
 
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportInputController.h>
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
-#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
-#include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
-#include <AzQtComponents/Components/StyleManager.h>
-#include <qnamespace.h>
+#include "QApplication"
+#include "QMessageBox"
+#include "QWindow"
+#include "qnamespace.h"
 
-#include <QApplication>
-#include <QMessageBox>
-#include <QWindow>
+#include "Conversation/Constants.h"
 
 namespace ConversationEditor
 {
@@ -22,14 +24,12 @@ namespace ConversationEditor
 
     ConversationCanvasMainWindow::ConversationCanvasMainWindow(
         AZ::Crc32 const& toolId,
-        AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr,
+        AtomToolsFramework::GraphViewSettingsPtr const& graphViewSettingsPtr,
         QWidget* parent)
         : Base(toolId, "ConversationCanvasMainWindow", parent)
         , m_graphViewSettingsPtr(graphViewSettingsPtr)
         , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
     {
-        // m_assetBrowser->SetFileTypeFilters("", "Conversation", true);
-
         m_documentInspector =
             new AtomToolsFramework::AtomToolsDocumentInspector(
                 m_toolId, this); // NOLINT
@@ -150,7 +150,31 @@ namespace ConversationEditor
         AZ::Uuid const& documentId)
     {
         Base::OnDocumentOpened(documentId);
-        m_documentInspector->SetDocumentId(documentId);
+        m_documentInspector ? m_documentInspector->SetDocumentId(documentId)
+                            : void();
+
+        // Disconnect to ensure we aren't currently connected to anything, since
+        // we'll be called multiple times.
+        GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
+
+        GraphCanvas::GraphId const openedDocumentGraphId =
+            [&documentId]() -> auto
+        {
+            GraphCanvas::GraphId result{};
+            AtomToolsFramework::GraphDocumentRequestBus::EventResult(
+                result,
+                documentId,
+                &AtomToolsFramework::GraphDocumentRequests::GetGraphId);
+            return result;
+        }();
+
+        if (openedDocumentGraphId.IsValid())
+        {
+            // WARNING: We must be connected to GraphCanvas'
+            // SceneNotificationBus so OnPreNodeDeleted gets called.
+            GraphCanvas::SceneNotificationBus::Handler::BusConnect(
+                openedDocumentGraphId);
+        }
     }
 
     void ConversationCanvasMainWindow::ResizeViewportRenderTarget(
@@ -251,6 +275,19 @@ namespace ConversationEditor
     {
         return R"(A basic conversation/dialogue system for O3DE.)";
     }
+
+    void ConversationCanvasMainWindow::OnPreNodeDeleted(
+        AZ::EntityId const& nodeId)
+    {
+        // WARNING: Without reseting the inspector prior deleting a group node,
+        // such as comments, the application will crash because the inspector is
+        // doing something with memory that's just been deleted. It doesn't
+        // happen with other node types. I have not been able to find the source
+        // of the bug, but it happens with O3DE's own AtomTools applications as
+        // well.
+        m_documentInspector->Reset();
+    }
+
 } // namespace ConversationEditor
 
 #include <Tools/Window/moc_ConversationCanvasMainWindow.cpp>
