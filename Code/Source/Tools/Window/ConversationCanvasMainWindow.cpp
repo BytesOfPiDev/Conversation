@@ -1,12 +1,10 @@
 #include "Tools/Window/ConversationCanvasMainWindow.h"
 
 #include "AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h"
-#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h"
-#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportInputController.h"
-#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h"
-#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h"
 #include "AtomToolsFramework/Graph/GraphDocumentRequestBus.h"
 #include "AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h"
+#include "AzCore/IO/FileIO.h"
+#include "AzFramework/Entity/EntityContext.h"
 #include "AzQtComponents/Components/StyleManager.h"
 #include "GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h"
 #include "GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h"
@@ -38,53 +36,9 @@ namespace ConversationEditor
         AddDockWidget(
             "Inspector", m_documentInspector, Qt::RightDockWidgetArea);
 
-        m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(
-            m_toolId, this); // NOLINT
-
-        m_conversationViewport =
-            new AtomToolsFramework::EntityPreviewViewportWidget(
-                m_toolId, this); // NOLINT
-
         auto entityContext = AZStd::make_shared<AzFramework::EntityContext>();
         entityContext->InitContext();
 
-        auto viewportScene =
-            AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportScene>(
-                m_toolId,
-                m_conversationViewport,
-                entityContext,
-                "ConversationCanvasViewportWidget",
-                "passes/lowendrenderpipeline.azasset");
-
-        auto viewportContent = AZStd::make_shared<
-            AtomToolsFramework::EntityPreviewViewportContent>(
-            m_toolId, m_conversationViewport, entityContext);
-
-        auto viewportController = AZStd::make_shared<
-            AtomToolsFramework::EntityPreviewViewportInputController>(
-            m_toolId, m_conversationViewport, viewportContent);
-
-        m_conversationViewport->Init(
-            entityContext, viewportScene, viewportContent, viewportController);
-
-        auto* viewPortAndToolbar = new QWidget(this); // NOLINT
-        viewPortAndToolbar->setLayout(
-            new QVBoxLayout(viewPortAndToolbar)); // NOLINT
-        viewPortAndToolbar->layout()->setContentsMargins(0, 0, 0, 0);
-        viewPortAndToolbar->layout()->setMargin(0);
-        viewPortAndToolbar->layout()->setSpacing(0);
-        viewPortAndToolbar->layout()->addWidget(m_toolBar);
-        viewPortAndToolbar->layout()->addWidget(m_conversationViewport);
-
-        AddDockWidget("Viewport", viewPortAndToolbar, Qt::BottomDockWidgetArea);
-
-        m_viewportSettingsInspector =
-            new AtomToolsFramework::EntityPreviewViewportSettingsInspector(
-                m_toolId, this);
-        AddDockWidget(
-            "Viewport Settings",
-            m_viewportSettingsInspector,
-            Qt::LeftDockWidgetArea);
         SetDockWidgetVisible("Viewport Settings", false);
 
         m_bookmarkDockWidget =
@@ -175,49 +129,6 @@ namespace ConversationEditor
             GraphCanvas::SceneNotificationBus::Handler::BusConnect(
                 openedDocumentGraphId);
         }
-    }
-
-    void ConversationCanvasMainWindow::ResizeViewportRenderTarget(
-        AZ::u32 width, AZ::u32 height)
-    {
-        QSize requestedViewportSize =
-            QSize(width, height) / devicePixelRatioF();
-        QSize currentViewportSize = m_conversationViewport->size();
-        QSize offset = requestedViewportSize - currentViewportSize;
-        QSize requestedWindowSize = size() + offset;
-        resize(requestedWindowSize);
-
-        AZ_Assert(
-            m_conversationViewport->size() == requestedViewportSize,
-            "Resizing the window did not give the expected viewport size. "
-            "Requested %d x %d but got %d x %d.",
-            requestedViewportSize.width(),
-            requestedViewportSize.height(),
-            m_conversationViewport->size().width(),
-            m_conversationViewport->size().height());
-
-        [[maybe_unused]] QSize newDeviceSize = m_conversationViewport->size();
-        AZ_Warning(
-            "Conversation Canvas",
-            static_cast<uint32_t>(newDeviceSize.width()) == width &&
-                static_cast<uint32_t>(newDeviceSize.height()) == height,
-            "Resizing the window did not give the expected frame size. "
-            "Requested %d x %d but got %d x %d.",
-            width,
-            height,
-            newDeviceSize.width(),
-            newDeviceSize.height());
-    }
-
-    void ConversationCanvasMainWindow::LockViewportRenderTargetSize(
-        AZ::u32 width, AZ::u32 height)
-    {
-        m_conversationViewport->LockRenderTargetSize(width, height);
-    }
-
-    void ConversationCanvasMainWindow::UnlockViewportRenderTargetSize()
-    {
-        m_conversationViewport->UnlockRenderTargetSize();
     }
 
     void ConversationCanvasMainWindow::PopulateSettingsInspector(
