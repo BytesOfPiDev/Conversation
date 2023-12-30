@@ -64,6 +64,9 @@ namespace Conversation
 
         constexpr DialogueData() = default;
         explicit DialogueData(UniqueId const id);
+        explicit DialogueData(bool generateRandomId)
+            : m_id(
+                  generateRandomId ? UniqueId::CreateRandomId() : UniqueId{}){};
         /**
          * @brief Setup a valid dialogue
          *
