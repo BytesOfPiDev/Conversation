@@ -19,6 +19,8 @@ namespace Conversation
         AZ_CLASS_ALLOCATOR_DECL; // NOLINT
         AZ_DISABLE_COPY_MOVE(ConversationAsset); // NOLINT
 
+        using StartingIdContainer = AZStd::vector<UniqueId>;
+
         static void Reflect(AZ::ReflectContext* context);
 
         ConversationAsset() = default;
@@ -57,6 +59,7 @@ namespace Conversation
         }
 
         void AddStartingId(UniqueId const& newStartingId) override;
+
         void AddDialogue(DialogueData const& newDialogueData) override;
         /**
          * @brief Add a dialogue as a response to another dialogue
@@ -116,7 +119,7 @@ namespace Conversation
 
     private:
         //! The IDs of any dialogues that can be used to begin a conversation.
-        AZStd::vector<UniqueId> m_startingIds{};
+        StartingIdContainer m_startingIds{};
         AZStd::vector<ResponseData> m_responses;
         AZStd::unordered_set<DialogueChunk> m_chunks;
         DialogueDataContainer m_dialogues{};
