@@ -37,9 +37,9 @@ namespace Conversation
         // There's a limit to the maximum amount of dialogue responses.
         // Attempting to go beyond this will likely result in it not being
         // added.
-        static constexpr auto const MaxResponses = 10;
-        static constexpr auto const DefaultEntryDelay = 0;
-        static constexpr auto const ChunkArraySize = 4;
+        static constexpr auto const MaxResponses{ 10 };
+        static constexpr auto const DefaultEntryDelay{ 0 };
+        static constexpr auto const ChunkArraySize{ 4 };
 
         AZ_DEFAULT_COPY_MOVE(DialogueData); // NOLINT
 
