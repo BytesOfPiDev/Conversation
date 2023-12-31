@@ -58,13 +58,14 @@ namespace Conversation
 
         void AddChunk(DialogueChunk const& dialogueChunk) override;
 
+        [[nodiscard]] auto GetConversationAsset() const
+            -> AZ::Data::Asset<ConversationAsset> override;
+
     protected:
         void Init() override;
         void Activate() override;
         void Deactivate() override;
 
-        [[nodiscard]] auto GetConversationAsset() const
-            -> AZ::Data::Asset<ConversationAsset> override;
         auto SetConversationAsset(
             AZ::Data::Asset<ConversationAsset> replacementAsset)
             -> bool override;

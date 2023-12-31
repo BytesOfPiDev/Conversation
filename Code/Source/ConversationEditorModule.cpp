@@ -1,8 +1,8 @@
 
 #include "Builder/ConversationAssetBuilderComponent.h"
-#include "Components/EditorDialogueComponent.h"
 #include "ConversationEditorSystemComponent.h"
 #include "ConversationModuleInterface.h"
+#include "Tools/Components/EditorDialogueComponent.h"
 
 namespace ConversationEditor
 {
@@ -12,7 +12,7 @@ namespace ConversationEditor
     public:
         AZ_RTTI(
             ConversationEditorModule,
-            "{0891f520-4159-453a-9663-8bdb2931b125}",
+            "{0891F520-4159-453A-9663-8BDB2931B125}",
             ConversationModuleInterface); // NOLINT
         AZ_CLASS_ALLOCATOR(
             ConversationEditorModule, AZ::SystemAllocator, 0); // NOLINT

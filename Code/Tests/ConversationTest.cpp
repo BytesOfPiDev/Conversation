@@ -2,6 +2,7 @@
 #include "AzCore/Asset/AssetManager.h"
 #include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Component/Component.h"
+#include "AzCore/RTTI/RTTIMacros.h"
 #include "AzCore/std/algorithm.h"
 #include "AzCore/std/ranges/ranges_algorithm.h"
 #include "AzTest/AzTest.h"
@@ -29,16 +30,34 @@ namespace ConversationTest
         Conversation::DialogueComponentTypeId
     };
 
-    class ConversationAssetTests : public ::testing::Test
+    auto CreateStartableAsset()
+        -> AZ::Data::Asset<Conversation::ConversationAsset>
     {
-    protected:
-        Conversation::DialogueData m_dlg1{
-            Conversation::UniqueId::CreateNamedId("TestDialogue01")
-        };
-        Conversation::DialogueData m_dlg2{
-            Conversation::UniqueId::CreateNamedId("TestDialogue02")
-        };
-    };
+        using namespace Conversation;
+
+        auto startableAsset =
+            AZ::Data::AssetManager::Instance()
+                .FindOrCreateAsset<Conversation::ConversationAsset>(
+                    TestConversationAssetId,
+                    AZ::Data::AssetLoadBehavior::PreLoad);
+
+        // Requires at least one dialogue with a valid DialogueId.
+        DialogueData startingDialogue1{ UniqueId::CreateNamedId(
+            "StartableAssetDialogueId1") };
+        startingDialogue1.SetShortText("Hello, where are you from?");
+        startableAsset->AddDialogue(startingDialogue1);
+
+        // Requires at least one valid starting Id that matches a dialogue
+        // inside the asset.
+        startableAsset->AddStartingId(startingDialogue1.GetId());
+
+        DialogueData earthResponseDialogue{ UniqueId::CreateRandomId() };
+        earthResponseDialogue.SetShortText("I am from Earth, duh.");
+        startableAsset->AddResponse(
+            { startingDialogue1.GetId(), earthResponseDialogue.GetId() });
+
+        return startableAsset;
+    }
 
     class DialogueComponentTests : public ::testing::Test
     {
@@ -61,35 +80,6 @@ namespace ConversationTest
             m_dialogueEntity = nullptr;
         }
 
-        auto CreateStartableAsset()
-            -> AZ::Data::Asset<Conversation::ConversationAsset>
-        {
-            using namespace Conversation;
-
-            auto startableAsset =
-                AZ::Data::AssetManager::Instance()
-                    .FindOrCreateAsset<Conversation::ConversationAsset>(
-                        TestConversationAssetId,
-                        AZ::Data::AssetLoadBehavior::PreLoad);
-
-            // Requires at least one dialogue with a valid DialogueId.
-            DialogueData startingDialogue1{ UniqueId::CreateNamedId(
-                "StartableAssetDialogueId1") };
-            startingDialogue1.SetShortText("Hello, where are you from?");
-            startableAsset->AddDialogue(startingDialogue1);
-
-            // Requires at least one valid starting Id that matches a dialogue
-            // inside the asset.
-            startableAsset->AddStartingId(startingDialogue1.GetId());
-
-            DialogueData earthResponseDialogue{ UniqueId::CreateRandomId() };
-            earthResponseDialogue.SetShortText("I am from Earth, duh.");
-            startableAsset->AddResponse(
-                { startingDialogue1.GetId(), earthResponseDialogue.GetId() });
-
-            return startableAsset;
-        }
-
         AZStd::unique_ptr<AZ::Entity> m_dialogueEntity{};
         AZ::Data::AssetCatalogRequests* m_catalogRequests{};
 
@@ -99,14 +89,6 @@ namespace ConversationTest
         Conversation::DialogueData const m_dlg2{
             Conversation::UniqueId::CreateNamedId("TestDialogue02")
         };
-    };
-
-    class DialogueComponentActiveConversationFixture : public ::testing::Test
-    {
-    };
-
-    class ConversationAssetRefComponentTests : public ::testing::Test
-    {
     };
 
     TEST(
@@ -221,9 +203,7 @@ namespace ConversationTest
             }));
     }
 
-    TEST_F(
-        ConversationAssetTests,
-        DefaultConstructed_AddingInvalidStartingIdIsRejected)
+    TEST(ConversationAssetTests, Defaulted_AddInvalidStartingId_IsRejected)
     {
         Conversation::ConversationAsset asset{};
         EXPECT_EQ(asset.CountStartingIds(), 0);
@@ -231,9 +211,7 @@ namespace ConversationTest
         EXPECT_EQ(asset.CountStartingIds(), 0);
     }
 
-    TEST_F(
-        ConversationAssetTests,
-        DefaultConstructed_AddingValidStartingIdIsAccepted)
+    TEST(ConversationAssetTests, Defaulted_AddValidStartingId_IsAdded)
     {
         using namespace Conversation;
 
@@ -241,11 +219,10 @@ namespace ConversationTest
         asset.AddStartingId(UniqueId::CreateRandomId());
 
         EXPECT_EQ(asset.CountStartingIds(), 1);
+        EXPECT_TRUE(asset.CopyStartingIds().front().IsValid());
     }
 
-    TEST_F(
-        ConversationAssetTests,
-        DefaultConstructed_AddingInvalidDialogueIsRejected)
+    TEST(ConversationAssetTests, Defaulted_AddInvalidDialogue_IsRejected)
     {
         using namespace Conversation;
 
@@ -256,14 +233,20 @@ namespace ConversationTest
         EXPECT_EQ(asset.CountDialogues(), 0);
     }
 
-    TEST_F(
+    TEST(
         ConversationAssetTests,
         DefaultConstructed_AddingValidDialogueIsAccepted)
     {
-        Conversation::ConversationAsset asset{};
+        using namespace Conversation;
 
-        asset.AddDialogue(m_dlg1);
-        asset.AddDialogue(m_dlg2);
+        ConversationAsset asset{};
+
+        DialogueData const dlg1{ UniqueId::CreateRandomId() };
+        DialogueData const dlg2{ UniqueId::CreateRandomId() };
+
+        asset.AddDialogue(dlg1);
+        asset.AddDialogue(dlg2);
+
         EXPECT_EQ(asset.CountDialogues(), 2);
     }
 
@@ -276,54 +259,136 @@ namespace ConversationTest
         EXPECT_EQ(m_dialogueEntity->GetState(), AZ::Entity::State::Init);
     }
 
-    TEST_F(DialogueComponentTests, TryStartConversation_OnSuccess_NoError)
+    TEST(
+        ConversationAssetRefComponentTests,
+        ParentEntityActivated_RTTI_SanityCheck_NoCrash)
+    {
+        using namespace Conversation;
+
+        AZ::Entity entity{ AZ::Entity::MakeId() };
+        auto* component{ entity.CreateComponent(
+            ConversationAssetRefComponent::TYPEINFO_Uuid()) };
+
+        entity.Init();
+        entity.Activate();
+
+        EXPECT_NE(component, nullptr);
+        EXPECT_TRUE(azrtti_istypeof<ConversationAssetRefComponent>(component));
+        EXPECT_NE(
+            entity.FindComponent<ConversationAssetRefComponent>(), nullptr);
+    }
+
+    TEST(
+        ConversationAssetRefComponentTests,
+        ParentEntityNotActivated_SetConversationAssetWithBus_AssetIsSet)
+    {
+        using namespace Conversation;
+
+        auto asset = CreateStartableAsset();
+        AZ::Entity entity{ AZ::Entity::MakeId() };
+        entity.CreateComponent(ConversationAssetRefComponent::TYPEINFO_Uuid());
+
+        entity.Init();
+
+        bool successfullyAssignedAsset{};
+        ConversationAssetRefComponentRequestBus::EventResult(
+            successfullyAssignedAsset,
+            entity.GetId(),
+            &ConversationAssetRefComponentRequests::SetConversationAsset,
+            asset);
+
+        EXPECT_TRUE(successfullyAssignedAsset);
+    }
+
+    TEST(
+        ConversationAssetRefComponentTests,
+        ParentEntityActivated_SetConversationAssetWithBus_AssetNotSet)
+    {
+        using namespace Conversation;
+
+        auto asset = CreateStartableAsset();
+        AZ::Entity entity{ AZ::Entity::MakeId() };
+        entity.CreateComponent(ConversationAssetRefComponent::TYPEINFO_Uuid());
+
+        entity.Init();
+        entity.Activate();
+
+        bool successfullyAssignedAsset{};
+        ConversationAssetRefComponentRequestBus::EventResult(
+            successfullyAssignedAsset,
+            entity.GetId(),
+            &ConversationAssetRefComponentRequests::SetConversationAsset,
+            asset);
+
+        EXPECT_FALSE(successfullyAssignedAsset);
+    }
+
+    TEST(
+        ConversationAssetRefComponentTests,
+        HasValidStartingData_TryStartConversation_Success)
     {
         using namespace Conversation;
 
         auto asset = CreateStartableAsset();
 
-        Conversation::DialogueComponentConfig dialogueComponentConfig{};
+        AZ::Entity entity{};
+        entity.CreateComponent(TagComponentType);
+        entity.CreateComponent(ConversationAssetRefComponentType);
+        entity.CreateComponent(DialogueComponentType);
 
-        bool successfullyAssignedAsset{};
-        ConversationAssetRefComponentRequestBus::EventResult(
-            successfullyAssignedAsset,
-            m_dialogueEntity->GetId(),
+        entity.Init();
+
+        ConversationAssetRefComponentRequestBus::Event(
+            entity.GetId(),
             &ConversationAssetRefComponentRequests::SetConversationAsset,
             asset);
 
-        EXPECT_TRUE(successfullyAssignedAsset);
-
         AZ::Component* const dialogueComponent =
-            m_dialogueEntity->FindComponent(DialogueComponentType);
+            entity.FindComponent(DialogueComponentType);
+
+        Conversation::DialogueComponentConfig dialogueComponentConfig{};
         dialogueComponent->SetConfiguration(dialogueComponentConfig);
-        m_dialogueEntity->Activate();
 
-        AZ::EntityId const someOtherEntityId{ AZ::Entity::MakeId() };
+        entity.Activate();
 
-        bool success{ false };
-        DialogueComponentRequestBus::EventResult(
-            success,
-            m_dialogueEntity->GetId(),
-            &DialogueComponentRequests::TryToStartConversation,
-            someOtherEntityId);
+        auto const tryToStartConversationResult = [&entity]() -> bool
+        {
+            AZ::EntityId const someOtherEntityId{ AZ::Entity::MakeId() };
 
-        DialogueState dialogueCurrentState{ DialogueState::Invalid };
-        DialogueComponentRequestBus::EventResult(
-            dialogueCurrentState,
-            m_dialogueEntity->GetId(),
-            &DialogueComponentRequests::GetCurrentState);
+            bool result{};
+            DialogueComponentRequestBus::EventResult(
+                result,
+                entity.GetId(),
+                &DialogueComponentRequests::TryToStartConversation,
+                someOtherEntityId);
+            return result;
+        }();
 
-        EXPECT_EQ(dialogueCurrentState, Conversation::DialogueState::Active);
-        EXPECT_TRUE(success);
+        EXPECT_TRUE(tryToStartConversationResult);
+
+        DialogueState const getCurrentStateResult = [&entity]() -> DialogueState
+        {
+            auto result{ DialogueState::Invalid };
+            DialogueComponentRequestBus::EventResult(
+                result,
+                entity.GetId(),
+                &DialogueComponentRequests::GetCurrentState);
+
+            return result;
+        }();
+
+        EXPECT_EQ(getCurrentStateResult, Conversation::DialogueState::Active);
     }
 
-    TEST_F(DialogueComponentTests, TryStartConversation_OnFailure_ReturnsFalse)
+    TEST_F(
+        DialogueComponentTests,
+        HasBadStartingData_TryStartConversation_ReturnsFalse)
     {
         using namespace Conversation;
 
         m_dialogueEntity->Activate();
 
-        auto const conversationStarted = [this]() -> bool
+        auto const tryToStartConversationResult = [this]() -> bool
         {
             bool result{};
             AZ::EntityId const someOtherEntityId{ AZ::Entity::MakeId() };
@@ -336,7 +401,7 @@ namespace ConversationTest
             return result;
         }();
 
-        EXPECT_FALSE(conversationStarted);
+        EXPECT_FALSE(tryToStartConversationResult);
     }
 
     TEST_F(
@@ -501,12 +566,12 @@ namespace ConversationTest
             Conversation::DialogueState::Inactive);
     }
 
-    TEST_F(ConversationAssetRefComponentTests, Fixture_SanityCheck)
+    TEST(ConversationAssetRefComponentTests, Fixture_SanityCheck)
     {
         EXPECT_TRUE(AZ::Data::AssetManager::IsReady());
     }
 
-    TEST_F(
+    TEST(
         ConversationAssetRefComponentTests,
         Constucted_NotConnectedToAssetRefComponentBus)
     {
@@ -514,7 +579,7 @@ namespace ConversationTest
         EXPECT_FALSE(assetRefComponent.BusIsConnected());
     }
 
-    TEST_F(
+    TEST(
         ConversationAssetRefComponentTests,
         ComponentOnAlreadyInitializedEntity_AssignAssetWithBus_Success)
     {

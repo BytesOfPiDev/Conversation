@@ -7,17 +7,17 @@
 namespace Conversation
 {
     template<typename ComponentType>
-    void LOG_EntityComponent(
+    void LOGTAG_EntityComponent(
         AZStd::string_view logTag,
-        ComponentType const& dialogueComponent,
+        ComponentType const& component,
         AZStd::string_view logMessage)
     {
         AZLOG( // NOLINT
             logTag.data(),
             "%s on [EntityId: %s | EntityName: %s]: %s.",
             AZ::AzTypeInfo<ComponentType>::Name(),
-            dialogueComponent.GetEntityId().ToString().data(),
-            dialogueComponent.GetNamedEntityId().GetName().data(),
+            component.GetEntityId().ToString().data(),
+            component.GetNamedEntityId().GetName().data(),
             logMessage.data());
     }
 } // namespace Conversation

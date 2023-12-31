@@ -7,6 +7,6 @@ set(FILES
     Source/Builder/ConversationAssetBuilderWorker.h
     Source/Builder/ConversationAssetBuilderWorker.cpp
 
-    Source/Components/EditorDialogueComponent.cpp
-    Source/Components/EditorDialogueComponent.h
+    Source/Tools/Components/EditorDialogueComponent.cpp
+    Source/Tools/Components/EditorDialogueComponent.h
 )

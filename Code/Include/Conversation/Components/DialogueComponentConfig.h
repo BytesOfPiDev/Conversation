@@ -2,6 +2,7 @@
 
 #include "Atom/RPI.Reflect/Image/StreamingImageAsset.h"
 #include "AzCore/Component/ComponentBus.h"
+#include "AzCore/Script/ScriptAsset.h"
 #include "AzCore/std/string/string.h"
 
 namespace AZ
@@ -25,6 +26,7 @@ namespace Conversation
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_speakerIconPath{};
+        AZ::Data::Asset<AZ::ScriptAsset> m_companionScript{};
         AZStd::string m_speakerTag{};
         AZStd::string m_displayName{};
     };

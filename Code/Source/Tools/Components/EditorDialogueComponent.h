@@ -1,11 +1,10 @@
 #pragma once
 
-#include "AzCore/Asset/AssetSerializer.h"
+#include "AzCore/Script/ScriptAsset.h"
 #include "AzFramework/Entity/EntityDebugDisplayBus.h"
 #include "AzToolsFramework/ToolsComponents/EditorComponentBase.h"
 
 #include "Conversation/Components/DialogueComponentConfig.h"
-#include "Conversation/ConversationAsset.h"
 #include "Conversation/ConversationTypeIds.h"
 
 namespace ConversationEditor
@@ -50,6 +49,6 @@ namespace ConversationEditor
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
     private:
-        Conversation::DialogueComponentConfig m_config;
+        Conversation::DialogueComponentConfig m_config{};
     };
 } // namespace ConversationEditor

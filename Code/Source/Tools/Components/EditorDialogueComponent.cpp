@@ -1,17 +1,23 @@
-#include "Components/EditorDialogueComponent.h"
+#include "Tools/Components/EditorDialogueComponent.h"
 
+#include "AzCore/Asset/AssetManager.h"
+#include "AzCore/Asset/AssetManagerBus.h"
+#include "AzCore/Asset/AssetSerializer.h"
 #include "AzCore/Console/ILogger.h"
+#include "AzCore/Debug/Trace.h"
 #include "AzCore/RTTI/RTTIMacros.h"
+#include "AzCore/Script/ScriptAsset.h"
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
 #include "AzCore/Serialization/SerializeContext.h"
-#include "AzCore/std/ranges/ranges_algorithm.h"
+#include "AzCore/StringFunc/StringFunc.h"
 #include "AzFramework/Script/ScriptComponent.h"
 #include "AzToolsFramework/Entity/EditorEntityContextBus.h"
+#include "Components/ConversationAssetRefComponent.h"
+#include "Logging.h"
 #include "ToolsComponents/EditorComponentBase.h"
 #include "cstdlib"
 
-#include "Conversation/ConversationAsset.h"
 #include "Conversation/DialogueComponent.h"
 
 namespace ConversationEditor
@@ -60,8 +66,8 @@ namespace ConversationEditor
     }
 
     void EditorDialogueComponent::DisplayEntityViewport(
-        AzFramework::ViewportInfo const& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay)
+        AzFramework::ViewportInfo const& /*viewportInfo*/,
+        AzFramework::DebugDisplayRequests& /*debugDisplay*/)
     {
     }
 
@@ -72,8 +78,9 @@ namespace ConversationEditor
         provided.push_back(AZ_CRC_CE("DialogueService"));
     }
     void EditorDialogueComponent::GetDependentServices(
-        AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
+        AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
+        dependent.push_back(AZ_CRC_CE("ConversationAssetRefService"));
     }
     void EditorDialogueComponent::GetRequiredServices(
         AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -95,6 +102,7 @@ namespace ConversationEditor
 
         auto* dialogueComponent =
             gameEntity->CreateComponent<Conversation::DialogueComponent>();
+
         if (!dialogueComponent)
         {
             AZLOG_FATAL( // NOLINT
@@ -103,6 +111,7 @@ namespace ConversationEditor
             return;
         }
 
+        //       SetupCompanionScript(gameEntity);
         dialogueComponent->SetConfiguration(m_config);
     }
 

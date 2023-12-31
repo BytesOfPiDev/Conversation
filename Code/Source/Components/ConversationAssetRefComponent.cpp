@@ -86,7 +86,7 @@ namespace Conversation
     {
         if (GetEntity()->GetState() == AZ::Entity::State::Active)
         {
-            LOG_EntityComponent(
+            LOGTAG_EntityComponent(
                 "LOG_ConversationAssetRefComponent",
                 *this,
                 "Failed to set asset. The asset cannot be changed while our "
@@ -115,12 +115,12 @@ namespace Conversation
     }
 
     void ConversationAssetRefComponent::GetRequiredServices [[maybe_unused]] (
-        AZ::ComponentDescriptor::DependencyArrayType& required)
+        AZ::ComponentDescriptor::DependencyArrayType& /*required*/)
     {
     }
 
     void ConversationAssetRefComponent::GetDependentServices [[maybe_unused]] (
-        AZ::ComponentDescriptor::DependencyArrayType& dependent)
+        AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
     {
     }
 

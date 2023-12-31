@@ -13,14 +13,12 @@
 namespace Conversation
 {
 
-    AZ_RTTI_NO_TYPE_INFO_IMPL(
-        DialogueComponentConfig, AZ::ComponentConfig); // NOLINT
+    AZ_RTTI_NO_TYPE_INFO_IMPL(DialogueComponentConfig, AZ::ComponentConfig);
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         DialogueComponentConfig,
         "DialogueComponentConfig",
-        DialogueComponentConfigTypeId); // NOLINT
-    AZ_CLASS_ALLOCATOR_IMPL(
-        DialogueComponentConfig, AZ::SystemAllocator); // NOLINT
+        DialogueComponentConfigTypeId);
+    AZ_CLASS_ALLOCATOR_IMPL(DialogueComponentConfig, AZ::SystemAllocator);
 
     void DialogueComponentConfig::Reflect(AZ::ReflectContext* context)
     {
@@ -31,6 +29,7 @@ namespace Conversation
                 ->Field("Display Name", &DialogueComponentConfig::m_displayName)
                 ->Field(
                     "Speaker Icon", &DialogueComponentConfig::m_speakerIconPath)
+                ->Field("Script", &DialogueComponentConfig::m_companionScript)
                 ->Field("Speaker Tag", &DialogueComponentConfig::m_speakerTag);
 
             if (auto editContext = serialize->GetEditContext())
@@ -42,6 +41,10 @@ namespace Conversation
                     ->Attribute(
                         AZ::Edit::Attributes::Category, "BoP/Conversation")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(
+                        AZ::Edit::Attributes::HelpPageURL,
+                        "https://github.com/BytesOfPiDev/Conversation/wiki/"
+                        "API#dialoguecomponentconfig")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &DialogueComponentConfig::m_speakerTag,
@@ -56,7 +59,7 @@ namespace Conversation
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &DialogueComponentConfig::m_speakerIconPath,
-                        "SpeakerIconPath",
+                        "Speaker Icon Path",
                         "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, true);
             }

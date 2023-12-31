@@ -253,15 +253,6 @@ namespace Conversation
             ConversationAssetRefComponentRequestBus::FindFirstHandler(
                 GetEntityId());
 
-        if (m_conversationAssetRequests)
-        {
-            // Activating without one is fine, if intentional.
-            LOG_EntityComponent(
-                "LOG_DialogueComponent",
-                *this,
-                "Activated without a ConversationAssetRefComponent.\n");
-        }
-
         // The TagComponent is used to communicate with speakers, so we add our
         // tag to it upon activation. It will need to be removed upon
         // deactivation.
@@ -612,7 +603,7 @@ namespace Conversation
             m_conversationAssetRequests->GetDialogueById(dialogueId);
         if (!getDialogueOutcome.IsSuccess())
         {
-            LOG_EntityComponent(
+            LOGTAG_EntityComponent(
                 "LOG_FollowConversation",
                 *this,
                 "Failed to select a dialogue using the given DialogueId.");
