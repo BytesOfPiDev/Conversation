@@ -1,8 +1,5 @@
 #include "Tools/Components/EditorDialogueComponent.h"
 
-#include "AzCore/Asset/AssetManager.h"
-#include "AzCore/Asset/AssetManagerBus.h"
-#include "AzCore/Asset/AssetSerializer.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/Debug/Trace.h"
 #include "AzCore/RTTI/RTTIMacros.h"
@@ -10,11 +7,7 @@
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/EditContextConstants.inl"
 #include "AzCore/Serialization/SerializeContext.h"
-#include "AzCore/StringFunc/StringFunc.h"
-#include "AzFramework/Script/ScriptComponent.h"
 #include "AzToolsFramework/Entity/EditorEntityContextBus.h"
-#include "Components/ConversationAssetRefComponent.h"
-#include "Logging.h"
 #include "ToolsComponents/EditorComponentBase.h"
 #include "cstdlib"
 
@@ -44,6 +37,10 @@ namespace ConversationEditor
                         AZ::Edit::Attributes::AppearsInAddComponentMenu,
                         AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(
+                        AZ::Edit::Attributes::HelpPageURL,
+                        "https://github.com/BytesOfPiDev/Conversation/wiki/"
+                        "API#dialogue-component")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorDialogueComponent::m_config,

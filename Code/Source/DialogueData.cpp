@@ -39,7 +39,6 @@ namespace Conversation
                 ->Field("Chunk", &DialogueData::m_dialogueChunk)
                 ->Field("DialogueId", &DialogueData::m_id)
                 ->Field("ResponseIds", &DialogueData::m_responseIds)
-                ->Field("ScriptIds", &DialogueData::m_scriptIds)
                 ->Field("Speaker", &DialogueData::m_speaker);
 
             serializeContext->RegisterGenericType<DialogueDataPtr>();
@@ -79,11 +78,6 @@ namespace Conversation
                         &DialogueData::m_audioTrigger,
                         "AudioTrigger",
                         "The trigger for the audio file to play.")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DialogueData::m_scriptIds,
-                        "ScriptIds",
-                        "Script Ids to be executed upon dialogue selection.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &DialogueData::m_availabilityId,
@@ -136,10 +130,10 @@ namespace Conversation
                     &DialogueData::SetAudioTrigger)
                 ->Property(
                     "ResponseIds", &DialogueData::GetResponseIds, nullptr)
-                ->Property("ScriptIds", &DialogueData::GetScriptIds, nullptr)
                 ->Property(
-                    "Chunk",
-                    BehaviorValueProperty(&DialogueData::m_dialogueChunk));
+                    "Chunk", &DialogueData::GetChunk, &DialogueData::SetChunk)
+                ->Property(
+                    "Dialogue Chunk", &DialogueData::GetChunkAsText, nullptr);
         }
     }
 
@@ -149,7 +143,7 @@ namespace Conversation
     }
 
     [[nodiscard]] auto ConvertToLua(
-        DialogueData const& dialogueData,
+        DialogueData const& /*dialogueData*/,
         AZStd::string_view variableName,
         bool isLocal) -> AZStd::string
     {

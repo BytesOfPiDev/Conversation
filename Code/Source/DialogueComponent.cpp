@@ -582,18 +582,6 @@ namespace Conversation
             "[Dialogue: '%s'] \"%s\"",
             GetNamedEntityId().GetName().data(),
             m_activeDialogue->GetShortText().data());
-
-        // Since it's considered spoken, we should sent any necessary
-        // notifications related to speaking a dialogue. The first thing we want
-        // to do is run any provided scripts.
-        AZStd::ranges::for_each(
-            m_activeDialogue->GetScriptIds(),
-            [](auto const scriptId)
-            {
-                DialogueScriptRequestBus::Event(
-                    AZ::Crc32(scriptId),
-                    &DialogueScriptRequestBus::Events::RunDialogueScript);
-            });
     }
 
     auto DialogueComponent::TryToSelectDialogue(UniqueId const dialogueId)

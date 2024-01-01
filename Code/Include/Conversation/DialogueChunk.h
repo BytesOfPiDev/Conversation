@@ -25,7 +25,7 @@ namespace Conversation
 
         friend void ReflectDialogueChunk(AZ::ReflectContext* reflect);
 
-        auto operator==(DialogueChunk const& rhs) const -> bool
+        [[nodiscard]] auto operator==(DialogueChunk const& rhs) const -> bool
         {
             return GetHash() == rhs.GetHash();
         }

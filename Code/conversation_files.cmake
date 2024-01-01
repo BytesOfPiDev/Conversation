@@ -13,9 +13,4 @@ set(FILES
     Source/Components/DialogueComponentConfig.cpp
     Source/Components/ConversationAssetRefComponent.cpp
     Source/Components/ConversationAssetRefComponent.h
-
-    Source/Conditions/ComparisonOp.cpp
-    Source/Conditions/ComparisonOp.h
-    Source/Conditions/ConditionFunction.cpp
-    Source/Conditions/ConditionFunction.h
 )

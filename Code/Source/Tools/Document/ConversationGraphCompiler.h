@@ -7,7 +7,6 @@
 #include "AzCore/std/utility/expected.h"
 #include "GraphModel/Model/Common.h"
 
-#include "Conditions/ConditionFunction.h"
 #include "Conversation/DialogueData.h"
 #include "Tools/NodeData.h"
 
@@ -17,8 +16,6 @@ namespace ConversationEditor
     using SlotValueTable = AZStd::map<GraphModel::ConstSlotPtr, AZStd::any>;
     using SlotDialogueTable =
         AZStd::map<GraphModel::ConstSlotPtr, Conversation::DialogueData>;
-    using SlotConditionTable =
-        AZStd::map<GraphModel::ConstSlotPtr, Conversation::ConditionFunction>;
 
     // NOTE: Experimenting. Trying to find an expressive way to say what errors
     // can happen w/o exceptions.

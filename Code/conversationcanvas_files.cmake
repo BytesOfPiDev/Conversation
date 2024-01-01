@@ -9,8 +9,6 @@ set(FILES
     Source/Tools/ConversationGraphContext.cpp
     Source/Tools/ConversationGraphContext.h
     Source/Tools/DataTypes.h
-    Source/Tools/GraphControllerHandler.cpp
-    Source/Tools/GraphControllerHandler.h
     Source/Tools/main.cpp
     Source/Tools/NodeData.h
 

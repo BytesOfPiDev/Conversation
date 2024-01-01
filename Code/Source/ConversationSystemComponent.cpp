@@ -6,7 +6,6 @@
 #include "AzCore/Serialization/EditContextConstants.inl"
 #include "AzCore/Serialization/SerializeContext.h"
 
-#include "Conditions/ConditionFunction.h"
 #include "Conversation/AvailabilityBus.h"
 #include "Conversation/Constants.h"
 #include "Conversation/ConversationAsset.h"
@@ -70,7 +69,7 @@ namespace Conversation
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<DialogueChunk>()->Version(1)->Field(
+            serialize->Class<DialogueChunk>()->Version(2)->Field(
                 "Data", &DialogueChunk::m_data);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
@@ -83,7 +82,7 @@ namespace Conversation
                     ->DataElement(
                         AZ::Edit::UIHandlers::MultiLineEdit,
                         &DialogueChunk::m_data,
-                        "Text Chunk",
+                        "Chunk",
                         "");
             }
         }
@@ -110,7 +109,6 @@ namespace Conversation
         ReflectUniqueId(context);
         ReflectDialogueChunk(context);
         DialogueData::Reflect(context);
-        ConditionFunction::Reflect(context);
 
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {

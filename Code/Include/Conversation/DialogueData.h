@@ -37,9 +37,9 @@ namespace Conversation
         // There's a limit to the maximum amount of dialogue responses.
         // Attempting to go beyond this will likely result in it not being
         // added.
-        static constexpr auto const MaxResponses{ 10 };
-        static constexpr auto const DefaultEntryDelay{ 0 };
-        static constexpr auto const ChunkArraySize{ 4 };
+        static constexpr auto MaxResponses{ 10 };
+        static constexpr auto DefaultEntryDelay{ 0 };
+        static constexpr auto DefaultExitDelay{ 0 };
 
         AZ_DEFAULT_COPY_MOVE(DialogueData); // NOLINT
 
@@ -129,12 +129,6 @@ namespace Conversation
             -> AZStd::string_view
         {
             return m_audioTrigger;
-        }
-
-        [[nodiscard]] constexpr auto GetScriptIds() const
-            -> AZStd::vector<AZStd::string> const&
-        {
-            return m_scriptIds;
         }
 
         [[nodiscard]] auto GetAvailabilityId() const -> UniqueId
@@ -249,33 +243,34 @@ namespace Conversation
             }
         }
 
-        void SetChunk(AZStd::string_view chunk)
+        void SetChunk(DialogueChunk const& chunk)
         {
             // FIXME: While still developing, setting a chunk when the short
             // text is empty will also assign the chunk's value to the short
             // text. This will change once chunks are fully implemented.
             if (m_shortText.empty())
             {
-                m_shortText = chunk;
+                m_shortText = chunk.GetData();
             }
 
-            m_dialogueChunk.SetData(chunk);
+            m_dialogueChunk = chunk;
         }
 
-        void SetChunk(DialogueChunk const& chunk)
+        [[nodiscard]] auto GetChunkAsText() -> AZStd::string_view
         {
-            m_dialogueChunk = chunk;
+            return m_dialogueChunk.GetData();
+        }
+
+        [[nodiscard]] auto GetChunk() const -> DialogueChunk
+        {
+            return m_dialogueChunk;
         }
 
     private:
         // A script that is run when this dialogue is activated.
         AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> m_script{};
-        [[maybe_unused]] AZStd::array<size_t, ChunkArraySize> m_chunkIds{};
         DialogueChunk m_dialogueChunk{};
         AZStd::vector<UniqueId> m_responseIds{};
-        // Contains script IDs that should be executed upon dialogue selection.
-        AZStd::vector<AZStd::string> m_scriptIds{};
-        AZStd::vector<AZ::Name> m_conditionIds{};
         AZStd::string m_shortText{};
         AZStd::string m_speaker{};
         // The audio trigger to execute upon selection of this dialogue.
@@ -285,6 +280,7 @@ namespace Conversation
         UniqueId m_availabilityId{};
         UniqueId m_id{ UniqueId::CreateInvalidId() };
         float m_entryDelay{ DefaultEntryDelay };
+        float m_exitDelay{ DefaultExitDelay };
     };
 
     using DialogueDataPtr = AZStd::shared_ptr<DialogueData>;
