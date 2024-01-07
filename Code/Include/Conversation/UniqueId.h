@@ -66,6 +66,11 @@ namespace Conversation
             return m_value;
         }
 
+        [[nodiscard]] auto GetName() const -> AZ::Name
+        {
+            return AZ::Name{ m_value };
+        }
+
     private:
         static constexpr auto MaxNameSize{ 64 };
 

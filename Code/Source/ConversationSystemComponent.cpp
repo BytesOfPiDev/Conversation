@@ -19,7 +19,7 @@
 namespace Conversation
 {
     class BehaviorDialogueScriptRequestBusHandler
-        : public DialogueScriptRequestBus::Handler
+        : public CompanionScriptRequestBus::Handler
         , public AZ::BehaviorEBusHandler
     {
     public:
@@ -27,11 +27,11 @@ namespace Conversation
             BehaviorDialogueScriptRequestBusHandler,
             "{168DA145-68E2-4D49-BCE7-3BAE5589C3D1}",
             AZ::SystemAllocator,
-            RunDialogueScript);
+            RunCompanionScript);
 
-        void RunDialogueScript() override
+        void RunCompanionScript(AZStd::string_view nodeId) override
         {
-            Call(FN_RunDialogueScript);
+            Call(FN_RunCompanionScript, nodeId);
         }
     };
 
@@ -45,7 +45,7 @@ namespace Conversation
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<UniqueId>("DialogueId")
+            behaviorContext->Class<UniqueId>("UniqueId")
                 ->Attribute(
                     AZ::Script::Attributes::Category, DialogueSystemCategory)
                 ->Attribute(
@@ -76,9 +76,6 @@ namespace Conversation
             {
                 editContext->Class<DialogueChunk>("Dialogue Chunk", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(
-                        AZ::Edit::Attributes::Visibility,
-                        AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::MultiLineEdit,
                         &DialogueChunk::m_data,
@@ -125,7 +122,7 @@ namespace Conversation
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(
                         AZ::Edit::Attributes::AppearsInAddComponentMenu,
-                        AZ_CRC("System"))
+                        AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -148,24 +145,39 @@ namespace Conversation
                 ->EnumProperty<static_cast<int>(DialogueState::Starting)>(
                     "ConversationStatus_Starting");
 
-            const AZ::BehaviorParameterOverrides
-                startConversationEntityIdParam = {
-                    "EntityId",
-                    "The Id of an entity that contains a conversation "
-                    "component that will be used to start the conversation."
-                };
-
             behaviorContext
                 ->EBus<ConversationRequestBus>("ConversationRequestBus")
                 ->Attribute(
-                    AZ::Script::Attributes::Category, "Dialogue System");
+                    AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(
+                    AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(
+                    AZ::Script::Attributes::Scope,
+                    AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true);
 
             behaviorContext
                 ->EBus<AvailabilityRequestBus>("AvailabilityRequestBus")
+                ->Attribute(
+                    AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(
+                    AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(
+                    AZ::Script::Attributes::Scope,
+                    AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
                 ->Handler<BehaviorAvailabilityRequestBusHandler>();
 
             behaviorContext
-                ->EBus<DialogueScriptRequestBus>("DialogueScriptRequestBus")
+                ->EBus<CompanionScriptRequestBus>("DialogueScriptRequestBus")
+                ->Attribute(
+                    AZ::Script::Attributes::Category, DialogueSystemCategory)
+                ->Attribute(
+                    AZ::Script::Attributes::Module, DialogueSystemModule)
+                ->Attribute(
+                    AZ::Script::Attributes::Scope,
+                    AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::ConstructibleFromNil, true)
                 ->Handler<BehaviorDialogueScriptRequestBusHandler>();
         }
     }

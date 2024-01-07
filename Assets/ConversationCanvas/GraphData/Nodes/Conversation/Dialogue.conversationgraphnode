@@ -52,6 +52,20 @@
                     "Value": ""
                 },
                 "visibleOnNode": false
+            },
+            {
+                "name": "in_dialogueChunk",
+                "displayName": "Dialogue Chunk",
+                "supportedDataTypeRegex": "dialogue_chunk",
+                "defaultDataType": "dialogue_chunk",
+                "defaultValue": {
+                    "$type": "DialogueChunk",
+                    "Value": {
+                        "Data": "..."
+                    }
+                },
+                "visibleOnNode": false,
+                "editableOnNode": false
             }
         ],
         "inputSlots": [

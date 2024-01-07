@@ -27,12 +27,23 @@ function lib.ScriptDialogueComponent:ActivateConversationScript()
 
 	self.dialogueComponentNotificationHandler = DialogueComponentNotificationBus.Connect(self, self.entityId)
 	self.availabilityRequestBusHandler = AvailabilityRequestBus.Connect(self, self.entityId)
+	self.companionScriptRequestHandler = DialogueScriptRequestBus.Connect(self, self.entityId)
 end
 
 function lib.ScriptDialogueComponent:DeactivateConversationScript()
 	if self.dialogueComponentNotificationHandler ~= nil then
 		self.dialogueComponentNotificationHandler:Disconnect()
 		self.dialogueComponentNotificationHandler = nil
+	end
+
+	if self.availabilityRequestBusHandler ~= nil then
+		self.availabilityRequestBusHandler:Disconnect()
+		self.availabilityRequestBusHandler = nil
+	end
+
+	if self.companionScriptRequestHandler ~= nil then
+		self.companionScriptRequestHandler:Disconnect()
+		self.companionScriptRequestHandler = nil
 	end
 end
 
@@ -47,6 +58,14 @@ function lib.ScriptDialogueComponent:GetOwnerEntityId()
 end
 
 function lib.ScriptDialogueComponent:OnDialogue(dialogue, availableResponses) end
+
+function lib.ScriptDialogueComponent:RunDialogueScript(nodeId)
+	Debug.Log("RunDialogueScript")
+	local nodeFunc = self[nodeId]
+	if type(nodeFunc) == "function" then
+		return nodeFunc()
+	end
+end
 
 function lib.ScriptDialogueComponent:IsAvailable(nodeId)
 	local conditionFunc = self[nodeId]

@@ -35,6 +35,7 @@ namespace Conversation
                 ->Field("ActorText", &DialogueData::m_shortText)
                 ->Field("AvailabilityId", &DialogueData::m_availabilityId)
                 ->Field("AudioTrigger", &DialogueData::m_audioTrigger)
+                ->Field("CinematicId", &DialogueData::m_cinematicId)
                 ->Field("Comment", &DialogueData::m_comment)
                 ->Field("Chunk", &DialogueData::m_dialogueChunk)
                 ->Field("DialogueId", &DialogueData::m_id)

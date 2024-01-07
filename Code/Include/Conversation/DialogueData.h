@@ -275,6 +275,7 @@ namespace Conversation
         AZStd::string m_speaker{};
         // The audio trigger to execute upon selection of this dialogue.
         AZStd::string m_audioTrigger{};
+        AZ::Name m_cinematicId{};
         // Any comments from the writers of this dialogue.
         AZStd::string m_comment{};
         UniqueId m_availabilityId{};

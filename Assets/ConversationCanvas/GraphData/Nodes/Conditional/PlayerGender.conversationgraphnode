@@ -11,7 +11,7 @@
             "includePaths": {},
             "instructions": {},
             "templatePaths": [
-                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/Conditions/ConversationGraphName_ConversationGraphNodeName_CF.lua"
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/condition_function.lua"
             ]
         },
         "propertySlots": [

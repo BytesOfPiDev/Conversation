@@ -12,6 +12,7 @@
 #include "Conversation/Components/ConversationAssetRefComponentBus.h"
 #include "Conversation/ConversationTypeIds.h"
 #include "Conversation/DialogueComponentBus.h"
+#include "Conversation/DialogueData.h"
 #include "LmbrCentral/Scripting/TagComponentBus.h"
 #include "cstdlib"
 
@@ -577,6 +578,8 @@ namespace Conversation
             *m_activeDialogue,
             m_availableResponses);
 
+        RunCompanionScript(m_activeDialogue.value());
+
         AZLOG( // NOLINT
             LOG_FollowConversation,
             "[Dialogue: '%s'] \"%s\"",
@@ -711,6 +714,16 @@ namespace Conversation
         return getDialogueOutcome.IsSuccess()
             ? CheckAvailability(getDialogueOutcome.GetValue())
             : false;
+    }
+
+    void DialogueComponent::RunCompanionScript(DialogueData& dialogueData) const
+    {
+        auto const nodeId{ dialogueData.GetId().GetName().GetStringView() };
+
+        CompanionScriptRequestBus::Event(
+            GetEntityId(),
+            &CompanionScriptRequests::RunCompanionScript,
+            nodeId);
     }
 
 } // namespace Conversation

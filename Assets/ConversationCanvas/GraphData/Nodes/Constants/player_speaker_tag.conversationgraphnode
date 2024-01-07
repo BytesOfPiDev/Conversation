@@ -8,6 +8,9 @@
         "title": "Player",
         "subTitle": "Speaker Tag",
         "titlePaletteName": "DefaultNodeTitlePalette",
+        "slotDataTypeGroups": [
+            {}
+        ],
         "outputSlots": [
             {
                 "name": "outValue",

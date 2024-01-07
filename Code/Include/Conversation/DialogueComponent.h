@@ -6,6 +6,7 @@
 #include "Conversation/ConversationAsset.h"
 #include "Conversation/ConversationTypeIds.h"
 #include "Conversation/DialogueComponentBus.h"
+#include "Conversation/DialogueData.h"
 #include "Conversation/IConversationAsset.h"
 
 namespace Conversation
@@ -138,6 +139,8 @@ namespace Conversation
             -> bool override;
         [[nodiscard]] auto CheckAvailability(UniqueId const& dialogueIdToCheck)
             -> bool override;
+
+        void RunCompanionScript(DialogueData& dialogueData) const;
 
     private:
         ConversationAssetRefComponentRequests* m_conversationAssetRequests{};
