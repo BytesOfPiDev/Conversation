@@ -7,7 +7,7 @@
 namespace ConversationEditor
 {
     /**
-     * @class ConversationGraphText
+     * @class ConversationGraphContext
      **/
     class ConversationGraphContext : public GraphModel::GraphContext
     {

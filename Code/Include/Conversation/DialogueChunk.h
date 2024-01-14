@@ -10,7 +10,7 @@ namespace AZ
 namespace Conversation
 {
     /**
-     * @brief Type for holding simple, as well as advanced dialogue text.
+     * @brief Contains dialogue and also allows for scripting placeholders.
      *
      * Once fully implemented, it will enable customization of text based on
      * information available at the time of execution.

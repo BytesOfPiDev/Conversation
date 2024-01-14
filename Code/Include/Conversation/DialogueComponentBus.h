@@ -21,6 +21,9 @@ namespace Conversation
         Executing,
         WaitingForResponse);
 
+    /***************************************************************************
+     * @brief Requests to an entity's DialogueComponent
+     **************************************************************************/
     class DialogueComponentRequests : public AZ::ComponentBus
     {
     public:
@@ -29,10 +32,33 @@ namespace Conversation
         DialogueComponentRequests() = default;
         ~DialogueComponentRequests() override = default;
 
-    public: // Requests
+    public:
+        /**********************************************************************
+         * @brief Tries to start a conversation.
+         *
+         * When starting a conversation, the component must be in the Inactive
+         * state. As this function attempts to start a conversation, it enters
+         * the DialogueState::Starting state. If all requirements are met, the
+         * conversation enters the Active state, and a dialogue is subsequently
+         * made active. Otherwise, the conversation is reset to Inactive.
+         *
+         * Requirements to start a conversation:
+         *    - The conversation must be in the Inactive state.
+         *    - At minimum, one ConversationAssetRefComponent on this entity.
+         *    - At minimum, one valid DialogueData within any asset ref.
+         *    - At minimum, one valid starting UniqueId within any asset ref.
+         *    - At minimum, one valid starting UniqueId must match a
+         *      DialogueData in the asset ref.
+         *    - At minimum, one DialogueData matching a starting UniqueId must
+         *      pass its availability check.
+         *
+         * @param initiatingEntityId The entity initiating the conversation.
+         * @returns bool True if the conversation successfully started.
+         **********************************************************************/
         virtual auto TryToStartConversation(
             const AZ::EntityId& /*initiatingEntityId*/) -> bool = 0;
-        /**
+
+        /**********************************************************************
          * Sends out the given DialogueData, making it the active dialogue.
          *
          * @param dialogueToSelect The desired dialogue.
@@ -45,7 +71,7 @@ namespace Conversation
          * referenced object to cease existence while processing the selection.
          * It could be stored in a container or object that gets reset or
          * deleted.
-         */
+         **********************************************************************/
         virtual void SelectDialogue(DialogueData /*dialogueToSelect*/) = 0;
 
         /**
@@ -58,14 +84,31 @@ namespace Conversation
 
         virtual void SelectAvailableResponse(
             int const availableResponseIndex) = 0;
+        /**
+         * @brief Forcibly ends the conversation.
+         *
+         * After ending the conversation, the abort scripts are called.
+         *
+         * @note Used in situations such as a monster attacking the player
+         * during a conversation.
+         *
+         * @note Conversations that only end through this call or from selecting
+         * an ending dialogue in a conversation graph.
+         */
         virtual void AbortConversation() = 0;
-        virtual void EndConversation() = 0;
+        /**
+         * @brief Moves the conversation forward, if possible.
+         *
+         * Examples:
+         *  - There is only one available response *and* it is by the same
+         *    speaker as the active dialogue.
+         */
         virtual void ContinueConversation() = 0;
 
         [[nodiscard]] virtual auto CheckAvailability(
-            DialogueData const& dialogueToCheck) -> bool = 0;
-        [[nodiscard]] virtual auto CheckAvailability(
-            UniqueId const& dialogueIdToCheck) -> bool = 0;
+            DialogueData const& dialogueToCheck) const -> bool = 0;
+        [[nodiscard]] virtual auto CheckAvailabilityById(
+            UniqueId const& dialogueIdToCheck) const -> bool = 0;
         [[nodiscard]] virtual auto GetAvailableResponses() const
             -> AZStd::vector<DialogueData> = 0;
         [[nodiscard]] virtual auto GetActiveDialogue() const
@@ -75,9 +118,49 @@ namespace Conversation
 
     using DialogueComponentRequestBus = AZ::EBus<DialogueComponentRequests>;
 
-    class DialogueComponentNotifications : public AZ::ComponentBus
+    AZ_ENUM(
+        DialogueComponentNotificationPriority, (Default, 0), (Internal, -1));
+
+    class DialogueComponentNotifications : public AZ::EBusTraits
     {
     public:
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy =
+            AZ::EBusHandlerPolicy::MultipleAndOrdered;
+
+        static constexpr AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::ById;
+
+        using BusIdType = AZ::EntityId;
+
+        struct BusHandlerOrderCompare
+        {
+            constexpr auto operator()(
+                DialogueComponentNotifications* left,
+                DialogueComponentNotifications* right) const -> bool
+            {
+                return left->GetDialogueComponentNotificationOrder() <
+                    right->GetDialogueComponentNotificationOrder();
+            }
+        };
+
+        /**********************************************************************
+         * @brief Returns the order of a handler during notifications.
+         *
+         * Lower numbers get notified before higher numbers.
+         *
+         * Users should most likely not need to set this to anything other than
+         * Default. It is primarly for Gem use. Particularly, it is used to make
+         * sure the companion scripts receive notification before the rest of
+         * the system. If user's do set it, it should be set to zero or more.
+         * Negative numbers are reserved for the Gem.
+         *
+         * @returns A number indiciating position during noitification.
+         *
+         * @note The function can't be const due to behavior handlers.
+         **********************************************************************/
+        [[nodiscard]] virtual auto GetDialogueComponentNotificationOrder()
+            -> int = 0;
+
         /**
          * Sent out when a dialogue is selected/spoken.
          *

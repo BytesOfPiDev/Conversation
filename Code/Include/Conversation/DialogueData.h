@@ -78,6 +78,7 @@ namespace Conversation
             AZStd::string actorText,
             AZStd::string speaker = {},
             AZStd::vector<UniqueId> responses = {});
+
         ~DialogueData() = default;
 
         constexpr auto operator==(DialogueData const& other) const -> bool
@@ -109,14 +110,19 @@ namespace Conversation
             return description;
         }
 
-        [[nodiscard]] auto IsValid() const -> bool
+        [[nodiscard]] constexpr auto IsValid() const -> bool
         {
             return m_id.IsValid();
         }
 
-        [[nodiscard]] auto GetId() const -> UniqueId
+        [[nodiscard]] constexpr auto GetId() const -> UniqueId
         {
             return m_id;
+        }
+
+        [[nodiscard]] auto GetName() const -> AZ::Name
+        {
+            return m_id.GetName();
         }
 
         [[nodiscard]] constexpr auto GetResponseIds() const
@@ -131,7 +137,7 @@ namespace Conversation
             return m_audioTrigger;
         }
 
-        [[nodiscard]] auto GetAvailabilityId() const -> UniqueId
+        [[nodiscard]] constexpr auto GetAvailabilityId() const -> UniqueId
         {
             return m_availabilityId;
         }
@@ -217,7 +223,7 @@ namespace Conversation
          *
          * @see ConversationAsset
          */
-        void AddResponseId(UniqueId const responseId)
+        constexpr void AddResponseId(UniqueId const responseId)
         {
             auto& responseIds = GetResponseIds();
             // Only add the response if we're within the limit.
@@ -228,13 +234,13 @@ namespace Conversation
             }
         }
 
-        void AddResponses(AZStd::span<UniqueId const> responses)
+        constexpr void AddResponses(AZStd::span<UniqueId const> responses)
         {
             m_responseIds.insert(
                 m_responseIds.end(), responses.begin(), responses.end());
         }
 
-        void AddDialogueResponseId(ResponseData const& responseData)
+        constexpr void AddDialogueResponseId(ResponseData const& responseData)
         {
             // Only add the response if we're within the limit.
             if (CountResponseIds() < DialogueData::MaxResponses)
@@ -243,7 +249,7 @@ namespace Conversation
             }
         }
 
-        void SetChunk(DialogueChunk const& chunk)
+        constexpr void SetChunk(DialogueChunk const& chunk)
         {
             // FIXME: While still developing, setting a chunk when the short
             // text is empty will also assign the chunk's value to the short
@@ -256,7 +262,7 @@ namespace Conversation
             m_dialogueChunk = chunk;
         }
 
-        [[nodiscard]] auto GetChunkAsText() -> AZStd::string_view
+        [[nodiscard]] constexpr auto GetChunkAsText() -> AZStd::string_view
         {
             return m_dialogueChunk.GetData();
         }
@@ -264,6 +270,16 @@ namespace Conversation
         [[nodiscard]] auto GetChunk() const -> DialogueChunk
         {
             return m_dialogueChunk;
+        }
+
+        constexpr void SetCinematicId(AZ::Name const& cinematicId)
+        {
+            m_cinematicId = cinematicId;
+        }
+
+        [[nodiscard]] auto GetCinematicId() const -> AZ::Name
+        {
+            return m_cinematicId;
         }
 
     private:

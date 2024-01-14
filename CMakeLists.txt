@@ -12,3 +12,10 @@ include(${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_gem.cmake)
 ly_add_external_target_path(${CMAKE_CURRENT_LIST_DIR}/3rdParty)
 
 add_subdirectory(Code)
+
+set(CONVERSATION_VERSION_MAJOR 0)
+set(CONVERSATION_VERSION_MINOR 0)
+set(CONVERSATION_VERSION_PATCH 0)
+
+configure_file("${CMAKE_CURRENT_LIST_DIR}/Doxyfile.in"
+"${CMAKE_CURRENT_LIST_DIR}/Doxyfile")

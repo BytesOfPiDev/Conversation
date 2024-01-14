@@ -2,8 +2,12 @@
 
 #include "AzCore/EBus/EBus.h"
 #include "AzCore/Interface/Interface.h"
+#include "AzCore/Name/Name.h"
+
 namespace Conversation
 {
+    using CinematicId = AZ::Name;
+
     /**
      * Requests needed to handle cinematics during a conversation.
      */
@@ -15,7 +19,7 @@ namespace Conversation
         CinematicRequests() = default;
         virtual ~CinematicRequests() = default;
 
-        virtual void StartCinematic(AZ::Crc32 cinematicTag) = 0;
+        virtual void StartCinematic(CinematicId cinematicTag) = 0;
     };
 
     struct CinematicRequestBusTraits : AZ::EBusTraits
@@ -48,7 +52,7 @@ namespace Conversation
         static constexpr AZ::EBusAddressPolicy AddressPolicy =
             AZ::EBusAddressPolicy::Single;
 
-        using BusIdType = AZ::Crc32;
+        using BusIdType = CinematicId;
 
         virtual void OnCinematicFinished() = 0;
     };

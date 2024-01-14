@@ -85,7 +85,6 @@ namespace Conversation
                         "AvailabilityId",
                         "Id to be called when determining dialogue "
                         "availability.")
-
                     ->DataElement(
                         AZ::Edit::UIHandlers::Button,
                         &DialogueData::m_id,
@@ -133,8 +132,11 @@ namespace Conversation
                     "ResponseIds", &DialogueData::GetResponseIds, nullptr)
                 ->Property(
                     "Chunk", &DialogueData::GetChunk, &DialogueData::SetChunk)
+                ->Property("ChunkText", &DialogueData::GetChunkAsText, nullptr)
                 ->Property(
-                    "Dialogue Chunk", &DialogueData::GetChunkAsText, nullptr);
+                    "CinematicId",
+                    &DialogueData::GetCinematicId,
+                    &DialogueData::SetCinematicId);
         }
     }
 

@@ -17,6 +17,7 @@
 #include "cstdlib"
 
 #include "Conversation/AvailabilityBus.h"
+#include "Conversation/CinematicBus.h"
 #include "Conversation/Components/DialogueComponentConfig.h"
 #include "Conversation/Constants.h"
 #include "Conversation/ConversationAsset.h"
@@ -42,6 +43,8 @@ namespace Conversation
             BehaviorDialogueComponentNotificationBusHandler,
             "{D9A79838-589F-4BE3-9D87-7CFE187A52D3}",
             AZ::SystemAllocator,
+            GetDialogueComponentNotificationOrder,
+            (),
             OnDialogue,
             ({ "Dialogue", "The dialogue being that was selected/spoken." },
              { "AvailableResponses",
@@ -61,6 +64,14 @@ namespace Conversation
         AZ_DISABLE_COPY_MOVE(
             BehaviorDialogueComponentNotificationBusHandler); // NOLINT
         ~BehaviorDialogueComponentNotificationBusHandler() override = default;
+
+        [[nodiscard]] auto GetDialogueComponentNotificationOrder()
+            -> int override
+        {
+            auto result{ DialogueComponentNotificationPriority::Default };
+            CallResult(result, FN_GetDialogueComponentNotificationOrder);
+            return result;
+        }
 
         void OnDialogue(
             DialogueData const& dialogue,
@@ -174,9 +185,6 @@ namespace Conversation
                 ->EventWithBus<DialogueComponentRequestBus>(
                     "ContinueConversation",
                     &DialogueComponentRequestBus::Events::ContinueConversation)
-                ->EventWithBus<DialogueComponentRequestBus>(
-                    "EndConversation",
-                    &DialogueComponentRequestBus::Events::EndConversation)
                 ->EventWithBus<DialogueComponentRequestBus>(
                     "GetActiveDialogue",
                     &DialogueComponentRequestBus::Events::GetActiveDialogue)
@@ -549,27 +557,8 @@ namespace Conversation
         }
 
         m_activeDialogue.emplace(dialogueToSelect);
-        m_availableResponses.clear();
 
-        // Check all responses and determine which should be available for use.
-        for (UniqueId const& responseId : m_activeDialogue->GetResponseIds())
-        {
-            AZ::Outcome<DialogueData> const responseDialogueOutcome =
-                m_conversationAssetRequests->GetDialogueById(responseId);
-            // An invalid ID means we didn't find a dialogue matching the
-            // responseId. We can only check valid dialogues, so we skip ahead
-            // if invalid.
-            if (!responseDialogueOutcome.IsSuccess())
-            {
-                continue;
-            }
-
-            if (CheckAvailability(responseDialogueOutcome.GetValue()))
-            {
-                m_availableResponses.push_back(
-                    responseDialogueOutcome.GetValue());
-            }
-        }
+        UpdateAvailableResponses();
 
         // We send the dialogue out. It's considered spoken after this call.
         DialogueComponentNotificationBus::Event(
@@ -578,7 +567,9 @@ namespace Conversation
             *m_activeDialogue,
             m_availableResponses);
 
-        RunCompanionScript(m_activeDialogue.value());
+        RunDialogueScript();
+        PlayDialogueAudio();
+        RunCinematic();
 
         AZLOG( // NOLINT
             LOG_FollowConversation,
@@ -685,8 +676,8 @@ namespace Conversation
         }
     }
 
-    auto DialogueComponent::CheckAvailability(DialogueData const& dialogueData)
-        -> bool
+    auto DialogueComponent::CheckAvailability(
+        DialogueData const& dialogueData) const -> bool
     {
         // All availability checks must pass for a dialogue to be available.
         bool const isDialogueAvailable = [this, &dialogueData]() -> bool
@@ -706,8 +697,8 @@ namespace Conversation
         return isDialogueAvailable;
     }
 
-    auto DialogueComponent::CheckAvailability(UniqueId const& dialogueId)
-        -> bool
+    auto DialogueComponent::CheckAvailabilityById(
+        UniqueId const& dialogueId) const -> bool
     {
         auto const getDialogueOutcome =
             m_conversationAssetRequests->GetDialogueById(dialogueId);
@@ -716,14 +707,68 @@ namespace Conversation
             : false;
     }
 
-    void DialogueComponent::RunCompanionScript(DialogueData& dialogueData) const
+    void DialogueComponent::UpdateAvailableResponses()
     {
-        auto const nodeId{ dialogueData.GetId().GetName().GetStringView() };
+        m_availableResponses.clear();
 
-        CompanionScriptRequestBus::Event(
-            GetEntityId(),
-            &CompanionScriptRequests::RunCompanionScript,
-            nodeId);
+        // Check all responses and determine which should be available for use.
+        for (UniqueId const& responseId : m_activeDialogue->GetResponseIds())
+        {
+            AZ::Outcome<DialogueData> const responseDialogueOutcome =
+                m_conversationAssetRequests->GetDialogueById(responseId);
+            // An invalid ID means we didn't find a dialogue matching the
+            // responseId. We can only check valid dialogues, so we skip ahead
+            // if invalid.
+            if (!responseDialogueOutcome.IsSuccess())
+            {
+                continue;
+            }
+
+            if (CheckAvailability(responseDialogueOutcome.GetValue()))
+            {
+                m_availableResponses.push_back(
+                    responseDialogueOutcome.GetValue());
+            }
+        }
+    }
+
+    void DialogueComponent::RunDialogueScript() const
+    {
+        if (!m_activeDialogue.has_value())
+        {
+            LOGTAG_EntityComponent(
+                "DialogueComponent",
+                *this,
+                "Unable to run a companion script without an active dialogue.");
+
+            return;
+        }
+
+        auto const nodeId{ m_activeDialogue->GetId().GetName() };
+
+        DialogueScriptRequestBus::Event(
+            GetEntityId(), &DialogueScriptRequests::RunDialogueScript, nodeId);
+    }
+
+    void DialogueComponent::PlayDialogueAudio() const
+    {
+    }
+
+    void DialogueComponent::RunCinematic() const
+    {
+        if (!m_activeDialogue.has_value())
+        {
+            LOGTAG_EntityComponent(
+                "DialogueComponent",
+                *this,
+                "Unable to start a cinematic without an active dialogue.");
+
+            return;
+        }
+
+        CinematicRequestBus::Broadcast(
+            &CinematicRequests::StartCinematic,
+            m_activeDialogue->GetCinematicId());
     }
 
 } // namespace Conversation

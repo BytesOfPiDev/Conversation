@@ -256,7 +256,47 @@ namespace ConversationTest
         EXPECT_NE(m_dialogueEntity->FindComponent(TagComponentType), nullptr);
         EXPECT_NE(
             m_dialogueEntity->FindComponent(DialogueComponentType), nullptr);
+        EXPECT_NE(
+            m_dialogueEntity->FindComponent(ConversationAssetRefComponentType),
+            nullptr);
         EXPECT_EQ(m_dialogueEntity->GetState(), AZ::Entity::State::Init);
+    }
+
+    TEST_F(
+        DialogueComponentTests,
+        CheckAvailability_GivenValidDialogueWithNoChecks_ReturnsTrue)
+    {
+        using namespace Conversation;
+
+        DialogueData someValidDialogue{ UniqueId::CreateRandomId() };
+
+        auto const resultWhenCheckedWithDialogueData =
+            [this, &someValidDialogue]() -> bool
+        {
+            bool result{};
+            DialogueComponentRequestBus::EventResult(
+                result,
+                m_dialogueEntity->GetId(),
+                &DialogueComponentRequests::CheckAvailability,
+                someValidDialogue);
+            return result;
+        }();
+
+        EXPECT_TRUE(resultWhenCheckedWithDialogueData);
+
+        auto const resultWhenCheckedWithId = [this,
+                                              &someValidDialogue]() -> bool
+        {
+            bool result{};
+            DialogueComponentRequestBus::EventResult(
+                result,
+                m_dialogueEntity->GetId(),
+                &DialogueComponentRequests::CheckAvailabilityById,
+                someValidDialogue.GetId());
+            return result;
+        }();
+
+        EXPECT_TRUE(resultWhenCheckedWithId);
     }
 
     TEST(

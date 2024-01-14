@@ -19,7 +19,7 @@
 namespace Conversation
 {
     class BehaviorDialogueScriptRequestBusHandler
-        : public CompanionScriptRequestBus::Handler
+        : public DialogueScriptRequestBus::Handler
         , public AZ::BehaviorEBusHandler
     {
     public:
@@ -27,11 +27,11 @@ namespace Conversation
             BehaviorDialogueScriptRequestBusHandler,
             "{168DA145-68E2-4D49-BCE7-3BAE5589C3D1}",
             AZ::SystemAllocator,
-            RunCompanionScript);
+            RunDialogueScript);
 
-        void RunCompanionScript(AZStd::string_view nodeId) override
+        void RunDialogueScript(AZ::Name nodeId) override
         {
-            Call(FN_RunCompanionScript, nodeId);
+            Call(FN_RunDialogueScript, nodeId);
         }
     };
 
@@ -169,7 +169,7 @@ namespace Conversation
                 ->Handler<BehaviorAvailabilityRequestBusHandler>();
 
             behaviorContext
-                ->EBus<CompanionScriptRequestBus>("DialogueScriptRequestBus")
+                ->EBus<DialogueScriptRequestBus>("DialogueScriptRequestBus")
                 ->Attribute(
                     AZ::Script::Attributes::Category, DialogueSystemCategory)
                 ->Attribute(

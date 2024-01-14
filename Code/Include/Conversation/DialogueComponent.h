@@ -70,10 +70,6 @@ namespace Conversation
          */
         void AbortConversation() override;
         /**
-         * Ends the conversation normally. Triggers end scripts.
-         */
-        void EndConversation() override;
-        /**
          * Makes the given dialogue the active dialogue.
          *
          * The given dialogue does not have to be a part of the asset.
@@ -104,7 +100,7 @@ namespace Conversation
         void SelectAvailableResponse(int const responseNumber) override;
         /**
          * \brief Attempts to move the conversation along by selecting the next
-         * dialogue.
+         * dialogue in certain scenarios.
          *
          * What this function does depends what responses are available for the
          * currently active dialogue.
@@ -118,12 +114,30 @@ namespace Conversation
          */
         void ContinueConversation() override;
 
+        /***********************************************************************
+         * @brief Gets the currently active dialogue
+         *
+         * It is safe to assume that, while there is an active conversation,
+         * there will always be an active. Anything that would cause this not to
+         * be true will immedietly abort the conversation.
+         *
+         * TODO: Create single point of modification to m_activeDialogue that
+         *       enforces the above.
+         *
+         * @returns An AZ::Outcome with the dialogue if there is one, otherwise
+         *          nothing.
+         **********************************************************************/
         [[nodiscard]] auto GetActiveDialogue() const
             -> AZ::Outcome<DialogueData> override
         {
             return m_activeDialogue ? *m_activeDialogue : DialogueData();
         }
 
+        /***********************************************************************
+         * @brief Gets a container of the currently available responses.
+         *
+         * @returns A container with copies of each DialogueData response.
+         **********************************************************************/
         [[nodiscard]] auto GetAvailableResponses() const
             -> AZStd::vector<DialogueData> override
         {
@@ -135,12 +149,29 @@ namespace Conversation
             return m_currentState;
         }
 
-        [[nodiscard]] auto CheckAvailability(DialogueData const& dialogueData)
-            -> bool override;
-        [[nodiscard]] auto CheckAvailability(UniqueId const& dialogueIdToCheck)
-            -> bool override;
+        [[nodiscard]] auto CheckAvailability(
+            DialogueData const& dialogueData) const -> bool override;
+        [[nodiscard]] auto CheckAvailabilityById(
+            UniqueId const& dialogueIdToCheck) const -> bool override;
 
-        void RunCompanionScript(DialogueData& dialogueData) const;
+    protected:
+        /***********************************************************************
+         * @brief Checks which of the active dialogue's responses are available
+         *        and updates related data.
+         **********************************************************************/
+        void UpdateAvailableResponses();
+
+        /***********************************************************************
+         * @brief Executes the current conversation's companion script.
+         **********************************************************************/
+        void RunDialogueScript() const;
+        void PlayDialogueAudio() const;
+        void RunCinematic() const;
+
+        /**
+         * Ends the conversation normally. Triggers end scripts.
+         */
+        void EndConversation();
 
     private:
         ConversationAssetRefComponentRequests* m_conversationAssetRequests{};

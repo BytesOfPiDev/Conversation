@@ -59,6 +59,11 @@ end
 
 function lib.ScriptDialogueComponent:OnDialogue(dialogue, availableResponses) end
 
+-- @brief Executes the script attached to a dialogue.
+--
+-- Nothing happens if no script is found that matches the Id..
+--
+-- @param nodeId The Id of the node whose script needs to be run
 function lib.ScriptDialogueComponent:RunDialogueScript(nodeId)
 	Debug.Log("RunDialogueScript")
 	local nodeFunc = self[nodeId]
@@ -67,10 +72,25 @@ function lib.ScriptDialogueComponent:RunDialogueScript(nodeId)
 	end
 end
 
+-------------------------------------------------------------------------------
+-- @brief Runs and returns the return of the given node's condition script(s).
+--
+-- @note If no node is found, we assume there are no conditions and returning
+--       true.
+-- @returns true if all conditions are satisfied. Otherwise, returns false.
+-------------------------------------------------------------------------------
 function lib.ScriptDialogueComponent:IsAvailable(nodeId)
 	local conditionFunc = self[nodeId]
+
+	-- Conditions that are functions must return a boolean type.
 	if type(conditionFunc) == "function" then
-		return conditionFunc()
+		local result = conditionFunc()
+		if type(result) == "boolean" then
+			return result
+		end
+
+		-- We fail the availability check because we didn't a boolean.
+		return false
 	end
 
 	-- We return true if no condition function was found because dialogues are available by default.
@@ -81,6 +101,12 @@ function lib.ScriptDialogueComponent:IsAvailable(nodeId)
 	return true
 end
 
+-------------------------------------------------------------------------------
+-- @brief Helper for adding a condition script to a dialogue.
+--
+-- @param dialogueNodeName The name of the node to add the condition to.
+-- @param conditionFunction A function returning a boolean result.
+-------------------------------------------------------------------------------
 function lib.ScriptDialogueComponent:AddCondition(dialogueNodeName, conditionFunction)
 	if dialogueNodeName == nil then
 		return
@@ -92,7 +118,7 @@ function lib.ScriptDialogueComponent:AddCondition(dialogueNodeName, conditionFun
 		return
 	end
 
-	Debug.Log("[core.lua] The condition function given is not a function. No condition will be added.")
+	Debug.Log("[dialogue_component.lua] The condition function given is not a function. No condition will be added.")
 end
 
 return lib

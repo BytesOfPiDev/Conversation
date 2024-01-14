@@ -2,25 +2,26 @@
 
 #include "AzCore/Component/EntityId.h"
 #include "AzCore/EBus/EBus.h"
+#include "AzCore/Name/Name.h"
 
 namespace Conversation
 {
-    class CompanionScriptRequests : public AZ::EBusTraits
+    class DialogueScriptRequests : public AZ::EBusTraits
     {
     public:
-        AZ_DISABLE_COPY_MOVE(CompanionScriptRequests);
+        AZ_DISABLE_COPY_MOVE(DialogueScriptRequests);
 
         static const AZ::EBusAddressPolicy AddressPolicy =
             AZ::EBusAddressPolicy::ById;
 
         using BusIdType = AZ::EntityId;
 
-        CompanionScriptRequests() = default;
-        virtual ~CompanionScriptRequests() = default;
+        DialogueScriptRequests() = default;
+        virtual ~DialogueScriptRequests() = default;
 
-        virtual void RunCompanionScript(AZStd::string_view nodeId) = 0;
+        virtual void RunDialogueScript(AZ::Name nodeId) = 0;
     };
 
-    using CompanionScriptRequestBus = AZ::EBus<CompanionScriptRequests>;
+    using DialogueScriptRequestBus = AZ::EBus<DialogueScriptRequests>;
 
 } // namespace Conversation
