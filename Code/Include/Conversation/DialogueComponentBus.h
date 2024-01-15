@@ -21,9 +21,9 @@ namespace Conversation
         Executing,
         WaitingForResponse);
 
-    /***************************************************************************
+    /*
      * @brief Requests to an entity's DialogueComponent
-     **************************************************************************/
+     */
     class DialogueComponentRequests : public AZ::ComponentBus
     {
     public:
@@ -33,7 +33,7 @@ namespace Conversation
         ~DialogueComponentRequests() override = default;
 
     public:
-        /**********************************************************************
+        /*
          * @brief Tries to start a conversation.
          *
          * When starting a conversation, the component must be in the Inactive
@@ -54,11 +54,11 @@ namespace Conversation
          *
          * @param initiatingEntityId The entity initiating the conversation.
          * @returns bool True if the conversation successfully started.
-         **********************************************************************/
+         */
         virtual auto TryToStartConversation(
             const AZ::EntityId& /*initiatingEntityId*/) -> bool = 0;
 
-        /**********************************************************************
+        /*
          * Sends out the given DialogueData, making it the active dialogue.
          *
          * @param dialogueToSelect The desired dialogue.
@@ -71,19 +71,32 @@ namespace Conversation
          * referenced object to cease existence while processing the selection.
          * It could be stored in a container or object that gets reset or
          * deleted.
-         **********************************************************************/
+         */
         virtual void SelectDialogue(DialogueData /*dialogueToSelect*/) = 0;
 
-        /**
-         * Attempts to find and send out a DialogueData using its DialogueId.
+        /*
+         * @brief Attempts to find a select a dialogue with the given Uniqueid.
          *
-         * Does nothing if it could not find one.
+         * Checks all assets available to the entity for a DialogueData that has
+         * the given UniqueId. If it finds one, an availability check is
+         * performed. If the check passes, then the dialogue is selected.
+         * Otherwise, nothing happens.
+         *
+         * @param id The id of the desired DialogueData.
+         * @returns @c true if successfully selected, @c false otherwise.
+         * @see ConversationAssetRefComponent
          */
-        virtual auto TryToSelectDialogue(
-            UniqueId const dialogueIdToFindAndSelect) -> bool = 0;
+        virtual auto TryToSelectDialogue(UniqueId const id) -> bool = 0;
 
-        virtual void SelectAvailableResponse(
-            int const availableResponseIndex) = 0;
+        /*
+         * @brief Selects one of the active dialogue's available responses.
+         *
+         * Responses numbers are based on the value of FirstResponseNumber
+         *
+         * @param responseNumber The choice number to select.
+         */
+
+        virtual void SelectAvailableResponse(int const responseNumber) = 0;
         /**
          * @brief Forcibly ends the conversation.
          *
@@ -143,7 +156,7 @@ namespace Conversation
             }
         };
 
-        /**********************************************************************
+        /*
          * @brief Returns the order of a handler during notifications.
          *
          * Lower numbers get notified before higher numbers.
@@ -157,7 +170,7 @@ namespace Conversation
          * @returns A number indiciating position during noitification.
          *
          * @note The function can't be const due to behavior handlers.
-         **********************************************************************/
+         */
         [[nodiscard]] virtual auto GetDialogueComponentNotificationOrder()
             -> int = 0;
 
