@@ -2,6 +2,6 @@
 [Cc]ache/
 [Uu]ser/
 .cache/
-.Doxyfile
-docs/
-!docs/images/
+
+docs/sphinx/
+docs/Doxyfile
