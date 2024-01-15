@@ -4,7 +4,8 @@
     "license": "Apache-2.0",
     "license_url": "https://github.com/BytesOfPiDev/Conversation/blob/main/LICENSE",
     "origin": "Andre Mitchell",
-    "origin_url": "The primary repo for Conversation goes here: i.e. http://www.mydomain.com",
+    "origin_url": "https://github.com/BytesOfPiDev/Conversation/tree/development",
+    "last_updated": "",
     "type": "Code",
     "summary": "A conversation system for O3DE",
     "canonical_tags": [
@@ -18,7 +19,7 @@
     "documentation_url": "https://github.com/BytesOfPiDev/Conversation",
     "dependencies": [],
     "restricted": "Conversation",
-    "repo_uri": "https://github.com/BytesOfPiDev/Conversation.git",
+    "repo_uri": "https://raw.githubusercontent.com/BytesOfPiDev/Conversation/development",
     "platforms": [
         "Linux",
         "Windows"
