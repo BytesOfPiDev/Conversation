@@ -35,7 +35,7 @@ if read_the_docs_build:
 project = 'Conversation'
 copyright = '2024, Andre Mitchell'
 author = 'Andre Mitchell'
-release = '11/05/2023'
+release = '12/05/2023'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
