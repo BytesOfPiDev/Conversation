@@ -1,5 +1,7 @@
 # O3DE Conversation System and Editor
 
+[![Documentation Status](https://readthedocs.org/projects/conversation/badge/?version=latest)](https://conversation.readthedocs.io/en/latest/?badge=latest)
+
 A conversation system and editor for O3DE that aims to provide a simple way to create, preview, and use branching dialogue. Think YarnSpinner.
 
 It is _**absolutely**_ not ready to be used for anything production at this time as it is very much a work in progress.
@@ -38,4 +40,3 @@ See the [wiki](https://github.com/BytesOfPiDev/Conversation/wiki).
 ## Conditionals
 
 Implemented, will document soon, but you can check out [PlayerGender](Assets/ConversationCanvas/GraphData/Nodes/Conditional/PlayerGender.conversationgraphnode) until then. It's just a test.
-

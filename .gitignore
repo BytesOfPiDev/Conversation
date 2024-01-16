@@ -3,5 +3,7 @@
 [Uu]ser/
 .cache/
 
-docs/sphinx/
 docs/Doxyfile
+
+docs/doxygen/
+docs/sphinx/

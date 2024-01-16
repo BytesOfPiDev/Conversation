@@ -33,17 +33,22 @@ if read_the_docs_build:
 # ...
 
 project = 'Conversation'
-copyright = '2024, Andre Mitchell'
 author = 'Andre Mitchell'
 release = '12/05/2023'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['breathe']
+extensions = [
+    'breathe', 
+    'sphinx.ext.duration',
+    'sphinx.ext.todo'
+]
+
+autosummary_generate = True
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'breathe/*']
 
 # Breathe Configuration
 breathe_default_project = 'Conversation'

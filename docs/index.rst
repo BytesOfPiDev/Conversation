@@ -3,25 +3,27 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Conversation's documentation!
+O3DE Conversation gem documentation!
 ========================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
-
+   installation
+   gettingstarted
+   api
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 
-Docs
-====
 
-.. doxygenstruct:: Conversation::DialogueData
+Introduction
+============
 
-.. doxygenclass:: Conversation::DialogueComponent
+`Conversation` is a conversation and dialogue system for O3DE.
+
+
