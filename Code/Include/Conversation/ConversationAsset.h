@@ -2,13 +2,15 @@
 
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Script/ScriptAsset.h"
-#include "AzCore/std/ranges/transform_view.h"
 #include "AzFramework/Asset/GenericAssetHandler.h"
 #include "Conversation/DialogueData.h"
 #include "Conversation/IConversationAsset.h"
 
 namespace Conversation
 {
+    /**
+     * Contains the runtime data of a conversation.
+     */
     class ConversationAsset
         : public AZ::Data::AssetData
         , public IConversationAsset
@@ -61,18 +63,18 @@ namespace Conversation
         void AddStartingId(UniqueId const& newStartingId) override;
 
         void AddDialogue(DialogueData const& newDialogueData) override;
+
         /**
-         * @brief Add a dialogue as a response to another dialogue
+         * Add a new response to the asset.
          *
-         * As long as the ResponseData is valid (not null), the response will
-         * be added, even if there is not currently a DialogueData in this
+         * As long as the ResponseData is valid, the response will be added
+         * even if there is not currently a DialogueData in this
          * asset with matching DialogueIds.
          *
          * @param responseData The response to add.
          *
          * @note Not currently implemented.
          */
-
         void AddResponse(ResponseData const& responseData) override;
 
         auto GetDialogueById(UniqueId const& dialogueId)

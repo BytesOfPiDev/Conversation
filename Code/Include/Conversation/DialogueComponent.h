@@ -20,9 +20,8 @@ namespace Conversation
     /**
      * @brief Allows an entity to use the conversation system.
      *
-     * @note It is not necessary to have any dialogue assets assigned to the
-     * component. It provides the basic information about the entity, such as
-     * name, speaker tag, etc.
+     * A DialogueComponentConfig can be used to specify settings
+     * that describe the entity.
      */
     class DialogueComponent
         : public AZ::Component
@@ -55,89 +54,20 @@ namespace Conversation
         static void GetDependentServices(
             AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        /**
-         * @brief Tries to start a conversation if possible.
-         *
-         * @return True if it was successfully started, false otherwise.
-         */
-        auto TryToStartConversation(const AZ::EntityId& initiatingEntityId)
+        auto TryToStartConversation(AZ::EntityId initiatingEntityId)
             -> bool override;
-        /**
-         * Forces the conversation to end. Triggers abort scripts.
-         *
-         * Intended for situations where an event takes place that must cancel
-         * the conversation.
-         */
         void AbortConversation() override;
-        /**
-         * Makes the given dialogue the active dialogue.
-         *
-         * The given dialogue does not have to be a part of the asset.
-         *
-         * @param dialogueToSelect The dialogue that will be made active.
-         */
         void SelectDialogue(DialogueData dialogueToSelect) override;
-        /**
-         * Attempts to find a dialogue matching the given ID and makes it
-         * active.
-         *
-         * Does nothing if no matching ID is found.
-         *
-         * @param dialogueId The ID of a dialogue contained in an attached
-         * ConversationAssetRefComponent.
-         */
         auto TryToSelectDialogue(UniqueId const dialogueId) -> bool override;
-        /**
-         * Processes and sends out the index matching an available dialogue
-         * choice.
-         *
-         * For example, if the active dialogue has 4 available responses, you
-         * can select the second one by passing in an index of '1'. It's assumed
-         * these options are being presented on screen in random order, so it's
-         * up to the caller match selections with an index.
-         *
-         */
         void SelectAvailableResponse(int const responseNumber) override;
-        /**
-         * \brief Attempts to move the conversation along by selecting the next
-         * dialogue in certain scenarios.
-         *
-         * What this function does depends what responses are available for the
-         * currently active dialogue.
-         *
-         * If no responses are available, it ends the conversation.
-         *
-         * If the first response available is an NPC response, it selects it.
-         *
-         * If the first response is a player response, it sends out *all*
-         * available player responses found in the response list as choices.
-         */
         void ContinueConversation() override;
 
-        /***********************************************************************
-         * @brief Gets the currently active dialogue
-         *
-         * It is safe to assume that, while there is an active conversation,
-         * there will always be an active. Anything that would cause this not to
-         * be true will immedietly abort the conversation.
-         *
-         * TODO: Create single point of modification to m_activeDialogue that
-         *       enforces the above.
-         *
-         * @returns An AZ::Outcome with the dialogue if there is one, otherwise
-         *          nothing.
-         **********************************************************************/
         [[nodiscard]] auto GetActiveDialogue() const
             -> AZ::Outcome<DialogueData> override
         {
             return m_activeDialogue ? *m_activeDialogue : DialogueData();
         }
 
-        /***********************************************************************
-         * @brief Gets a container of the currently available responses.
-         *
-         * @returns A container with copies of each DialogueData response.
-         **********************************************************************/
         [[nodiscard]] auto GetAvailableResponses() const
             -> AZStd::vector<DialogueData> override
         {
@@ -178,7 +108,9 @@ namespace Conversation
         DialogueComponentConfig m_config;
         ConversationAsset m_memoryConversationAsset;
         DialogueState m_currentState = DialogueState::Inactive;
+        // The currently active dialogue, if there is one.
         AZStd::optional<DialogueData> m_activeDialogue;
+        // Available responses to the active dialogue
         AZStd::vector<DialogueData> m_availableResponses;
     };
 

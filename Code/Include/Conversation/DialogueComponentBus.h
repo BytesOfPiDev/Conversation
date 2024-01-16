@@ -21,8 +21,8 @@ namespace Conversation
         Executing,
         WaitingForResponse);
 
-    /*
-     * @brief Requests to an entity's DialogueComponent
+    /**
+     * Requests to an entity's DialogueComponent
      */
     class DialogueComponentRequests : public AZ::ComponentBus
     {
@@ -33,32 +33,32 @@ namespace Conversation
         ~DialogueComponentRequests() override = default;
 
     public:
-        /*
-         * @brief Tries to start a conversation.
+        /**
+         * Tries to start a conversation.
          *
-         * When starting a conversation, the component must be in the Inactive
-         * state. As this function attempts to start a conversation, it enters
-         * the DialogueState::Starting state. If all requirements are met, the
-         * conversation enters the Active state, and a dialogue is subsequently
-         * made active. Otherwise, the conversation is reset to Inactive.
-         *
-         * Requirements to start a conversation:
-         *    - The conversation must be in the Inactive state.
-         *    - At minimum, one ConversationAssetRefComponent on this entity.
-         *    - At minimum, one valid DialogueData within any asset ref.
-         *    - At minimum, one valid starting UniqueId within any asset ref.
-         *    - At minimum, one valid starting UniqueId must match a
+         * It assumes the following:
+         *    * The conversation is in the Inactive state.
+         *    * At minimum, one ConversationAssetRefComponent on this entity.
+         *    * At minimum, one valid DialogueData within any asset ref.
+         *    * At minimum, one valid starting UniqueId within any asset ref.
+         *    * At minimum, one valid starting UniqueId must match a
          *      DialogueData in the asset ref.
-         *    - At minimum, one DialogueData matching a starting UniqueId must
+         *    * At minimum, one DialogueData matching a starting UniqueId must
          *      pass its availability check.
+         *
+         * As this function executes, its DialogueState will change. attempts to
+         * start a conversation, it enters the DialogueState::Starting state. If
+         * all requirements are met, the conversation enters the Active state,
+         * and a dialogue is subsequently made active. Otherwise, the
+         * conversation is reset to Inactive.
          *
          * @param initiatingEntityId The entity initiating the conversation.
          * @returns bool True if the conversation successfully started.
          */
-        virtual auto TryToStartConversation(
-            const AZ::EntityId& /*initiatingEntityId*/) -> bool = 0;
+        virtual auto TryToStartConversation(AZ::EntityId initiatingEntityId)
+            -> bool = 0;
 
-        /*
+        /**
          * Sends out the given DialogueData, making it the active dialogue.
          *
          * @param dialogueToSelect The desired dialogue.
@@ -72,9 +72,9 @@ namespace Conversation
          * It could be stored in a container or object that gets reset or
          * deleted.
          */
-        virtual void SelectDialogue(DialogueData /*dialogueToSelect*/) = 0;
+        virtual void SelectDialogue(DialogueData dialogueToSelect) = 0;
 
-        /*
+        /**
          * @brief Attempts to find a select a dialogue with the given Uniqueid.
          *
          * Checks all assets available to the entity for a DialogueData that has
@@ -88,7 +88,7 @@ namespace Conversation
          */
         virtual auto TryToSelectDialogue(UniqueId const id) -> bool = 0;
 
-        /*
+        /**
          * @brief Selects one of the active dialogue's available responses.
          *
          * Responses numbers are based on the value of FirstResponseNumber
@@ -109,6 +109,7 @@ namespace Conversation
          * an ending dialogue in a conversation graph.
          */
         virtual void AbortConversation() = 0;
+
         /**
          * @brief Moves the conversation forward, if possible.
          *

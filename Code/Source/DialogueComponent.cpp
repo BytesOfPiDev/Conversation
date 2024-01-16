@@ -341,7 +341,7 @@ namespace Conversation
     }
 
     auto DialogueComponent::TryToStartConversation(
-        AZ::EntityId const& initiatingEntityId) -> bool
+        AZ::EntityId initiatingEntityId) -> bool
     {
         if (!m_conversationAssetRequests)
         {
