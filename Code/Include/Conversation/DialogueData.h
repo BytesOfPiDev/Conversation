@@ -37,6 +37,8 @@ namespace Conversation
         // There's a limit to the maximum amount of dialogue responses.
         // Attempting to go beyond this will likely result in it not being
         // added.
+        //
+        // @todo Review limit.
         static constexpr auto MaxResponses{ 10 };
         static constexpr auto DefaultEntryDelay{ 0 };
         static constexpr auto DefaultExitDelay{ 0 };
@@ -236,6 +238,18 @@ namespace Conversation
 
         constexpr void AddResponses(AZStd::span<UniqueId const> responses)
         {
+            if (CountResponseIds() + responses.size() >
+                DialogueData::MaxResponses)
+            {
+                AZ_Warning(
+                    "DialogueData",
+                    false,
+                    "Failed to add responses, as it would total more than the "
+                    "allowed responses.");
+
+                return;
+            }
+
             m_responseIds.insert(
                 m_responseIds.end(), responses.begin(), responses.end());
         }

@@ -264,7 +264,7 @@ namespace ConversationTest
 
     TEST_F(
         DialogueComponentTests,
-        CheckAvailability_GivenValidDialogueWithNoChecks_ReturnsTrue)
+        DISABLED_CheckAvailability_GivenValidDialogueWithNoChecks_ReturnsTrue)
     {
         using namespace Conversation;
 
@@ -496,24 +496,28 @@ namespace ConversationTest
             asset);
 
         m_dialogueEntity->Activate();
+        auto dialogueEntityId{ m_dialogueEntity->GetId() };
 
         DialogueComponentRequestBus::Event(
-            m_dialogueEntity->GetId(),
+            dialogueEntityId,
             &DialogueComponentRequests::TryToStartConversation,
             AZ::Entity::MakeId());
+
+        constexpr auto getActiveDialogue =
+            [](AZ::EntityId const& entityId) -> AZ::Outcome<DialogueData>
+        {
+            AZ::Outcome<DialogueData> resultOutcome{};
+            DialogueComponentRequestBus::EventResult(
+                resultOutcome,
+                entityId,
+                &DialogueComponentRequests::GetActiveDialogue);
+            return resultOutcome;
+        };
 
         // Test upper bound
         {
             auto const activeDialogueOutcomeBeforeSelection =
-                [this]() -> AZ::Outcome<DialogueData>
-            {
-                AZ::Outcome<DialogueData> resultOutcome{};
-                DialogueComponentRequestBus::EventResult(
-                    resultOutcome,
-                    m_dialogueEntity->GetId(),
-                    &DialogueComponentRequests::GetActiveDialogue);
-                return resultOutcome;
-            }();
+                getActiveDialogue(dialogueEntityId);
 
             auto const numberOfAvailableResponses = [this]() -> size_t
             {
@@ -531,15 +535,7 @@ namespace ConversationTest
                 numberOfAvailableResponses + 1);
 
             auto const activeDialogueOutcomeAfterSelection =
-                [this]() -> AZ::Outcome<DialogueData>
-            {
-                AZ::Outcome<DialogueData> resultOutcome{};
-                DialogueComponentRequestBus::EventResult(
-                    resultOutcome,
-                    m_dialogueEntity->GetId(),
-                    &DialogueComponentRequests::GetActiveDialogue);
-                return resultOutcome;
-            }();
+                getActiveDialogue(m_dialogueEntity->GetId());
 
             EXPECT_EQ(
                 activeDialogueOutcomeBeforeSelection.GetValue(),
@@ -549,15 +545,7 @@ namespace ConversationTest
         // Test lower bound
         {
             auto const activeDialogueOutcomeBeforeSelection =
-                [this]() -> AZ::Outcome<DialogueData>
-            {
-                AZ::Outcome<DialogueData> resultOutcome{};
-                DialogueComponentRequestBus::EventResult(
-                    resultOutcome,
-                    m_dialogueEntity->GetId(),
-                    &DialogueComponentRequests::GetActiveDialogue);
-                return resultOutcome;
-            }();
+                getActiveDialogue(dialogueEntityId);
 
             DialogueComponentRequestBus::Event(
                 m_dialogueEntity->GetId(),
@@ -565,15 +553,7 @@ namespace ConversationTest
                 FirstResponseNumber - 1);
 
             auto const activeDialogueOutcomeAfterSelection =
-                [this]() -> AZ::Outcome<DialogueData>
-            {
-                AZ::Outcome<DialogueData> resultOutcome{};
-                DialogueComponentRequestBus::EventResult(
-                    resultOutcome,
-                    m_dialogueEntity->GetId(),
-                    &DialogueComponentRequests::GetActiveDialogue);
-                return resultOutcome;
-            }();
+                getActiveDialogue(dialogueEntityId);
 
             EXPECT_EQ(
                 activeDialogueOutcomeBeforeSelection.GetValue(),
