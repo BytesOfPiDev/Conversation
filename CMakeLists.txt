@@ -1,4 +1,6 @@
 
+set(CONVERSATION_BUILD_DOCS ON CACHE BOOL "If true, builds the Conversation gem's documentation")
+
 set(gem_path ${CMAKE_CURRENT_LIST_DIR})
 set(gem_json ${gem_path}/gem.json)
 o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
@@ -12,7 +14,10 @@ include(${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_gem.cmake)
 ly_add_external_target_path(${CMAKE_CURRENT_LIST_DIR}/3rdParty)
 
 add_subdirectory(Code)
-add_subdirectory(docs)
+
+if(${CONVERSATION_BUILD_DOCS})
+  add_subdirectory(docs)
+endif()
 
 set(CONVERSATION_VERSION_MAJOR 0)
 set(CONVERSATION_VERSION_MINOR 0)

@@ -32,11 +32,3 @@ Right now, I'm mostly creating a solid prototype without worrying too much about
 I'm self-taught with no professional experience, so keep that in mind when you look at my code! After all the experimenting, there's bound to be some weird stuff in there. I would _love_ constructive feedback.
 
 I used the [MaterialCanvas](https://github.com/o3de/o3de/tree/development/Gems/Atom/Tools/MaterialCanvas) in O3DE as a base for the current version.
-
-# Usage
-
-See the [wiki](https://github.com/BytesOfPiDev/Conversation/wiki).
-
-## Conditionals
-
-Implemented, will document soon, but you can check out [PlayerGender](Assets/ConversationCanvas/GraphData/Nodes/Conditional/PlayerGender.conversationgraphnode) until then. It's just a test.
