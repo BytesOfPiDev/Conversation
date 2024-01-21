@@ -83,7 +83,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         INTERFACE
-           AZ::AzCore
+            AZ::AzCore
 )
 
 ly_add_target(
