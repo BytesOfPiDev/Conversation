@@ -20,6 +20,7 @@ namespace Conversation
         {
             serialize->Class<ConversationAssetRefComponentRequests>()->Version(
                 1);
+
             serialize
                 ->Class<
                     ConversationAssetRefComponent,

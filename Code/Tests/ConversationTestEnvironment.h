@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AzCore/Component/ComponentApplication.h"
-#include "AzCore/UnitTest/UnitTest.h"
 #include "AzTest/GemTestEnvironment.h"
 
 namespace ConversationTest

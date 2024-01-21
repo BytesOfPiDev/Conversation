@@ -18,7 +18,8 @@ namespace Conversation
     public:
         AZ_COMPONENT(
             ConversationAssetRefComponent,
-            ConversationAssetRefComponentTypeId); // NOLINT
+            ConversationAssetRefComponentTypeId,
+            ConversationAssetRefComponentRequests); // NOLINT
         AZ_DISABLE_COPY_MOVE(ConversationAssetRefComponent); // NOLINT
 
         static void Reflect(AZ::ReflectContext* context);
