@@ -240,14 +240,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     list(APPEND convTestTargets Conversation.Tests)
 
-    ly_add_target_files(
-        TARGETS
-            ${convTestTargets}
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/whatever.txt
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/Conversation
-    )
   endif()
 
   # If we are a host platform we want to add tools test like editor tests here
