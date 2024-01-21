@@ -40,6 +40,7 @@ namespace Conversation
                 ->Field("Chunk", &DialogueData::m_dialogueChunk)
                 ->Field("DialogueId", &DialogueData::m_id)
                 ->Field("ResponseIds", &DialogueData::m_responseIds)
+                ->Field("SoundAsset", &DialogueData::m_soundAsset)
                 ->Field("Speaker", &DialogueData::m_speaker);
 
             serializeContext->RegisterGenericType<DialogueDataPtr>();
@@ -89,6 +90,11 @@ namespace Conversation
                         AZ::Edit::UIHandlers::Button,
                         &DialogueData::m_id,
                         "Id",
+                        "")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &DialogueData::m_soundAsset,
+                        "Sound Asset",
                         "");
             }
         }

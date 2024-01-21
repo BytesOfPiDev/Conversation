@@ -66,6 +66,15 @@
                 },
                 "visibleOnNode": false,
                 "editableOnNode": false
+            },
+            {
+                "name": "in_soundAsset",
+                "displayName": "Sound",
+                "supportedDataTypeRegex": "sound_asset",
+                "defaultDataType": "sound_asset",
+                "defaultValue": {
+                    "$type": "{52B5A81B-FE6B-549F-B89D-59694CA08EBD} Asset<SoundAsset>"
+                }
             }
         ],
         "inputSlots": [

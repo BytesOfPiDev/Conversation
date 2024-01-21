@@ -4,7 +4,7 @@
 #include "AzCore/Name/Name.h"
 #include "AzCore/std/containers/unordered_set.h"
 #include "AzCore/std/string/string.h"
-#include "ScriptEvents/ScriptEventsAsset.h"
+#include "MiniAudio/SoundAsset.h"
 
 #include "Conversation/ConversationTypeIds.h"
 #include "Conversation/DialogueChunk.h"
@@ -19,6 +19,8 @@ namespace AZ
 namespace Conversation
 {
     using AvailabilityId = UniqueId;
+
+    using DialogueAudioAsset = AZ::Data::Asset<MiniAudio::SoundAsset>;
 
     struct DialogueData;
 
@@ -296,9 +298,17 @@ namespace Conversation
             return m_cinematicId;
         }
 
+        [[nodiscard]] auto GetSoundAsset() const -> DialogueAudioAsset
+        {
+            return m_soundAsset;
+        }
+
+        void SetSoundAsset(DialogueAudioAsset soundAsset)
+        {
+            m_soundAsset = AZStd::move(soundAsset);
+        }
+
     private:
-        // A script that is run when this dialogue is activated.
-        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> m_script{};
         DialogueChunk m_dialogueChunk{};
         AZStd::vector<UniqueId> m_responseIds{};
         AZStd::string m_shortText{};
@@ -308,6 +318,7 @@ namespace Conversation
         AZ::Name m_cinematicId{};
         // Any comments from the writers of this dialogue.
         AZStd::string m_comment{};
+        DialogueAudioAsset m_soundAsset{};
         UniqueId m_availabilityId{};
         UniqueId m_id{ UniqueId::CreateInvalidId() };
         float m_entryDelay{ DefaultEntryDelay };

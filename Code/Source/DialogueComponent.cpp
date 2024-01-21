@@ -14,6 +14,7 @@
 #include "Conversation/DialogueComponentBus.h"
 #include "Conversation/DialogueData.h"
 #include "LmbrCentral/Scripting/TagComponentBus.h"
+#include "MiniAudio/MiniAudioPlaybackBus.h"
 #include "cstdlib"
 
 #include "Conversation/AvailabilityBus.h"
@@ -338,6 +339,7 @@ namespace Conversation
         AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC_CE("ConversationAssetRefService"));
+        dependent.push_back(AZ_CRC_CE("MiniAudioService"));
     }
 
     auto DialogueComponent::TryToStartConversation(
@@ -752,6 +754,18 @@ namespace Conversation
 
     void DialogueComponent::PlayDialogueAudio() const
     {
+        if (!m_activeDialogue.has_value())
+        {
+            return;
+        }
+
+        MiniAudio::MiniAudioPlaybackRequestBus::Event(
+            GetEntityId(),
+            &MiniAudio::MiniAudioPlaybackRequests::SetSoundAsset,
+            m_activeDialogue->GetSoundAsset());
+
+        MiniAudio::MiniAudioPlaybackRequestBus::Event(
+            GetEntityId(), &MiniAudio::MiniAudioPlaybackRequests::Play);
     }
 
     void DialogueComponent::RunCinematic() const

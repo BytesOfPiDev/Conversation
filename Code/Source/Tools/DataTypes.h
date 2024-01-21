@@ -14,7 +14,8 @@ namespace ConversationEditor
         dialogue_chunk,
         speaker_tag,
         lua_snippet,
-        condition_snippet);
+        condition_snippet,
+        sound_asset);
 
     AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         NodeTypes,

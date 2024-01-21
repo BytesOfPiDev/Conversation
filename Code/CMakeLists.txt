@@ -84,6 +84,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
             AZ::AzCore
+            Gem::MiniAudio
 )
 
 ly_add_target(
@@ -102,6 +103,7 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::ScriptCanvas
             Gem::LmbrCentral
+            Gem::MiniAudio
             Legacy::CryCommon
         PRIVATE
 )

@@ -198,6 +198,10 @@ namespace ConversationEditor
                 ToTag(SlotTypes::dialogue_id),
                 Conversation::UniqueId{},
                 ToString(SlotTypes::dialogue_id)),
+            AZStd::make_shared<GraphModel::DataType>(
+                ToTag(SlotTypes::sound_asset),
+                AZ::Data::Asset<MiniAudio::SoundAsset>{},
+                ToString(SlotTypes::sound_asset)),
 
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("unique_id"),

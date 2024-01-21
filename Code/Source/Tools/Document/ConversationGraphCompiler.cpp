@@ -1081,6 +1081,9 @@ namespace ConversationEditor
                 targetNodeDataDialogue->SetChunk(
                     AZStd::any_cast<DialogueChunk>(value));
                 break;
+            case ToTag(SlotTypes::sound_asset):
+                targetNodeDataDialogue->SetSoundAsset(
+                    AZStd::any_cast<DialogueAudioAsset>(value));
             default:
                 break;
             }

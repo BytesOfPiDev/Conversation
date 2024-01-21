@@ -78,6 +78,7 @@ namespace ConversationEditor
         AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC_CE("ConversationAssetRefService"));
+        dependent.push_back(AZ_CRC_CE("MiniAudioService"));
     }
     void EditorDialogueComponent::GetRequiredServices(
         AZ::ComponentDescriptor::DependencyArrayType& required)
