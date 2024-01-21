@@ -55,7 +55,6 @@ namespace ConversationEditor
 
     private:
         AtomToolsFramework::DynamicNodeManager m_conversationEditorNodeManager;
-        AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> m_editorScriptEvents;
         AZStd::map<AZ::Crc32, AZStd::string> m_functionIdToNameMap;
     };
 } // namespace ConversationEditor

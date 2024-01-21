@@ -11,11 +11,6 @@
 #include "GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h"
 #include "GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h"
 
-#include "QApplication"
-#include "QMessageBox"
-#include "QWindow"
-#include "qnamespace.h"
-
 #include "Conversation/Constants.h"
 
 namespace ConversationEditor
@@ -54,7 +49,7 @@ namespace ConversationEditor
                 m_conversationViewport,
                 entityContext,
                 "ConversationCanvasViewportWidget",
-                "passes/lowendrenderpipeline.azasset");
+                "passes/mainrenderpipeline.azasset");
 
         auto viewportContent = AZStd::make_shared<
             AtomToolsFramework::EntityPreviewViewportContent>(
@@ -277,7 +272,7 @@ namespace ConversationEditor
     }
 
     void ConversationCanvasMainWindow::OnPreNodeDeleted(
-        AZ::EntityId const& nodeId)
+        AZ::EntityId const& /*nodeId*/)
     {
         // WARNING: Without reseting the inspector prior deleting a group node,
         // such as comments, the application will crash because the inspector is
