@@ -3,8 +3,9 @@
 #include "AzCore/Math/Crc.h"
 #include "AzCore/Preprocessor/Enum.h"
 #include "AzCore/RTTI/TypeInfoSimple.h"
+#include "AzCore/std/string/string.h"
 
-namespace ConversationEditor
+namespace ConversationCanvas
 {
     AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         SlotTypes,
@@ -15,7 +16,8 @@ namespace ConversationEditor
         speaker_tag,
         lua_snippet,
         condition_snippet,
-        sound_asset);
+        sound_asset,
+        audio_control);
 
     AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
         NodeTypes,
@@ -58,27 +60,27 @@ namespace ConversationEditor
         static_assert(AZStd::is_enum_v<T>, "The type must be an enum!");
         return AZ::Crc32(ToString(type));
     }
-} // namespace ConversationEditor
+} // namespace ConversationCanvas
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
-        ConversationEditor::NodeTypes,
+    AZ_TYPE_INFO_SPECIALIZE(
+        ConversationCanvas::NodeTypes,
         "{021346A3-C665-4577-BC4C-D540438A0813}");
 
-    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
-        ConversationEditor::GeneralSlots,
+    AZ_TYPE_INFO_SPECIALIZE(
+        ConversationCanvas::GeneralSlots,
         "{3EB468A4-96BE-48AD-A397-FC7E06D8CFA3}");
 
-    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
-        ConversationEditor::LinkNodeSlots,
+    AZ_TYPE_INFO_SPECIALIZE(
+        ConversationCanvas::LinkNodeSlots,
         "{920F43A3-71AB-4313-BA6D-4CDC3AEB848C}");
 
-    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
-        ConversationEditor::ConditionNodeSlots,
+    AZ_TYPE_INFO_SPECIALIZE(
+        ConversationCanvas::ConditionNodeSlots,
         "{F996C072-DDC3-453E-8086-16239B04514D}");
 
-    AZ_TYPE_INFO_SPECIALIZE( // NOLINT(modernize-use-trailing-return-type)
-        ConversationEditor::DialogueNodeSlots,
+    AZ_TYPE_INFO_SPECIALIZE(
+        ConversationCanvas::DialogueNodeSlots,
         "{06BDCFE5-C580-42EB-9A95-4199815F818D}");
 } // namespace AZ

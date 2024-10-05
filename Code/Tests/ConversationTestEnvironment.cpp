@@ -10,8 +10,8 @@
 #include "AzFramework/Asset/AssetSystemComponent.h"
 #include "AzFramework/Entity/GameEntityContextComponent.h"
 #include "Components/ConversationAssetRefComponent.h"
-#include "Conversation/DialogueComponent.h"
 #include "ConversationSystemComponent.h"
+#include "DialogueComponent.h"
 
 namespace ConversationTest
 {

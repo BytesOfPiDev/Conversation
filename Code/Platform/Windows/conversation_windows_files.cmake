@@ -5,4 +5,5 @@
 #      ../Include/Windows/ConversationWindows.h
 
 set(FILES
+    MaterialCanvas.rc
 )

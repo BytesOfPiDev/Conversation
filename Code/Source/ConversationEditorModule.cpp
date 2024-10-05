@@ -27,9 +27,11 @@ namespace ConversationEditor
             // through the [MyComponent]::Reflect() function.
             m_descriptors.insert(
                 m_descriptors.end(),
-                { ConversationEditorSystemComponent::CreateDescriptor(),
-                  DialogueAssetBuilderComponent::CreateDescriptor(),
-                  EditorDialogueComponent::CreateDescriptor() });
+                {
+                    EditorDialogueComponent::CreateDescriptor(),
+                    ConversationEditorSystemComponent::CreateDescriptor(),
+                    DialogueAssetBuilderComponent::CreateDescriptor(),
+                });
         }
 
         /**

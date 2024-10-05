@@ -5,7 +5,7 @@
 
 #include "Tools/Document/NodeRequestBus.h"
 
-namespace ConversationEditor
+namespace ConversationCanvas
 {
     /**
      * Represents a link to a dialogue node within the graph.
@@ -23,10 +23,10 @@ namespace ConversationEditor
         , public NodeRequestBus::Handler
     {
     public:
-        AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
-        AZ_TYPE_INFO_WITH_NAME_DECL(LinkNode); // NOLINT
-        AZ_CLASS_ALLOCATOR_DECL; // NOLINT
-        AZ_DISABLE_COPY_MOVE(LinkNode); // NOLINT
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_TYPE_INFO_WITH_NAME_DECL(LinkNode);
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_DISABLE_COPY_MOVE(LinkNode);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -45,6 +45,6 @@ namespace ConversationEditor
         void PostLoadSetup() override;
         void RegisterSlots() override;
 
-        void UpdateNodeData(NodeData& nodeData) const override;
+        void UpdateNodeData(DialogueNodeData& nodeData) const override;
     };
-} // namespace ConversationEditor
+} // namespace ConversationCanvas

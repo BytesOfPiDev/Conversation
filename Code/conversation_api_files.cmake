@@ -8,7 +8,6 @@ set(FILES
     Include/Conversation/DialogueData.h
     Include/Conversation/ConversationAsset.h
     Include/Conversation/ConversationTypeIds.h
-    Include/Conversation/DialogueComponent.h
     Include/Conversation/DialogueComponentBus.h
     Include/Conversation/DialogueScript.h
     Include/Conversation/IConversationAsset.h

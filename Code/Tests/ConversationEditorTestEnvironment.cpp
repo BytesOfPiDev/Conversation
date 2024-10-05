@@ -8,8 +8,8 @@
 #include "AzFramework/Asset/AssetSystemComponent.h"
 #include "AzFramework/Entity/GameEntityContextComponent.h"
 
-#include "Conversation/DialogueComponent.h"
 #include "ConversationEditorSystemComponent.h"
+#include "DialogueComponent.h"
 
 namespace ConversationEditorTest
 {

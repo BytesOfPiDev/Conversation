@@ -4,7 +4,7 @@
 #include "Conversation/DialogueData.h"
 #include "GraphModel/Model/Node.h"
 
-namespace ConversationEditor
+namespace ConversationCanvas
 {
     struct LinkData
     {
@@ -18,11 +18,11 @@ namespace ConversationEditor
         GraphModel::ConstNodePtr m_to;
     };
 
-    struct NodeData
+    struct DialogueNodeData
     {
         AZStd::optional<Conversation::DialogueData> m_dialogue;
         AZStd::vector<AZ::Name> m_conditions;
         AZStd::vector<Conversation::UniqueId> m_responseIds;
         LinkData m_linkData;
     };
-} // namespace ConversationEditor
+} // namespace ConversationCanvas

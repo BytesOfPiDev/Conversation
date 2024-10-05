@@ -1,7 +1,6 @@
-#include "Conversation/DialogueComponent.h"
+#include "DialogueComponent.h"
 
 #include "AzCore/Asset/AssetCommon.h"
-#include "AzCore/Asset/AssetSerializer.h"
 #include "AzCore/Component/Component.h"
 #include "AzCore/Component/Entity.h"
 #include "AzCore/Debug/Trace.h"
@@ -9,19 +8,18 @@
 #include "AzCore/RTTI/RTTIMacros.h"
 #include "AzCore/Script/ScriptContextAttributes.h"
 #include "AzCore/Serialization/SerializeContext.h"
-#include "Conversation/Components/ConversationAssetRefComponentBus.h"
-#include "Conversation/ConversationTypeIds.h"
-#include "Conversation/DialogueComponentBus.h"
-#include "Conversation/DialogueData.h"
+#include "LmbrCentral/Audio/AudioSystemComponentBus.h"
 #include "LmbrCentral/Scripting/TagComponentBus.h"
-#include "MiniAudio/MiniAudioPlaybackBus.h"
-#include "cstdlib"
 
 #include "Conversation/AvailabilityBus.h"
 #include "Conversation/CinematicBus.h"
+#include "Conversation/Components/ConversationAssetRefComponentBus.h"
 #include "Conversation/Components/DialogueComponentConfig.h"
 #include "Conversation/Constants.h"
 #include "Conversation/ConversationAsset.h"
+#include "Conversation/ConversationTypeIds.h"
+#include "Conversation/DialogueComponentBus.h"
+#include "Conversation/DialogueData.h"
 #include "Conversation/DialogueScript.h"
 #include "Logging.h"
 
@@ -575,8 +573,9 @@ namespace Conversation
 
         AZLOG( // NOLINT
             LOG_FollowConversation,
-            "[Dialogue: '%s'] \"%s\"",
+            "[Dialogue: '%s'/%s] \"%s\"",
             GetNamedEntityId().GetName().data(),
+            m_activeDialogue->GetSpeaker().data(),
             m_activeDialogue->GetShortText().data());
     }
 
@@ -754,18 +753,16 @@ namespace Conversation
 
     void DialogueComponent::PlayDialogueAudio() const
     {
-        if (!m_activeDialogue.has_value())
+        // TODO: Use AudioTriggerComponentBus instead.
+        if (m_activeDialogue.has_value() &&
+            !m_activeDialogue->GetAudioControl().IsEmpty())
         {
-            return;
+            LmbrCentral::AudioSystemComponentRequestBus::Broadcast(
+                &LmbrCentral::AudioSystemComponentRequests::
+                    GlobalExecuteAudioTrigger,
+                m_activeDialogue->GetAudioControl().GetName().data(),
+                GetEntityId());
         }
-
-        MiniAudio::MiniAudioPlaybackRequestBus::Event(
-            GetEntityId(),
-            &MiniAudio::MiniAudioPlaybackRequests::SetSoundAsset,
-            m_activeDialogue->GetSoundAsset());
-
-        MiniAudio::MiniAudioPlaybackRequestBus::Event(
-            GetEntityId(), &MiniAudio::MiniAudioPlaybackRequests::Play);
     }
 
     void DialogueComponent::RunCinematic() const

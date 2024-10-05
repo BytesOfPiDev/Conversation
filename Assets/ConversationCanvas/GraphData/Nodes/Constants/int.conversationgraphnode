@@ -3,10 +3,13 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{96F5DD02-8536-4CFF-A2A3-3DE58034698D}",
+        "id": "{7D248D1E-47F1-40EB-A502-4B26A033C0AC}",
         "category": "Constants",
         "title": "Int Constant",
         "titlePaletteName": "ConstantNodeTitlePalette",
+        "slotDataTypeGroups": [
+            "inValue|outValue"
+        ],
         "propertySlots": [
             {
                 "name": "inValue",
@@ -14,9 +17,10 @@
                 "description": "Value",
                 "supportedDataTypeRegex": "int",
                 "defaultDataType": "int",
-                "defaultValue": {
-                    "$type": "int",
-                    "Value": 0
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
                 }
             }
         ],
@@ -24,15 +28,12 @@
             {
                 "name": "outValue",
                 "displayName": "Value",
+                "description": "Value",
                 "supportedDataTypeRegex": "int",
                 "defaultDataType": "int",
-                "defaultValue": {
-                    "$type": "int",
-                    "Value": 0
-                },
                 "settings": {
                     "instructions": [
-                        "local SLOTNAME = SLOTVALUE(inValue);"
+                        "SLOTTYPE SLOTNAME = inValue;"
                     ]
                 }
             }

@@ -1,9 +1,17 @@
-#include "Tools/ConversationCanvasApplication.h"
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root
+ * of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
+#include "ConversationCanvasApplication.h"
+
+#include "Atom/RPI.Reflect/Image/StreamingImageAsset.h"
 #include "AtomToolsFramework/Document/AtomToolsAnyDocument.h"
-#include "AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h"
 #include "AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h"
-#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h"
 #include "AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h"
 #include "AtomToolsFramework/Graph/GraphDocument.h"
 #include "AtomToolsFramework/Graph/GraphDocumentView.h"
@@ -13,21 +21,20 @@
 #include "AzCore/Math/Vector3.h"
 #include "AzCore/Math/Vector4.h"
 #include "AzCore/RTTI/RTTI.h"
-#include "AzCore/RTTI/RTTIMacros.h"
-#include "AzCore/Script/ScriptAsset.h"
-#include "Conversation/DialogueData.h"
-#include "Conversation/UniqueId.h"
-#include "GraphModel/Integration/NodePalette/StandardNodePaletteItem.h"
+#include "AzCore/std/smart_ptr/make_shared.h"
 #include "GraphModel/Model/DataType.h"
 
-#include "Conversation/Constants.h"
-#include "Tools/ConversationGraphContext.h"
-#include "Tools/DataTypes.h"
-#include "Tools/Document/ConversationGraphCompiler.h"
-#include "Tools/Window/ConversationCanvasMainWindow.h"
-
-#include "QLabel"
+#include "Conversation/DialogueChunk.h"
+#include "Conversation/UniqueId.h"
+#include "DataTypes.h"
+#include "Document/ConversationGraphCompiler.h"
+#include "GraphModel/Integration/NodePalette/StandardNodePaletteItem.h"
+#include "Tools/Common.h"
+#include "Tools/Document/NodeRequestBus.h"
 #include "Tools/Window/Nodes/Link.h"
+#include "Window/ConversationCanvasMainWindow.h"
+
+#include <QLabel>
 
 void InitConversationCanvasResources()
 {
@@ -38,14 +45,13 @@ void InitConversationCanvasResources()
     Q_INIT_RESOURCE(GraphView);
 }
 
-namespace ConversationEditor
+namespace ConversationCanvas
 {
-
-    static auto GetBuildTargetName() -> char const*
+    static char const* GetBuildTargetName()
     {
 #if !defined(LY_CMAKE_TARGET)
 #error                                                                         \
-    "LY_CMAKE_TARGET must be defined in order to add this source file to a cmake executable target."
+    "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
 #endif
         return LY_CMAKE_TARGET;
     }
@@ -57,10 +63,8 @@ namespace ConversationEditor
         InitConversationCanvasResources();
 
         QApplication::setOrganizationName("Bytes of Pi");
-        QApplication::setApplicationName(
-            "O3DE Conversation Canvas (prototype)");
-        QApplication::setWindowIcon(
-            QIcon(":/ConversationCanvas/toolbar_icon.svg"));
+        QApplication::setApplicationName("O3DE Conversation Canvas");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
         AZ::RHI::FactoryManagerNotificationBus::Handler::BusConnect();
@@ -70,11 +74,10 @@ namespace ConversationEditor
 
     ConversationCanvasApplication::~ConversationCanvasApplication()
     {
-        AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::
             BusDisconnect(m_toolId);
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         AZ::RHI::FactoryManagerNotificationBus::Handler::BusDisconnect();
-
         m_window.reset();
     }
 
@@ -82,10 +85,9 @@ namespace ConversationEditor
     {
         Base::Reflect(context);
         ConversationGraphCompiler::Reflect(context);
-
         GraphModelIntegration::ReflectAndCreateNodeMimeEvent<LinkNode>(context);
 
-        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->RegisterGenericType<AZStd::array<AZ::Vector2, 2>>();
             serialize->RegisterGenericType<AZStd::array<AZ::Vector3, 3>>();
@@ -96,8 +98,8 @@ namespace ConversationEditor
         }
     }
 
-    auto ConversationCanvasApplication::GetCurrentConfigurationName() const
-        -> char const*
+    char const* ConversationCanvasApplication::GetCurrentConfigurationName()
+        const
     {
 #if defined(_RELEASE)
         return "ReleaseConversationCanvas";
@@ -118,7 +120,6 @@ namespace ConversationEditor
         InitGraphViewSettings();
         InitConversationGraphDocumentType();
         InitConversationGraphNodeDocumentType();
-        InitDialogueSourceDataDocumentType();
         InitMainWindow();
         InitDefaultDocument();
     }
@@ -132,7 +133,6 @@ namespace ConversationEditor
 
         m_graphViewSettingsPtr.reset();
         m_window.reset();
-        m_viewportSettingsSystem.reset();
         m_graphContext.reset();
         m_graphTemplateFileDataCache.reset();
         m_dynamicNodeManager.reset();
@@ -140,8 +140,8 @@ namespace ConversationEditor
         Base::Destroy();
     }
 
-    auto ConversationCanvasApplication::GetCriticalAssetFilters() const
-        -> AZStd::vector<AZStd::string>
+    AZStd::vector<AZStd::string> ConversationCanvasApplication::
+        GetCriticalAssetFilters() const
     {
         return AZStd::vector<AZStd::string>(
             { "passes/", "config/", "ConversationCanvas/" });
@@ -176,6 +176,48 @@ namespace ConversationEditor
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("float"), float{}, "float"),
             AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("float2"), AZ::Vector2{}, "float2"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("float3"), AZ::Vector3{}, "float3"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("float4"), AZ::Vector4{}, "float4"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("float2x2"),
+                AZStd::array<AZ::Vector2, 2>{ AZ::Vector2(1.0f, 0.0f),
+                                              AZ::Vector2(0.0f, 1.0f) },
+                "float2x2"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("float3x3"),
+                AZStd::array<AZ::Vector3, 3>{ AZ::Vector3(1.0f, 0.0f, 0.0f),
+                                              AZ::Vector3(0.0f, 1.0f, 0.0f),
+                                              AZ::Vector3(0.0f, 0.0f, 1.0f) },
+                "float3x3"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("float4x3"),
+                AZStd::array<AZ::Vector4, 3>{
+                    AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+                    AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+                    AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f) },
+                "float4x3"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("float4x4"),
+                AZStd::array<AZ::Vector4, 4>{
+                    AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+                    AZ::Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+                    AZ::Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+                    AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f) },
+                "float4x4"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("string"), AZStd::string{}, "string"),
+            AZStd::make_shared<GraphModel::DataType>(
+                AZ_CRC_CE("image"),
+                AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{
+                    AZ::Data::AssetLoadBehavior::NoLoad },
+                "image"),
+
+            AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("string"), AZStd::string{}, "string"),
 
             AZStd::make_shared<GraphModel::DataType>(
@@ -198,10 +240,6 @@ namespace ConversationEditor
                 ToTag(SlotTypes::dialogue_id),
                 Conversation::UniqueId{},
                 ToString(SlotTypes::dialogue_id)),
-            AZStd::make_shared<GraphModel::DataType>(
-                ToTag(SlotTypes::sound_asset),
-                AZ::Data::Asset<MiniAudio::SoundAsset>{},
-                ToString(SlotTypes::sound_asset)),
 
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("unique_id"),
@@ -212,6 +250,12 @@ namespace ConversationEditor
 
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("crc32"), AZ::Crc32{}, "crc32"),
+
+            AZStd::make_shared<GraphModel::DataType>(
+                ToTag(SlotTypes::audio_control),
+                Conversation::DialogueAudioControl{},
+                ToString(SlotTypes::audio_control)),
+
         });
 
         // Search the project and gems for dynamic node configurations and
@@ -238,7 +282,70 @@ namespace ConversationEditor
         m_dynamicNodeManager->RegisterEditDataForSetting(
             "functionDefinitions", editData);
         m_dynamicNodeManager->RegisterEditDataForSetting(
+            "conversationPropertyMember", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "conversationPropertyDescription", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting(
             "conditionInstructions", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::LineEdit;
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "conversationPropertyName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "conversationPropertyDisplayName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "conversationPropertyConnectionName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "conversationPropertyGroupName", editData);
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "conversationPropertyGroup", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
+        AtomToolsFramework::AddEditDataAttribute(
+            editData,
+            AZ::Edit::Attributes::StringList,
+            AZStd::vector<AZStd::string>{ "", "0", "1", "2", "3", "4" });
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "conversationPropertyMinVectorSize", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
+        AtomToolsFramework::AddEditDataAttribute(
+            editData,
+            AZ::Edit::Attributes::StringList,
+            AZStd::vector<AZStd::string>{ "None",
+                                          "ScriptInput",
+                                          "ScriptOption",
+                                          "ScriptEnabled",
+                                          "InternalProperty",
+                                          "" });
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "conversationPropertyConnectionType", editData);
+
+        editData = {};
+        editData.m_elementId = AZ_CRC_CE("StringFilePath");
+        AtomToolsFramework::AddEditDataAttribute(
+            editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
+        AtomToolsFramework::AddEditDataAttribute(
+            editData,
+            AZ_CRC_CE("Extensions"),
+            AZStd::vector<AZStd::string>{
+                "azsl", "azsli", "material", "materialtype", "shader" });
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "templatePaths", editData);
+
+        editData = {};
+        editData.m_elementId = AZ_CRC_CE("StringFilePath");
+        AtomToolsFramework::AddEditDataAttribute(
+            editData, AZ_CRC_CE("Title"), AZStd::string("Include File"));
+        AtomToolsFramework::AddEditDataAttribute(
+            editData,
+            AZ_CRC_CE("Extensions"),
+            AZStd::vector<AZStd::string>{ "azsli" });
+        m_dynamicNodeManager->RegisterEditDataForSetting(
+            "includePaths", editData);
 
         editData = {};
         editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
@@ -276,10 +383,10 @@ namespace ConversationEditor
     {
         // Each graph document creates its own graph context but we want to use
         // a shared graph context instead to avoid data duplication
-        m_graphContext =
-            AZStd::make_shared<ConversationEditor::ConversationGraphContext>(
-                m_dynamicNodeManager->GetRegisteredDataTypes());
-
+        m_graphContext = AZStd::make_shared<GraphModel::GraphContext>(
+            "Conversation Graph",
+            ".conversationgraph",
+            m_dynamicNodeManager->GetRegisteredDataTypes());
         m_graphContext->CreateModuleGraphManager();
     }
 
@@ -312,7 +419,7 @@ namespace ConversationEditor
                 &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::
                     CreateNodePaletteTree);
 
-            auto coreNode =
+            auto* const coreNode =
                 rootTreeItem->CreateChildNode<GraphCanvas::NodePaletteTreeItem>(
                     "Core", toolId);
 
@@ -326,21 +433,31 @@ namespace ConversationEditor
         // Initialize the default group preset names and colors needed by the
         // graph canvas view to create node groups.
         AZStd::map<AZStd::string, AZ::Color> const defaultGroupPresets =
-            AZStd::map<AZStd::string, AZ::Color>{
-                { "Logic", AZ::Color(0.188f, 0.972f, 0.243f, 1.0f) },
-                { "Function", AZ::Color(0.396f, 0.788f, 0.788f, 1.0f) },
-                { "Output", AZ::Color(0.866f, 0.498f, 0.427f, 1.0f) },
-                { "Input", AZ::Color(0.396f, 0.788f, 0.549f, 1.0f) }
-            };
+            AtomToolsFramework::GetSettingsObject(
+                "/O3DE/Atom/GraphView/DefaultGroupPresets",
+                AZStd::map<AZStd::string, AZ::Color>{
+                    { "Logic", AZ::Color(0.188f, 0.972f, 0.243f, 1.0f) },
+                    { "Function", AZ::Color(0.396f, 0.788f, 0.788f, 1.0f) },
+                    { "Output", AZ::Color(0.866f, 0.498f, 0.427f, 1.0f) },
+                    { "Input", AZ::Color(0.396f, 0.788f, 0.549f, 1.0f) } });
 
         // Connect the graph view settings to the required buses so that they
         // can be accessed throughout the application.
         m_graphViewSettingsPtr->Initialize(m_toolId, defaultGroupPresets);
     }
+
     void ConversationCanvasApplication::InitConversationGraphDocumentType()
     {
+        // Initialize system to asynchronously report material and shader
+        // related asset processing status for open documents
+        m_assetStatusReporterSystem =
+            AZStd::make_unique<AtomToolsFramework::AssetStatusReporterSystem>(
+                m_toolId);
+
+        // Initialize system to load and store material graph template files and
+        // only reload them if modified
         m_graphTemplateFileDataCache =
-            AZStd::make_shared<AtomToolsFramework::GraphTemplateFileDataCache>(
+            AZStd::make_unique<AtomToolsFramework::GraphTemplateFileDataCache>(
                 m_toolId);
 
         // Acquiring default Conversation Canvas document type info so that it
@@ -370,7 +487,6 @@ namespace ConversationEditor
         {
             m_window->AddDocumentTab(
                 documentId,
-                // NOLINTNEXTLINE(*-owning-memory)
                 aznew AtomToolsFramework::GraphDocumentView(
                     toolId,
                     documentId,
@@ -408,7 +524,8 @@ namespace ConversationEditor
         {
             auto viewWidget = new QLabel(
                 "Conversation Graph Node Config properties can be edited in "
-                "the inspector.",
+                "the "
+                "inspector.",
                 m_window.get());
             viewWidget->setAlignment(Qt::AlignCenter);
             return m_window->AddDocumentTab(documentId, viewWidget);
@@ -420,18 +537,14 @@ namespace ConversationEditor
                 RegisterDocumentType,
             documentTypeInfo);
     }
-    void ConversationCanvasApplication::InitDialogueSourceDataDocumentType()
-    {
-    }
+
     void ConversationCanvasApplication::InitMainWindow()
     {
-        m_viewportSettingsSystem = AZStd::make_unique<
-            AtomToolsFramework::EntityPreviewViewportSettingsSystem>(m_toolId);
-
-        m_window = AZStd::make_unique<ConversationCanvasMainWindow>(
-            m_toolId, m_graphViewSettingsPtr);
+        m_window.reset(aznew ConversationCanvasMainWindow(
+            m_toolId, m_graphViewSettingsPtr));
         m_window->show();
     }
+
     void ConversationCanvasApplication::InitDefaultDocument()
     {
         // Create an untitled, empty graph document as soon as the application
@@ -456,4 +569,4 @@ namespace ConversationEditor
         }
     }
 
-} // namespace ConversationEditor
+} // namespace ConversationCanvas

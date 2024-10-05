@@ -1,6 +1,5 @@
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Asset/AssetManager.h"
-#include "AzCore/Asset/AssetManagerBus.h"
 #include "AzCore/Component/Component.h"
 #include "AzCore/Component/Entity.h"
 #include "AzCore/RTTI/RTTIMacros.h"
@@ -12,11 +11,11 @@
 #include "Conversation/Components/DialogueComponentConfig.h"
 #include "Conversation/ConversationAsset.h"
 #include "Conversation/ConversationTypeIds.h"
-#include "Conversation/DialogueComponent.h"
 #include "Conversation/DialogueComponentBus.h"
 #include "Conversation/DialogueData.h"
 #include "Conversation/UniqueId.h"
 #include "ConversationTestEnvironment.h"
+#include "DialogueComponent.h"
 #include "DialogueComponentTestBase.h"
 
 namespace ConversationTest

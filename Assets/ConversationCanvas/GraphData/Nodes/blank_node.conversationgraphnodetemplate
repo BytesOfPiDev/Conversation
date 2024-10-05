@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Default",
-        "titlePaletteName": "DefaultNodeTitlePalette"
+        "category": "Default"
     }
 }
