@@ -210,7 +210,7 @@ namespace ConversationEditor
         AZ_Info( // NOLINT
             "ConversationCanvas",
             "Launching Conversation Canvas (prototype)");
-        AtomToolsFramework::LaunchTool("ConversationCanvas", arguments);
+        AtomToolsFramework::LaunchTool("Conversation.App", arguments);
     }
 
 } // namespace ConversationEditor

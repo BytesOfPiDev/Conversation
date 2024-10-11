@@ -1,28 +1,27 @@
 #include "Tools/Window/Nodes/Link.h"
 
+#include "AtomToolsFramework/Graph/GraphCompiler.h"
+#include "AzCore/Console/ILogger.h"
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/Serialization/EditContext.h"
 #include "AzCore/Serialization/SerializeContext.h"
 #include "AzCore/std/smart_ptr/make_shared.h"
 #include "AzCore/std/string/string.h"
-#include "Conversation/ConversationTypeIds.h"
 #include "GraphModel/Integration/Helpers.h"
 #include "GraphModel/Model/Common.h"
 #include "GraphModel/Model/Connection.h"
 #include "GraphModel/Model/Slot.h"
 
 #include "Conversation/DialogueData.h"
+#include "Tools/ConversationCanvasTypeIds.h"
 #include "Tools/DataTypes.h"
 #include "Tools/Document/NodeRequestBus.h"
 
-namespace ConversationEditor
+namespace ConversationCanvas
 {
-    AZ_RTTI_NO_TYPE_INFO_IMPL( // NOLINT(modernize-use-trailing-return-type)
-        LinkNode,
-        GraphModel::Node,
-        NodeRequests);
-    AZ_TYPE_INFO_WITH_NAME_IMPL(LinkNode, "LinkNode", LinkNodeTypeId); // NOLINT
-    AZ_CLASS_ALLOCATOR_IMPL(LinkNode, AZ::SystemAllocator); // NOLINT
+    AZ_RTTI_NO_TYPE_INFO_IMPL(LinkNode, GraphModel::Node, NodeRequests);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(LinkNode, "LinkNode", LinkNodeTypeId);
+    AZ_CLASS_ALLOCATOR_IMPL(LinkNode, AZ::SystemAllocator);
 
     LinkNode::LinkNode(GraphModel::GraphPtr graph)
         : GraphModel::Node(AZStd::move(graph))
@@ -110,8 +109,13 @@ namespace ConversationEditor
         RegisterSlot(AZStd::move(to));
     }
 
-    void LinkNode::UpdateNodeData(NodeData& nodeData) const
+    void LinkNode::UpdateNodeData(DialogueNodeData& nodeData) const
     {
+        if (AtomToolsFramework::GraphCompiler::IsCompileLoggingEnabled())
+        {
+            AZLOG_INFO("Updating link node...");
+        }
+
         auto const fromSlot = GetSlot(ToString(LinkNodeSlots::in_from));
 
         auto toSlot = GetSlot(ToString(LinkNodeSlots::in_to));
@@ -157,8 +161,7 @@ namespace ConversationEditor
             // The source should not be us, we should be the target
             if (toSlotConnection->GetSourceNode().get() == thisNode)
             {
-                AZ_Error( // NOLINT(*-pro-type-vararg,
-                          // *-bounds-array-to-pointer-decay)
+                AZ_Error(
                     "LinkNode",
                     false,
                     "Invalid slot configuration. The source node should not be "
@@ -172,6 +175,7 @@ namespace ConversationEditor
 
         if (!fromSlotConnection || !toSlotConnection)
         {
+            AZLOG_WARN("Link node slot connection issue");
             return;
         }
 
@@ -179,4 +183,4 @@ namespace ConversationEditor
         nodeData.m_linkData.m_to = toSlotConnection->GetSourceNode();
     }
 
-} // namespace ConversationEditor
+} // namespace ConversationCanvas

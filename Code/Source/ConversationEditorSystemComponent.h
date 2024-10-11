@@ -26,8 +26,8 @@ namespace ConversationEditor
         AZ_COMPONENT(
             ConversationEditorSystemComponent,
             ConversationEditorSystemComponentTypeId,
-            BaseSystemComponent); // NOLINT
-        AZ_DISABLE_COPY_MOVE(ConversationEditorSystemComponent); // NOLINT
+            BaseSystemComponent);
+        AZ_DISABLE_COPY_MOVE(ConversationEditorSystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 

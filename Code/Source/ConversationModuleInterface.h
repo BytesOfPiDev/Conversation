@@ -2,8 +2,8 @@
 #include "AzCore/Module/Module.h"
 
 #include "Components/ConversationAssetRefComponent.h"
-#include "Conversation/DialogueComponent.h"
 #include "ConversationSystemComponent.h"
+#include "DialogueComponent.h"
 
 namespace Conversation
 {
@@ -13,9 +13,8 @@ namespace Conversation
         AZ_RTTI(
             ConversationModuleInterface,
             "{ABF1988A-779A-458A-B8D3-71864F4C66FC}",
-            AZ::Module); // NOLINT
-        AZ_CLASS_ALLOCATOR(
-            ConversationModuleInterface, AZ::SystemAllocator, 0); // NOLINT
+            AZ::Module);
+        AZ_CLASS_ALLOCATOR(ConversationModuleInterface, AZ::SystemAllocator, 0);
 
         ConversationModuleInterface()
         {

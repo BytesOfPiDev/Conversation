@@ -1,7 +1,9 @@
 [Bb]uild/
 [Cc]ache/
 [Uu]ser/
-.cache/
+
+.cache
+compile_commands.json
 
 docs/Doxyfile
 

@@ -28,8 +28,8 @@ namespace Conversation
         , public DialogueComponentRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(DialogueComponent, DialogueComponentTypeId); // NOLINT
-        AZ_DISABLE_COPY_MOVE(DialogueComponent); // NOLINT
+        AZ_COMPONENT(DialogueComponent, DialogueComponentTypeId);
+        AZ_DISABLE_COPY_MOVE(DialogueComponent);
 
         DialogueComponent() = default;
         ~DialogueComponent() override = default;
@@ -112,6 +112,7 @@ namespace Conversation
         AZStd::optional<DialogueData> m_activeDialogue;
         // Available responses to the active dialogue
         AZStd::vector<DialogueData> m_availableResponses;
+        AZ::Data::AssetId m_dialogueAssetIds;
     };
 
 } // namespace Conversation

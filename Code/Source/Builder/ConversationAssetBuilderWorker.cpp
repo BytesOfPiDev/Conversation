@@ -84,6 +84,8 @@ namespace ConversationEditor
                 AssetBuilderSDK::ErrorWindow,
                 "Job failed. Unsupported job key: '%s'\n",
                 request.m_jobDescription.m_jobKey.c_str());
+
+            return;
         }
         // This is the most basic example of handling for cancellation requests.
         // If possible, you should listen for cancellation requests and then

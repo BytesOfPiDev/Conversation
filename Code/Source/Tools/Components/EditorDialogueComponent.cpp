@@ -11,11 +11,10 @@
 #include "ToolsComponents/EditorComponentBase.h"
 #include "cstdlib"
 
-#include "Conversation/DialogueComponent.h"
+#include "DialogueComponent.h"
 
 namespace ConversationEditor
 {
-
     void EditorDialogueComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))

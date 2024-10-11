@@ -1,19 +1,15 @@
 #include "Tools/Window/ConversationCanvasMainWindow.h"
 
 #include "AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h"
-#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h"
-#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportInputController.h"
-#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h"
-#include "AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h"
-#include "AtomToolsFramework/Graph/GraphDocumentRequestBus.h"
 #include "AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h"
+#include "AzCore/IO/FileIO.h"
 #include "AzQtComponents/Components/StyleManager.h"
 #include "GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h"
 #include "GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h"
 
-#include "Conversation/Constants.h"
+#include "Tools/Common.h"
 
-namespace ConversationEditor
+namespace ConversationCanvas
 {
     using GraphCanvas::NodePaletteConfig;
 
@@ -26,60 +22,12 @@ namespace ConversationEditor
         , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
     {
         m_documentInspector =
-            new AtomToolsFramework::AtomToolsDocumentInspector(
-                m_toolId, this); // NOLINT
+            new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix(
             ConversationCanvasSettingsDocumentInspectorKey);
         AddDockWidget(
             "Inspector", m_documentInspector, Qt::RightDockWidgetArea);
 
-        m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(
-            m_toolId, this); // NOLINT
-
-        m_conversationViewport =
-            new AtomToolsFramework::EntityPreviewViewportWidget(
-                m_toolId, this); // NOLINT
-
-        auto entityContext = AZStd::make_shared<AzFramework::EntityContext>();
-        entityContext->InitContext();
-
-        auto viewportScene =
-            AZStd::make_shared<AtomToolsFramework::EntityPreviewViewportScene>(
-                m_toolId,
-                m_conversationViewport,
-                entityContext,
-                "ConversationCanvasViewportWidget",
-                "passes/mainrenderpipeline.azasset");
-
-        auto viewportContent = AZStd::make_shared<
-            AtomToolsFramework::EntityPreviewViewportContent>(
-            m_toolId, m_conversationViewport, entityContext);
-
-        auto viewportController = AZStd::make_shared<
-            AtomToolsFramework::EntityPreviewViewportInputController>(
-            m_toolId, m_conversationViewport, viewportContent);
-
-        m_conversationViewport->Init(
-            entityContext, viewportScene, viewportContent, viewportController);
-
-        auto* viewPortAndToolbar = new QWidget(this); // NOLINT
-        viewPortAndToolbar->setLayout(
-            new QVBoxLayout(viewPortAndToolbar)); // NOLINT
-        viewPortAndToolbar->layout()->setContentsMargins(0, 0, 0, 0);
-        viewPortAndToolbar->layout()->setMargin(0);
-        viewPortAndToolbar->layout()->setSpacing(0);
-        viewPortAndToolbar->layout()->addWidget(m_toolBar);
-        viewPortAndToolbar->layout()->addWidget(m_conversationViewport);
-
-        AddDockWidget("Viewport", viewPortAndToolbar, Qt::BottomDockWidgetArea);
-
-        m_viewportSettingsInspector =
-            new AtomToolsFramework::EntityPreviewViewportSettingsInspector(
-                m_toolId, this);
-        AddDockWidget(
-            "Viewport Settings",
-            m_viewportSettingsInspector,
-            Qt::LeftDockWidgetArea);
         SetDockWidgetVisible("Viewport Settings", false);
 
         m_bookmarkDockWidget =
@@ -142,77 +90,10 @@ namespace ConversationEditor
     }
 
     void ConversationCanvasMainWindow::OnDocumentOpened(
-        AZ::Uuid const& documentId)
+        const AZ::Uuid& documentId)
     {
         Base::OnDocumentOpened(documentId);
-        m_documentInspector ? m_documentInspector->SetDocumentId(documentId)
-                            : void();
-
-        // Disconnect to ensure we aren't currently connected to anything, since
-        // we'll be called multiple times.
-        GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
-
-        GraphCanvas::GraphId const openedDocumentGraphId =
-            [&documentId]() -> auto
-        {
-            GraphCanvas::GraphId result{};
-            AtomToolsFramework::GraphDocumentRequestBus::EventResult(
-                result,
-                documentId,
-                &AtomToolsFramework::GraphDocumentRequests::GetGraphId);
-            return result;
-        }();
-
-        if (openedDocumentGraphId.IsValid())
-        {
-            // WARNING: We must be connected to GraphCanvas'
-            // SceneNotificationBus so OnPreNodeDeleted gets called.
-            GraphCanvas::SceneNotificationBus::Handler::BusConnect(
-                openedDocumentGraphId);
-        }
-    }
-
-    void ConversationCanvasMainWindow::ResizeViewportRenderTarget(
-        AZ::u32 width, AZ::u32 height)
-    {
-        QSize requestedViewportSize =
-            QSize(width, height) / devicePixelRatioF();
-        QSize currentViewportSize = m_conversationViewport->size();
-        QSize offset = requestedViewportSize - currentViewportSize;
-        QSize requestedWindowSize = size() + offset;
-        resize(requestedWindowSize);
-
-        AZ_Assert(
-            m_conversationViewport->size() == requestedViewportSize,
-            "Resizing the window did not give the expected viewport size. "
-            "Requested %d x %d but got %d x %d.",
-            requestedViewportSize.width(),
-            requestedViewportSize.height(),
-            m_conversationViewport->size().width(),
-            m_conversationViewport->size().height());
-
-        [[maybe_unused]] QSize newDeviceSize = m_conversationViewport->size();
-        AZ_Warning(
-            "Conversation Canvas",
-            static_cast<uint32_t>(newDeviceSize.width()) == width &&
-                static_cast<uint32_t>(newDeviceSize.height()) == height,
-            "Resizing the window did not give the expected frame size. "
-            "Requested %d x %d but got %d x %d.",
-            width,
-            height,
-            newDeviceSize.width(),
-            newDeviceSize.height());
-    }
-
-    void ConversationCanvasMainWindow::LockViewportRenderTargetSize(
-        AZ::u32 width, AZ::u32 height)
-    {
-        m_conversationViewport->LockRenderTargetSize(width, height);
-    }
-
-    void ConversationCanvasMainWindow::UnlockViewportRenderTargetSize()
-    {
-        m_conversationViewport->UnlockRenderTargetSize();
+        m_documentInspector->SetDocumentId(documentId);
     }
 
     void ConversationCanvasMainWindow::PopulateSettingsInspector(
@@ -224,15 +105,27 @@ namespace ConversationEditor
                 "Conversation Canvas Settings",
                 {
                     AtomToolsFramework::CreateSettingsPropertyValue(
-                        ConversationCanvasSettingsEnablePreviewKey,
-                        "Enable Preview Functionality",
-                        "Just testing.",
+                        "/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging",
+                        "Enable Compiler Logging",
+                        "Toggle verbose logging for material graph generation.",
                         false),
+                    AtomToolsFramework::CreateSettingsPropertyValue(
+                        Settings::FormatLua,
+                        "Run stylua (experimental)",
+                        "If true, stylua is run on @devassets@/Conversions to "
+                        "format the lua files",
+                        false),
+                    AtomToolsFramework::CreateSettingsPropertyValue(
+                        Settings::LuaFormatter,
+                        "Path to stylua",
+                        "The full path, including the executable name, to the "
+                        "stylua",
+                        AZStd::string{ "stylua" }),
                     AtomToolsFramework::CreateSettingsPropertyValue(
                         ConversationCanvasSettingsForceDeleteGeneratedFilesKey,
                         "Force Delete Generated Files",
                         "Delete all files in generated folder after compiling.",
-                        false),
+                        ""),
 
                 });
 
@@ -240,7 +133,7 @@ namespace ConversationEditor
             m_conversationCanvasCompileSettingsGroup->m_name,
             m_conversationCanvasCompileSettingsGroup->m_displayName,
             m_conversationCanvasCompileSettingsGroup->m_description,
-            aznew AtomToolsFramework::InspectorPropertyGroupWidget(
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_conversationCanvasCompileSettingsGroup.get(),
                 m_conversationCanvasCompileSettingsGroup.get(),
                 azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>()));
@@ -268,7 +161,7 @@ namespace ConversationEditor
     auto ConversationCanvasMainWindow::GetHelpDialogText() const
         -> AZStd::string
     {
-        return R"(A basic conversation/dialogue system for O3DE.)";
+        return R"(A dialogue system for O3DE.)";
     }
 
     void ConversationCanvasMainWindow::OnPreNodeDeleted(
@@ -283,6 +176,6 @@ namespace ConversationEditor
         m_documentInspector->Reset();
     }
 
-} // namespace ConversationEditor
+} // namespace ConversationCanvas
 
 #include <Tools/Window/moc_ConversationCanvasMainWindow.cpp>

@@ -4,13 +4,13 @@
 #include "AtomToolsFramework/Graph/GraphCompiler.h"
 #include "AtomToolsFramework/Graph/GraphTemplateFileData.h"
 #include "AzCore/RTTI/RTTIMacros.h"
-#include "AzCore/std/utility/expected.h"
+#include "Conversation/UniqueId.h"
 #include "GraphModel/Model/Common.h"
 
 #include "Conversation/DialogueData.h"
 #include "Tools/NodeData.h"
 
-namespace ConversationEditor
+namespace ConversationCanvas
 {
     using StartingIdContainer = AZStd::vector<Conversation::UniqueId>;
     using SlotValueTable = AZStd::map<GraphModel::ConstSlotPtr, AZStd::any>;
@@ -25,19 +25,7 @@ namespace ConversationEditor
         FailedToSaveTemplate,
         BadDialogueNodeData);
 
-    using SuccessTypeWhenNoReturnDataExpected = AZStd::true_type;
-
-    struct CompilationError
-    {
-        static constexpr auto ErrorMessageSize{ 64 };
-        using ErrorMessageType = std::array<char, ErrorMessageSize>;
-
-        CompilationErrorCode m_errorCode;
-        ErrorMessageType m_errorMessage;
-    };
-
-    static_assert(
-        AZStd::is_pod_v<CompilationError>, "Ensure CompilationError is POD");
+    using CompilerOutcome = AZ::Outcome<void, AZStd::string>;
 
     class ConversationGraphCompiler : public AtomToolsFramework::GraphCompiler
     {
@@ -46,12 +34,14 @@ namespace ConversationEditor
         AZ_TYPE_INFO_WITH_NAME_DECL(ConversationGraphCompiler); // NOLINT
         AZ_CLASS_ALLOCATOR_DECL; // NOLINT
         AZ_DISABLE_COPY_MOVE(ConversationGraphCompiler); // NOLINT
-
         ConversationGraphCompiler() = default;
+
         ConversationGraphCompiler(AZ::Crc32 const& toolId);
         ~ConversationGraphCompiler() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
+
+        bool RunLuaFormatter();
 
         auto CompileGraph(
             GraphModel::GraphPtr graph,
@@ -95,8 +85,7 @@ namespace ConversationEditor
         constexpr void ClearInstructionsForCurrentNodeAndReserveSize(
             size_t reserveAmount);
 
-        [[nodiscard]] auto BuildDependencyTables() -> AZ::
-            Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
+        [[nodiscard]] auto BuildDependencyTables() -> CompilerOutcome;
 
         [[nodiscard]] auto ShouldUseInstructionsFromInputNode(
             GraphModel::ConstNodePtr const& outputNode,
@@ -138,10 +127,8 @@ namespace ConversationEditor
 
         void BuildInstructionsForCurrentNode(
             GraphModel::ConstNodePtr const& currentNode);
-        auto BuildConversationAsset() -> AZ::
-            Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
-        auto BuildConversationScript() -> AZ::
-            Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
+        auto BuildConversationAsset() -> CompilerOutcome;
+        auto BuildConversationScript() -> CompilerOutcome;
 
         [[nodiscard]] auto GetValueFromSlot(
             GraphModel::ConstSlotPtr const slot) const -> AZStd::any;
@@ -168,9 +155,8 @@ namespace ConversationEditor
          * DialogueData.
          * @return true or CompilationError
          */
-        auto BuildDialogueNode(
-            GraphModel::ConstNodePtr const& dialogueGraphNode) -> AZStd::
-            expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>;
+        auto BuildDialogueNode(GraphModel::ConstNodePtr const&
+                                   dialogueGraphNode) -> CompilerOutcome;
 
         /**
          * @brief Gathers the data needed by the compiler to setup dialogue
@@ -236,10 +222,14 @@ namespace ConversationEditor
         SlotValueTable m_slotValueTable{};
         // Contains the UniqueId of each starting dialogue.
         StartingIdContainer m_startingIds{};
+        // Contains links from one node to another.
+        AZStd::unordered_map<Conversation::UniqueId, Conversation::UniqueId>
+            m_links{};
         // The names(symbols) of any nodes we've encountered.
         AZStd::vector<AZ::Name> m_names{};
         //  A map containing the NodeData of each node we've encountered.
-        AZStd::map<GraphModel::ConstNodePtr, NodeData> m_nodeDataTable{};
+        AZStd::map<GraphModel::ConstNodePtr, DialogueNodeData>
+            m_nodeDataTable{};
         // Contains each template associated with the current node
         AZStd::list<AtomToolsFramework::GraphTemplateFileData>
             m_templateFileDataVecForCurrentNode{};
@@ -259,4 +249,4 @@ namespace ConversationEditor
         // case multiple template nodes are included in the same graph
         [[maybe_unused]] int m_templateNodeCount = 0;
     };
-} // namespace ConversationEditor
+} // namespace ConversationCanvas

@@ -1,5 +1,7 @@
 #include "Tools/Document/ConversationGraphCompiler.h"
 
+#include <QProcess>
+
 #include "AtomToolsFramework/Graph/DynamicNode/DynamicNode.h"
 #include "AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h"
 #include "AtomToolsFramework/Graph/GraphCompiler.h"
@@ -10,6 +12,7 @@
 #include "AzCore/Asset/AssetCommon.h"
 #include "AzCore/Console/ILogger.h"
 #include "AzCore/Debug/Trace.h"
+#include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path_fwd.h"
 #include "AzCore/RTTI/RTTIMacros.h"
 #include "AzCore/Script/ScriptAsset.h"
@@ -21,38 +24,27 @@
 #include "AzCore/std/string/regex.h"
 #include "AzFramework/Asset/AssetSystemBus.h"
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
-#include "Conversation/DialogueChunk.h"
-#include "Conversation/DialogueData.h"
 #include "GraphModel/Model/Common.h"
 #include "GraphModel/Model/Node.h"
 #include "GraphModel/Model/Slot.h"
 
-#include "Conversation/Constants.h"
 #include "Conversation/ConversationAsset.h"
-#include "Conversation/ConversationTypeIds.h"
+#include "Conversation/DialogueChunk.h"
+#include "Conversation/DialogueData.h"
+#include "Tools/Common.h"
+#include "Tools/ConversationCanvasTypeIds.h"
 #include "Tools/DataTypes.h"
 #include "Tools/Document/NodeRequestBus.h"
 
-namespace ConversationEditor
+namespace ConversationCanvas
 {
-    AZ_RTTI_NO_TYPE_INFO_IMPL( // NOLINT(modernize-use-trailing-return-type)
-        ConversationGraphCompiler,
-        AtomToolsFramework::GraphCompiler);
-    AZ_TYPE_INFO_WITH_NAME_IMPL( // NOLINT(modernize-use-trailing-return-type)
+    AZ_CLASS_ALLOCATOR_IMPL(ConversationGraphCompiler, AZ::SystemAllocator);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(
+        ConversationGraphCompiler, AtomToolsFramework::GraphCompiler);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(
         ConversationGraphCompiler,
         "ConversationGraphCompiler",
         ConversationGraphCompilerTypeId);
-    AZ_CLASS_ALLOCATOR_IMPL( // NOLINT
-        ConversationGraphCompiler,
-        AZ::SystemAllocator);
-
-    static auto UnexpectedCompilationError(
-        CompilationErrorCode errorCode, AZStd::string_view errorMessage)
-        -> AZStd::unexpected<CompilationError>
-    {
-        return AZStd::unexpected(
-            CompilationError{ errorCode, { *errorMessage.data() } });
-    }
 
     ConversationGraphCompiler::ConversationGraphCompiler(
         AZ::Crc32 const& toolId)
@@ -71,6 +63,42 @@ namespace ConversationEditor
                     AtomToolsFramework::GraphCompiler>()
                 ->Version(0);
         }
+    }
+
+    bool ConversationGraphCompiler::RunLuaFormatter()
+    {
+        auto const shouldRun{ AtomToolsFramework::GetSettingsObject(
+            Settings::FormatLua, true) };
+        if (!shouldRun)
+        {
+            return true;
+        }
+
+        QString const formatProgram{ AtomToolsFramework::GetSettingsObject(
+                                         Settings::LuaFormatter,
+                                         AZStd::string{})
+                                         .c_str() };
+
+        auto const workingDir{
+            []() -> QString
+            {
+                AZ::IO::FixedMaxPath result{};
+                // FIXME: Replacement does not work. I assume because whatever
+                // module sets @devassets@ isn't active
+                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(
+                    result,
+                    AZ::IO::Path{ "@projectroot@/Assets/Conversations/" });
+                return result.c_str();
+            }()
+        };
+
+        AZLOG_INFO(
+            "Running Lua formatter w/ using program '%s' on directory '%s'",
+            formatProgram.toStdString().c_str(),
+            workingDir.toStdString().c_str());
+
+        return QProcess::startDetached(
+            QString{ formatProgram }, QStringList{ "./" }, workingDir);
     }
 
     auto ConversationGraphCompiler::CompileGraph(
@@ -186,7 +214,7 @@ namespace ConversationEditor
                 "ConversationGraphCompiler",
                 false,
                 "Failed to compile conversation script. Message: %s",
-                buildResult.GetError().m_errorMessage.data());
+                buildResult.GetError().c_str());
         }
 
         if (!ReportGeneratedFileStatus())
@@ -201,6 +229,8 @@ namespace ConversationEditor
         }
 
         SetState(AtomToolsFramework::GraphCompiler::State::Complete);
+
+        RunLuaFormatter();
 
         AZ_Info( // NOLINT(*-pro-type-vararg
             "ConversationGraphCompiler",
@@ -285,13 +315,11 @@ namespace ConversationEditor
     }
 
     auto ConversationGraphCompiler::BuildDependencyTables()
-        -> AZ::Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>
+        -> AZ::Outcome<void, AZStd::string>
     {
         if (!m_graph)
         {
-            return UnexpectedCompilationError(
-                CompilationErrorCode::NullGraphPointer,
-                "The graph assigned to the compiler is null!");
+            return AZ::Failure("The graph assigned to the compiler is null!");
         }
 
         for (auto const& nodePair : m_graph->GetNodes())
@@ -325,7 +353,7 @@ namespace ConversationEditor
             }
         }
 
-        return SuccessTypeWhenNoReturnDataExpected{};
+        return AZ::Success();
     }
 
     [[nodiscard]] auto ConversationGraphCompiler::
@@ -425,8 +453,7 @@ namespace ConversationEditor
     {
         if (!node)
         {
-            AZ_Warning( // NOLINT(*-pro-type-vararg,
-                        // *-bounds-array-to-pointer-decay)
+            AZ_Warning(
                 "ConversationGraphCompiler",
                 false,
                 "A valid node pointer is required!");
@@ -811,8 +838,7 @@ namespace ConversationEditor
             });
     }
 
-    auto ConversationGraphCompiler::BuildConversationAsset()
-        -> AZ::Outcome<AZStd::true_type, CompilationError>
+    auto ConversationGraphCompiler::BuildConversationAsset() -> CompilerOutcome
     {
         auto const conversationAsset =
             AZStd::make_unique<Conversation::ConversationAsset>();
@@ -858,9 +884,7 @@ namespace ConversationEditor
             conversationAsset.get());
         if (!saveResult)
         {
-            return UnexpectedCompilationError(
-                CompilationErrorCode::FailedToSaveTemplate,
-                "Failed to save Conversation Asset");
+            return AZ::Failure("Failed to save Conversation Asset");
         }
 
         AzFramework::AssetSystemRequestBus::Broadcast(
@@ -870,11 +894,10 @@ namespace ConversationEditor
 
         m_generatedFiles.push_back(conversationAssetOutputPath);
 
-        return SuccessTypeWhenNoReturnDataExpected{};
+        return AZ::Success();
     }
 
-    auto ConversationGraphCompiler::BuildConversationScript()
-        -> AZ::Outcome<SuccessTypeWhenNoReturnDataExpected, CompilationError>
+    auto ConversationGraphCompiler::BuildConversationScript() -> CompilerOutcome
     {
         m_scriptFileDataTemplate.ReplaceLinesInBlock(
             "BOP_GENERATED_FUNCTIONS_BEGIN",
@@ -890,19 +913,27 @@ namespace ConversationEditor
         {
             static constexpr auto errorMessageFormat =
                 "Failed to save conversation script template to '%s'";
-            return UnexpectedCompilationError(
-                CompilationErrorCode::FailedToSaveTemplate,
+            return AZ::Failure(
                 AZStd::string::format(
                     errorMessageFormat, templateOutputPath.c_str())
                     .data());
         }
 
-        return SuccessTypeWhenNoReturnDataExpected{};
+        return AZ::Success();
     }
 
     [[nodiscard]] auto ConversationGraphCompiler::GetValueFromSlot(
         GraphModel::ConstSlotPtr const slot) const -> AZStd::any
     {
+        if (!slot->GetDataType())
+        {
+            AZ_Error(
+                "ConversationGraphCompiler",
+                false,
+                "Null data type! A valid data type is required!");
+            return {};
+        }
+
         auto const& slotItr = AZStd::ranges::find_if(
             GetSlotValueTable(),
             [slot](auto const& key) -> bool
@@ -993,30 +1024,22 @@ namespace ConversationEditor
                 };
             }
         }
-        else if (currentNode->RTTI_IsTypeOf(AZ::TypeId{ LinkNodeTypeId }))
+        else if (auto* const nodeRequests{
+                     azrtti_cast<NodeRequests const*>(currentNode.get()) })
         {
-            auto* nodeRequests =
-                azrtti_cast<NodeRequests const*>(currentNode.get());
-            if (!nodeRequests)
-            {
-                return;
-            }
-
             nodeRequests->UpdateNodeData(nodeData);
             BuildLinkNode(currentNode);
         }
     }
 
     auto ConversationGraphCompiler::BuildDialogueNode(
-        GraphModel::ConstNodePtr const& targetDialogueNode) -> AZStd::
-        expected<SuccessTypeWhenNoReturnDataExpected, CompilationError>
+        GraphModel::ConstNodePtr const& targetDialogueNode) -> CompilerOutcome
     {
         using namespace Conversation;
 
         if (!targetDialogueNode)
         {
-            return UnexpectedCompilationError(
-                CompilationErrorCode::BadDialogueNodeData,
+            return AZ::Failure(
                 "Expected valid dialogue node, but got a nullptr instead.");
         }
 
@@ -1056,16 +1079,7 @@ namespace ConversationEditor
 
         for (auto& [slotId, slot] : targetDialogueNode->GetSlots())
         {
-            if (!slot->GetDataType())
-            {
-                AZ_Error(
-                    "ConversationGraphCompiler",
-                    false,
-                    "Null data type! A valid data type is required!");
-
-                continue;
-            }
-            auto const value = m_slotValueTable[slot];
+            auto const value = GetValueFromSlotOrConnection(slot);
 
             switch (slot->GetDataType()->GetTypeEnum())
             {
@@ -1081,9 +1095,11 @@ namespace ConversationEditor
                 targetNodeDataDialogue->SetChunk(
                     AZStd::any_cast<DialogueChunk>(value));
                 break;
-            case ToTag(SlotTypes::sound_asset):
-                targetNodeDataDialogue->SetSoundAsset(
-                    AZStd::any_cast<DialogueAudioAsset>(value));
+            case ToTag(SlotTypes::audio_control):
+                targetNodeDataDialogue->SetAudioControl(
+                    value.is<DialogueAudioControl>()
+                        ? AZStd::any_cast<DialogueAudioControl const&>(value)
+                        : DialogueAudioControl{});
             default:
                 break;
             }
@@ -1144,8 +1160,7 @@ namespace ConversationEditor
                 };
                 if (!sourceNodeDataDialogue.has_value())
                 {
-                    return UnexpectedCompilationError(
-                        CompilationErrorCode::BadDialogueNodeData,
+                    return AZ::Failure(
                         "Source node should have a valid dialogue!");
                 }
 
@@ -1164,7 +1179,7 @@ namespace ConversationEditor
             }
         }
 
-        return SuccessTypeWhenNoReturnDataExpected{};
+        return AZ::Success();
     }
 
     void ConversationGraphCompiler::BuildLinkNode(
@@ -1172,8 +1187,9 @@ namespace ConversationEditor
     {
         auto const& linkData = m_nodeDataTable[linkNode].m_linkData;
 
-        if (linkData.IsValid())
+        if (!linkData.IsValid())
         {
+            AZLOG_ERROR("Link data is invalid");
             return;
         }
         auto& fromNodeData = m_nodeDataTable[linkData.m_from];
@@ -1198,7 +1214,9 @@ namespace ConversationEditor
                     currentNode->GetSlots(),
                     [this](auto const& currentSlotPair)
                     {
-                        auto const& currentSlot = currentSlotPair.second;
+                        GraphModel::SlotPtr const& currentSlot =
+                            currentSlotPair.second;
+
                         ModifySlotValueTable()[currentSlot] =
                             currentSlot->GetValue();
                     });
@@ -1344,7 +1362,7 @@ namespace ConversationEditor
                 AZStd::vector<AZStd::string> includeStatements;
                 includeStatements.reserve(m_includePaths.size());
 
-                for (const auto& path : m_includePaths)
+                for (auto const& path : m_includePaths)
                 {
                     bool relativePathFound = false;
                     AZStd::string relativePath;
@@ -1469,4 +1487,4 @@ namespace ConversationEditor
         }
     }
 
-} // namespace ConversationEditor
+} // namespace ConversationCanvas

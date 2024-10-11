@@ -7,8 +7,11 @@ set(FILES
 
     Source/ConversationAsset.cpp
     Source/DialogueComponent.cpp
+    Source/DialogueComponent.h
     Source/DialogueData.cpp
     Source/Logging.h
+    Source/DialogueAudioControl.cpp
+    Source/DialogueAudioControl.h
 
     Source/Components/DialogueComponentConfig.cpp
     Source/Components/ConversationAssetRefComponent.cpp

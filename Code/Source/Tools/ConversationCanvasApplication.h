@@ -1,18 +1,30 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root
+ * of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 #pragma once
 
+#include "ConversationCanvasTypeIds.h"
+
+#include "Window/ConversationCanvasMainWindow.h"
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
+#include <AtomToolsFramework/Graph/AssetStatusReporterSystem.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
 #include <AtomToolsFramework/Graph/GraphTemplateFileDataCache.h>
-#include <AzCore/Component/Component.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <GraphModel/Model/GraphContext.h>
-#include <Tools/Window/ConversationCanvasMainWindow.h>
 
-namespace ConversationEditor
+namespace ConversationCanvas
 {
+    //! The main application class for Conversation Canvas, setting up top level
+    //! systems, document types, and the main window.
     class ConversationCanvasApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private AzToolsFramework::EditorWindowRequestBus::Handler
@@ -20,32 +32,28 @@ namespace ConversationEditor
         , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(
-            ConversationCanvasApplication, AZ::SystemAllocator); // NOLINT
-        AZ_RTTI( // NOLINT
-            ConversationCanvasApplication,
-            "{8417F15F-B290-47A4-9996-1954F3D153EB}",
-            AtomToolsFramework::AtomToolsDocumentApplication); // NOLINT
-        AZ_DISABLE_COPY_MOVE(ConversationCanvasApplication); // NOLINT
+        AZ_CLASS_ALLOCATOR(ConversationCanvasApplication, AZ::SystemAllocator)
+        AZ_TYPE_INFO(
+            ConversationCanvas::ConversationCanvasApplication,
+            ConversationCanvasApplicationTypeId);
 
         using Base = AtomToolsFramework::AtomToolsDocumentApplication;
 
         ConversationCanvasApplication(int* argc, char*** argv);
-        ~ConversationCanvasApplication() override;
+        ~ConversationCanvasApplication();
 
         // AzFramework::Application overrides...
         void Reflect(AZ::ReflectContext* context) override;
-        auto GetCurrentConfigurationName() const -> char const* override;
+        char const* GetCurrentConfigurationName() const override;
         void StartCommon(AZ::Entity* systemEntity) override;
         void Destroy() override;
 
     private:
         // AtomToolsFramework::AtomToolsApplication overrides...
-        auto GetCriticalAssetFilters() const
-            -> AZStd::vector<AZStd::string> override;
+        AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
 
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
-        auto GetAppMainWindow() -> QWidget* override;
+        QWidget* GetAppMainWindow() override;
 
         // AZ::RHI::FactoryManagerNotificationBus::Handler overrides...
         void FactoryRegistered() override;
@@ -56,21 +64,17 @@ namespace ConversationEditor
         void InitGraphViewSettings();
         void InitConversationGraphDocumentType();
         void InitConversationGraphNodeDocumentType();
-        void InitDialogueSourceDataDocumentType();
         void InitMainWindow();
         void InitDefaultDocument();
 
-    private:
         AZStd::unique_ptr<ConversationCanvasMainWindow> m_window;
-        AZStd::unique_ptr<
-            AtomToolsFramework::EntityPreviewViewportSettingsSystem>
-            m_viewportSettingsSystem;
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager>
             m_dynamicNodeManager;
+        AZStd::unique_ptr<AtomToolsFramework::AssetStatusReporterSystem>
+            m_assetStatusReporterSystem;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AZStd::shared_ptr<AtomToolsFramework::GraphTemplateFileDataCache>
             m_graphTemplateFileDataCache;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
     };
-
-} // namespace ConversationEditor
+} // namespace ConversationCanvas

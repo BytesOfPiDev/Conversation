@@ -3,7 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{EC242BBE-AF06-4278-820D-059337B55032}",
+        "id": "{93A359D9-1E7A-4EAC-87E9-E68D095C1D87}",
         "category": "Conversation",
         "title": "Actor Dialogue",
         "subTitle": "Dialogue",
@@ -68,12 +68,12 @@
                 "editableOnNode": false
             },
             {
-                "name": "in_soundAsset",
-                "displayName": "Sound",
-                "supportedDataTypeRegex": "sound_asset",
-                "defaultDataType": "sound_asset",
+                "name": "in_audioControl",
+                "displayName": "Audio Control",
+                "supportedDataTypeRegex": "audio_control",
+                "defaultDataType": "audio_control",
                 "defaultValue": {
-                    "$type": "{52B5A81B-FE6B-549F-B89D-59694CA08EBD} Asset<SoundAsset>"
+                    "$type": "ConversationControl"
                 }
             }
         ],

@@ -4,12 +4,12 @@
 #include "AzCore/Name/Name.h"
 #include "AzCore/std/containers/unordered_set.h"
 #include "AzCore/std/string/string.h"
-#include "MiniAudio/SoundAsset.h"
 
 #include "Conversation/ConversationTypeIds.h"
 #include "Conversation/DialogueChunk.h"
 #include "Conversation/ResponseData.h"
 #include "Conversation/UniqueId.h"
+#include "DialogueAudioControl.h"
 
 namespace AZ
 {
@@ -19,8 +19,6 @@ namespace AZ
 namespace Conversation
 {
     using AvailabilityId = UniqueId;
-
-    using DialogueAudioAsset = AZ::Data::Asset<MiniAudio::SoundAsset>;
 
     struct DialogueData;
 
@@ -135,10 +133,9 @@ namespace Conversation
             return m_responseIds;
         }
 
-        [[nodiscard]] constexpr auto GetAudioTrigger() const
-            -> AZStd::string_view
+        [[nodiscard]] auto GetAudioControl() const -> DialogueAudioControl
         {
-            return m_audioTrigger;
+            return m_audioControl;
         }
 
         [[nodiscard]] constexpr auto GetAvailabilityId() const -> UniqueId
@@ -181,9 +178,9 @@ namespace Conversation
             m_speaker = speaker;
         }
 
-        constexpr void SetAudioTrigger(AZStd::string_view audioTrigger)
+        constexpr void SetAudioControl(DialogueAudioControl const& audioTrigger)
         {
-            m_audioTrigger = audioTrigger;
+            m_audioControl = audioTrigger;
         }
 
         constexpr void SetEntryDelay(float entryDelay)
@@ -298,27 +295,16 @@ namespace Conversation
             return m_cinematicId;
         }
 
-        [[nodiscard]] auto GetSoundAsset() const -> DialogueAudioAsset
-        {
-            return m_soundAsset;
-        }
-
-        void SetSoundAsset(DialogueAudioAsset soundAsset)
-        {
-            m_soundAsset = AZStd::move(soundAsset);
-        }
-
     private:
         DialogueChunk m_dialogueChunk{};
         AZStd::vector<UniqueId> m_responseIds{};
         AZStd::string m_shortText{};
         AZStd::string m_speaker{};
         // The audio trigger to execute upon selection of this dialogue.
-        AZStd::string m_audioTrigger{};
+        DialogueAudioControl m_audioControl{};
         AZ::Name m_cinematicId{};
         // Any comments from the writers of this dialogue.
         AZStd::string m_comment{};
-        DialogueAudioAsset m_soundAsset{};
         UniqueId m_availabilityId{};
         UniqueId m_id{ UniqueId::CreateInvalidId() };
         float m_entryDelay{ DefaultEntryDelay };

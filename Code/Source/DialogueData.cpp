@@ -7,6 +7,7 @@
 #include "AzCore/Serialization/SerializeContext.h"
 
 #include "Conversation/Constants.h"
+#include "DialogueAudioControl.h"
 
 namespace Conversation
 {
@@ -25,6 +26,7 @@ namespace Conversation
 
     void DialogueData::Reflect(AZ::ReflectContext* context)
     {
+        DialogueAudioControl::Reflect(context);
         ResponseData::Reflect(context);
 
         if (auto* serializeContext =
@@ -34,13 +36,12 @@ namespace Conversation
                 ->Version(8) // NOLINT(cppcoreguidelines-avoid-magic-numbers)
                 ->Field("ActorText", &DialogueData::m_shortText)
                 ->Field("AvailabilityId", &DialogueData::m_availabilityId)
-                ->Field("AudioTrigger", &DialogueData::m_audioTrigger)
+                ->Field("AudioTrigger", &DialogueData::m_audioControl)
                 ->Field("CinematicId", &DialogueData::m_cinematicId)
                 ->Field("Comment", &DialogueData::m_comment)
                 ->Field("Chunk", &DialogueData::m_dialogueChunk)
                 ->Field("DialogueId", &DialogueData::m_id)
                 ->Field("ResponseIds", &DialogueData::m_responseIds)
-                ->Field("SoundAsset", &DialogueData::m_soundAsset)
                 ->Field("Speaker", &DialogueData::m_speaker);
 
             serializeContext->RegisterGenericType<DialogueDataPtr>();
@@ -77,7 +78,7 @@ namespace Conversation
                         "Represents a specific actor in the conversation.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &DialogueData::m_audioTrigger,
+                        &DialogueData::m_audioControl,
                         "AudioTrigger",
                         "The trigger for the audio file to play.")
                     ->DataElement(
@@ -90,11 +91,6 @@ namespace Conversation
                         AZ::Edit::UIHandlers::Button,
                         &DialogueData::m_id,
                         "Id",
-                        "")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DialogueData::m_soundAsset,
-                        "Sound Asset",
                         "");
             }
         }
@@ -132,8 +128,8 @@ namespace Conversation
                     &DialogueData::SetSpeaker)
                 ->Property(
                     "AudioTrigger",
-                    &DialogueData::GetAudioTrigger,
-                    &DialogueData::SetAudioTrigger)
+                    &DialogueData::GetAudioControl,
+                    &DialogueData::SetAudioControl)
                 ->Property(
                     "ResponseIds", &DialogueData::GetResponseIds, nullptr)
                 ->Property(
