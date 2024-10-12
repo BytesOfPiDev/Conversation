@@ -1,27 +1,21 @@
 {
-    "gem_name": "Conversation",
-    "display_name": "Conversation",
-    "license": "Apache-2.0",
-    "license_url": "https://github.com/BytesOfPiDev/Conversation/blob/main/LICENSE",
-    "origin": "Andre Mitchell",
-    "origin_url": "https://github.com/BytesOfPiDev/Conversation/tree/development",
-    "last_updated": "",
-    "type": "Code",
-    "summary": "A conversation system for O3DE",
-    "canonical_tags": [
-        "Gem"
-    ],
-    "user_tags": [
-        "Conversation"
-    ],
-    "icon_path": "",
-    "requirements": "",
-    "documentation_url": "https://github.com/BytesOfPiDev/Conversation",
-    "dependencies": [],
-    "restricted": "Conversation",
-    "repo_uri": "https://raw.githubusercontent.com/BytesOfPiDev/Conversation/development",
-    "platforms": [
-        "Linux",
-        "Windows"
-    ]
+  "gem_name": "Conversation",
+  "version": "0.0.0",
+  "display_name": "Conversation",
+  "license": "Apache-2.0",
+  "license_url": "https://github.com/BytesOfPiDev/Conversation/blob/main/LICENSE",
+  "origin": "Andre Mitchell",
+  "origin_url": "https://github.com/BytesOfPiDev/Conversation/tree/development",
+  "last_updated": "",
+  "type": "Code",
+  "summary": "A conversation system for O3DE",
+  "canonical_tags": ["Gem"],
+  "user_tags": ["Conversation"],
+  "icon_path": "",
+  "requirements": "",
+  "documentation_url": "https://github.com/BytesOfPiDev/Conversation",
+  "dependencies": [],
+  "restricted": "Conversation",
+  "repo_uri": "https://raw.githubusercontent.com/BytesOfPiDev/Conversation/development",
+  "platforms": ["Linux", "Windows"]
 }
