@@ -67,9 +67,9 @@ namespace ConversationCanvas
 
     bool ConversationGraphCompiler::RunLuaFormatter()
     {
-        auto const shouldRun{ AtomToolsFramework::GetSettingsObject(
+        auto const luaFormatingEnabled{ AtomToolsFramework::GetSettingsObject(
             Settings::FormatLua, true) };
-        if (!shouldRun)
+        if (!luaFormatingEnabled)
         {
             return true;
         }
@@ -83,8 +83,6 @@ namespace ConversationCanvas
             []() -> QString
             {
                 AZ::IO::FixedMaxPath result{};
-                // FIXME: Replacement does not work. I assume because whatever
-                // module sets @devassets@ isn't active
                 AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(
                     result,
                     AZ::IO::Path{ "@projectroot@/Assets/Conversations/" });
@@ -108,10 +106,8 @@ namespace ConversationCanvas
     {
         if (IsCompileLoggingEnabled())
         {
-            AZLOG_INFO( // NOLINT(*-pro-type-vararg,
-                        // *-bounds-array-to-pointer-decay)
-                "Compiling conversation graph '%s'...",
-                graphName.c_str());
+            AZLOG_INFO(
+                "Compiling conversation graph '%s'...", graphName.c_str());
         }
 
         ClearData();
@@ -119,10 +115,7 @@ namespace ConversationCanvas
         if (!AtomToolsFramework::GraphCompiler::CompileGraph(
                 graph, graphName, graphPath))
         {
-            if (IsCompileLoggingEnabled())
-            {
-                AZLOG_INFO("Base graph compilation failed."); // NOLINT
-            }
+            AZLOG_ERROR("Base graph compilation failed.");
             return false;
         }
 

@@ -36,7 +36,10 @@ namespace Conversation
         /**
          * Tries to start a conversation.
          *
-         * It assumes the following:
+         * @param initiatingEntityId The entity initiating the conversation.
+         * @returns bool True if the conversation successfully started.
+         *
+         * Success requires that:
          *    * The conversation is in the Inactive state.
          *    * At minimum, one ConversationAssetRefComponent on this entity.
          *    * At minimum, one valid DialogueData within any asset ref.
@@ -46,14 +49,14 @@ namespace Conversation
          *    * At minimum, one DialogueData matching a starting UniqueId must
          *      pass its availability check.
          *
-         * As this function executes, its DialogueState will change. attempts to
-         * start a conversation, it enters the DialogueState::Starting state. If
-         * all requirements are met, the conversation enters the Active state,
-         * and a dialogue is subsequently made active. Otherwise, the
-         * conversation is reset to Inactive.
+         * While trying to start the conversation, the DialogueState may change.
+         * Initially, it enters the DialogueState::Starting state. If all
+         * requirements are met, a starting dialogue is chosen and the
+         * dialogue state becomes Active. Otherwise, the conversation is reset
+         * to Inactive.
          *
-         * @param initiatingEntityId The entity initiating the conversation.
-         * @returns bool True if the conversation successfully started.
+         * @note Callable from Lua
+         * @note Callable from ScriptCanvas
          */
         virtual auto TryToStartConversation(AZ::EntityId initiatingEntityId)
             -> bool = 0;

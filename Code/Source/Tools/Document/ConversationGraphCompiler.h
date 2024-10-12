@@ -17,23 +17,15 @@ namespace ConversationCanvas
     using SlotDialogueTable =
         AZStd::map<GraphModel::ConstSlotPtr, Conversation::DialogueData>;
 
-    // NOTE: Experimenting. Trying to find an expressive way to say what errors
-    // can happen w/o exceptions.
-    AZ_ENUM( // NOLINT
-        CompilationErrorCode,
-        NullGraphPointer,
-        FailedToSaveTemplate,
-        BadDialogueNodeData);
-
     using CompilerOutcome = AZ::Outcome<void, AZStd::string>;
 
     class ConversationGraphCompiler : public AtomToolsFramework::GraphCompiler
     {
     public:
-        AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
-        AZ_TYPE_INFO_WITH_NAME_DECL(ConversationGraphCompiler); // NOLINT
-        AZ_CLASS_ALLOCATOR_DECL; // NOLINT
-        AZ_DISABLE_COPY_MOVE(ConversationGraphCompiler); // NOLINT
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_TYPE_INFO_WITH_NAME_DECL(ConversationGraphCompiler);
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_DISABLE_COPY_MOVE(ConversationGraphCompiler);
         ConversationGraphCompiler() = default;
 
         ConversationGraphCompiler(AZ::Crc32 const& toolId);

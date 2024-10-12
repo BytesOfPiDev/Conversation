@@ -6,7 +6,7 @@
 
 namespace ConversationCanvas
 {
-    struct LinkData
+    struct LinkNodeData
     {
         [[nodiscard]] auto IsValid() const
         {
@@ -23,6 +23,6 @@ namespace ConversationCanvas
         AZStd::optional<Conversation::DialogueData> m_dialogue;
         AZStd::vector<AZ::Name> m_conditions;
         AZStd::vector<Conversation::UniqueId> m_responseIds;
-        LinkData m_linkData;
+        LinkNodeData m_linkData;
     };
 } // namespace ConversationCanvas
