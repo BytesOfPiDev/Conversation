@@ -1,5 +1,5 @@
 
-set(CONVERSATION_BUILD_DOCS ON CACHE BOOL "If true, builds the Conversation gem's documentation")
+set(CONVERSATION_BUILD_DOCS OFF CACHE BOOL "If true, builds the Conversation gem's documentation")
 
 set(gem_path ${CMAKE_CURRENT_LIST_DIR})
 set(gem_json ${gem_path}/gem.json)
