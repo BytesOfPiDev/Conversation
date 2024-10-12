@@ -11,54 +11,6 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${
 # is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-ly_add_target(
-    NAME Conversation.App APPLICATION
-    NAMESPACE Gem
-    AUTOMOC
-    AUTORCC
-    FILES_CMAKE
-        conversationcanvas_files.cmake
-        ${pal_dir}/conversationcanvas_files.cmake
-    PLATFORM_INCLUDE_FILES
-        ${pal_dir}/tool_dependencies_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            Source
-            ${pal_dir}
-        PUBLIC
-            Include
-    BUILD_DEPENDENCIES
-        PRIVATE
-            Gem::CommonFeaturesAtom.Static
-            Gem::AtomToolsFramework.Editor
-            Gem::AtomToolsFramework.Static
-            Gem::Conversation
-            Gem::Conversation.Static
-    RUNTIME_DEPENDENCIES
-        Gem::AtomToolsFramework.Editor
-        Gem::Conversation
-)
-
-# Add build dependency to Editor for the ConversationCanvas application since
-# Editor opens up the ConversationCanvas
-ly_add_dependencies(Editor Gem::Conversation.App)
-
-# Adds the ConversationCanvas target as a C preprocessor define so that it can be used as a Settings Registry
-# specialization in order to look up the generated .setreg which contains the dependencies
-# specified for the target.
-if(TARGET Conversation.App)
-  set_source_files_properties(
-        Source/Tools/ConversationCanvasApplication.cpp
-        PROPERTIES
-            COMPILE_DEFINITIONS
-                LY_CMAKE_TARGET="ConversationCanvas"
-    )
-else()
-  message(FATAL_ERROR "Cannot set LY_CMAKE_TARGET define to Conversation.App as the target doesn't exist anymore."
-        " Perhaps it has been renamed")
-endif()
-
 # The Conversation.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME Conversation.API INTERFACE
@@ -191,8 +143,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
   # By default, we will specify that the above target Conversation would be used by
   # Tool and Builder type targets when this gem is enabled.  If you don't want it
   # active in Tools or Builders by default, delete one of both of the following lines:
-  ly_create_alias(NAME Conversation.Tools    NAMESPACE Gem TARGETS Gem::Conversation.Editor Gem::Conversation.App)
-  ly_create_alias(NAME Conversation.Builders NAMESPACE Gem TARGETS Gem::Conversation.Editor Gem::Conversation.App)
+  ly_create_alias(NAME Conversation.Tools    NAMESPACE Gem TARGETS Gem::Conversation.Editor)
+  ly_create_alias(NAME Conversation.Builders NAMESPACE Gem TARGETS Gem::Conversation.Editor)
 
   # For the Tools and Builders variants of Conversation Gem, an alias to the Conversation.Editor API target will be made
   ly_create_alias(NAME Conversation.Tools.API NAMESPACE Gem TARGETS Gem::Conversation.Editor.API)
@@ -200,9 +152,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-################################################################################
+# # ##############################################################################
 # Tests
-################################################################################
+# # ##############################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
   # We globally support tests, see if we support tests on this platform for Conversation.Tests

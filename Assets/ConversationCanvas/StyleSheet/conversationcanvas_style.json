@@ -2237,14 +2237,14 @@
     "color": "#ffffff"
   },
   {
-    "selectors": [ "MaterialInputNodeTitlePalette" ],
+    "selectors": [ "ConversationInputNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#0000FF",
     "background-color": "#0000FF",
     "color": "#ffffff"
   },
   {
-    "selectors": [ "MaterialOutputNodeTitlePalette" ],
+    "selectors": [ "OutputNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#FF0000",
     "background-color": "#FF0000",
