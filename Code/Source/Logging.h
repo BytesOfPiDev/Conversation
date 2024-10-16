@@ -8,7 +8,7 @@ namespace Conversation
 {
     template<typename ComponentType>
     void LOGTAG_EntityComponent(
-        AZStd::string_view logTag,
+        [[maybe_unused]]AZStd::string_view logTag,
         ComponentType const& component,
         AZStd::string_view logMessage)
     {

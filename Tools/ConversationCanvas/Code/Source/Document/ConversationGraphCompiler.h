@@ -74,7 +74,7 @@ namespace ConversationCanvas
         [[nodiscard]] auto ModifyInstructionNodesForCurrentNode()
             -> AZStd::vector<GraphModel::ConstNodePtr>&;
 
-        constexpr void ClearInstructionsForCurrentNodeAndReserveSize(
+        void ClearInstructionsForCurrentNodeAndReserveSize(
             size_t reserveAmount);
 
         [[nodiscard]] auto BuildDependencyTables() -> CompilerOutcome;

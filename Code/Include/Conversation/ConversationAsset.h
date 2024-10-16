@@ -136,7 +136,7 @@ namespace Conversation
     using ConversationAssetContainer =
         AZStd::vector<AZ::Data::Asset<ConversationAsset>>;
 
-    inline constexpr void AddStartingId(
+    inline static void AddStartingId(
         ConversationAsset& conversationAsset, UniqueId const& startingId)
     {
         conversationAsset.AddStartingId(startingId);

@@ -151,7 +151,7 @@ namespace Conversation
 
         struct BusHandlerOrderCompare
         {
-            constexpr auto operator()(
+            auto operator()(
                 DialogueComponentNotifications* left,
                 DialogueComponentNotifications* right) const -> bool
             {

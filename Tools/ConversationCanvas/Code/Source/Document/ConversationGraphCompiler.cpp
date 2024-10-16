@@ -307,7 +307,7 @@ namespace ConversationCanvas
         return m_instructionNodesForCurrentNode;
     }
 
-    constexpr void ConversationGraphCompiler::
+    void ConversationGraphCompiler::
         ClearInstructionsForCurrentNodeAndReserveSize(size_t reserveAmount)
     {
         ModifyInstructionNodesForCurrentNode().clear();
