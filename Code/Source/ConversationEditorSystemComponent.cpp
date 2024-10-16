@@ -207,10 +207,10 @@ namespace ConversationEditor
                 QString("--project-path=%1").arg(projectPath.c_str()));
         }
 
-        AZ_Info( // NOLINT
+        AZ_Info( 
             "ConversationCanvas",
-            "Launching Conversation Canvas (prototype)");
-        AtomToolsFramework::LaunchTool("Conversation.App", arguments);
+            "Launching Conversation Canvas");
+        AtomToolsFramework::LaunchTool("ConversationCanvas", arguments);
     }
 
 } // namespace ConversationEditor
