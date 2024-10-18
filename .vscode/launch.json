@@ -8,7 +8,7 @@
             "type": "O3DELua",
             "request": "attach",
             "name": "Default O3DE Lua Debugger configuration",
-            "gameProjectPath": "/home/dinkleberg/o3de-projects/Dinkleberg",
+            "gameProjectPath": "C:\\Users\\Dinkleberg\\o3de-projects\\o3de-dinkle",
             "tcpListenPort": 0,
             "trace": true
         }

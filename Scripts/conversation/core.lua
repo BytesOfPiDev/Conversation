@@ -1,11 +1,17 @@
 -- core.lua
 
-require("conversation.condition")
-require("conversation.dialogue")
 require("conversation.dialogue_component")
 
 function GetEntityByTag(tag)
 	return TagGlobalRequestBus.Event.GetEntityByTag(Crc32(tag))
 end
 
-Debug.Log("Convesation's 'core.lua' loaded.\n")
+function LogConditionError(graphName, nodeName)
+	Debug.Log(
+		"ConditionError in graph '" .. graphName .. "', "
+			.. "node '" .. nodeName .. "':  "
+			.. "condition is not a function"
+	)
+end
+
+Debug.Log("Conversation's 'core.lua' loaded.\n")

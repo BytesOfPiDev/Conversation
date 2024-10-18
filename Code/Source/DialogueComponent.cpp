@@ -690,8 +690,8 @@ namespace Conversation
                 result,
                 GetEntityId(),
                 &AvailabilityRequestBus::Events::IsAvailable,
-                AZ::Name(dialogueData.GetAvailabilityId().GetHash())
-                    .GetStringView());
+                AZ::Name(dialogueData.GetId().GetHash()).GetStringView());
+
             return result.value;
         }();
 

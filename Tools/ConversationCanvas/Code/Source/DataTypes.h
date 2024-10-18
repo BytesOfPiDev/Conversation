@@ -7,43 +7,32 @@
 
 namespace ConversationCanvas
 {
-    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
-        SlotTypes,
+    AZ_ENUM_CLASS(
+        GraphValueType,
         undefined,
         actor_text,
-        dialogue_id,
+        audio_control,
         dialogue_chunk,
-        speaker_tag,
+        dialogue_id,
+        lua_condition_function,
+        lua_condition_snippet,
+        lua_function,
+        lua_function_name,
         lua_snippet,
-        condition_snippet,
         sound_asset,
-        audio_control);
+        speaker_tag);
 
-    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
-        NodeTypes,
-        Undefined,
-        Condition,
-        Dialogue,
-        Link);
+    AZ_ENUM_CLASS(NodeTypes, Undefined, Condition, Dialogue, Link);
 
-    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
-        GeneralSlots,
-        NodeName);
+    AZ_ENUM_CLASS(GeneralSlots, NodeName);
 
-    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
-        LinkNodeSlots,
-        in_from,
-        in_to);
+    AZ_ENUM_CLASS(LinkNodeSlots, in_from, in_to);
 
-    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
-        ConditionNodeSlots,
-        out_condition);
+    AZ_ENUM_CLASS(ConditionNodeSlots, out_condition);
 
-    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
-        DialogueScriptSlots,
-        out_chunk);
+    AZ_ENUM_CLASS(DialogueScriptSlots, out_chunk);
 
-    AZ_ENUM_CLASS( // NOLINT(*-use-trailing-return-type, *missing-std-forward)
+    AZ_ENUM_CLASS(
         DialogueNodeSlots,
         in_comment,
         in_condition,
@@ -59,6 +48,13 @@ namespace ConversationCanvas
     {
         static_assert(AZStd::is_enum_v<T>, "The type must be an enum!");
         return AZ::Crc32(ToString(type));
+    }
+
+    inline auto IsSlotType(
+        GraphModel::ConstSlotPtr const& slot, GraphValueType const slotType)
+        -> bool
+    {
+        return slot->GetDataType()->GetTypeEnum() == ToTag(slotType);
     }
 } // namespace ConversationCanvas
 

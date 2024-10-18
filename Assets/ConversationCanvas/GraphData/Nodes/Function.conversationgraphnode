@@ -18,7 +18,7 @@
         },
         "inputSlots": [
             {
-                "name": "in_chunk",
+                "name": "in_snippet",
                 "displayName": "Source",
                 "supportedDataTypeRegex": "lua_snippet",
                 "defaultDataType": "lua_snippet",
@@ -29,16 +29,17 @@
         ],
         "outputSlots": [
             {
-                "name": "out_chunk",
+                "name": "out_snippet",
                 "displayName": "Chunk",
                 "supportedDataTypeRegex": "lua_snippet",
                 "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "DialogueChunk"
+                    "$type": "LuaSnippet"
                 },
+                "editableOnNode": false,
                 "settings": {
                     "instructions": [
-                        "SLOTVALUE(in_chunk)"
+                        "local SLOTNAME = function()\n    SLOTVALUE(in_snippet)\nend"
                     ]
                 }
             }

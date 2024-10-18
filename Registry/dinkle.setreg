@@ -1,0 +1,12 @@
+{
+    "O3DE": {
+        "ActionManager": {
+            "EnableNewActionManager": false
+        },
+        "Lua": {
+            "Debugger" : {
+                "Uri": "vscode://lumbermixalot.o3de-lua-debug/debug?" 
+            }
+        }
+    }
+}

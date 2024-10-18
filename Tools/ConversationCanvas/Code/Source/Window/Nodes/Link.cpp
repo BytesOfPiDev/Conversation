@@ -69,7 +69,7 @@ namespace ConversationCanvas
         GraphModel::DataTypePtr uniqueIdDataType =
             GetGraphContext()->GetDataType<AZ::Uuid>();
         auto dialogueIdDataType{ GetGraphContext()->GetDataType(
-            ToTag(SlotTypes::dialogue_id)) };
+            ToTag(GraphValueType::dialogue_id)) };
 
         auto to = AZStd::make_shared<GraphModel::SlotDefinition>(
             GraphModel::SlotDefinition(

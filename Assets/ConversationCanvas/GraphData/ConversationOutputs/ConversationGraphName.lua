@@ -7,11 +7,12 @@ local dcLib = require("conversation.dialogue_component")
 
 -- BOP_GENERATED_INCLUDES_END
 
-local ConversationGraphName = dcLib.ScriptDialogueComponent:New()
+local M = dcLib:New()
 
-function ConversationGraphName:InitConversationScript() end
+function M:InitConversationScript() end
 
-function ConversationGraphName:OnActivate()
+
+function M:OnActivate()
 	self:ActivateConversationScript() -- Required since defining OnActivate in the metaclass doesn't seem to work.
 
 	Debug.Log(
@@ -21,7 +22,7 @@ function ConversationGraphName:OnActivate()
 	)
 end
 
-function ConversationGraphName:OnDeactivate()
+function M:OnDeactivate()
 	self:DeactivateConversationScript() -- Required since defining OnActivate in the metaclass doesn't seem to work.
 
 	Debug.Log(
@@ -31,8 +32,9 @@ function ConversationGraphName:OnDeactivate()
 	)
 end
 
+
 -- BOP_GENERATED_FUNCTIONS_BEGIN
 
 -- BOP_GENERATED_FUNCTIONS_END
 
-return ConversationGraphName
+return M

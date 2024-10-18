@@ -5,7 +5,7 @@
     "ClassData": {
         "id": "{93A359D9-1E7A-4EAC-87E9-E68D095C1D87}",
         "category": "Conversation",
-        "title": "Actor Dialogue",
+        "title": "Dialogue",
         "subTitle": "Dialogue",
         "titlePaletteName": "DialogueOutputNodeTitlePalette",
         "description": "A short version of this node's dialogue.",
@@ -18,7 +18,7 @@
                 "Dialogue"
             ],
             "templatePaths": [
-                "@gemroot:Conversation@/Scripts/conversation/dialogue.lua"
+                "@gemroot:Conversation@/Assets/ConversationCanvas/GraphData/ConversationOutputs/dialogue.lua"
             ]
         },
         "propertySlots": [
@@ -65,7 +65,10 @@
                     }
                 },
                 "visibleOnNode": false,
-                "editableOnNode": false
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": {}
+                }
             },
             {
                 "name": "in_audioControl",
@@ -94,12 +97,14 @@
                 "supportedDataTypeRegex": "lua_snippet",
                 "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "DialogueChunk"
+                    "$type": "LuaSnippet",
+                    "Value": {
+                        "SourceCode": "return true"
+                    }
                 },
-                "editableOnNode": false,
                 "settings": {
                     "instructions": [
-                        "-- Begin NODEID settings\n    self:AddCondition('NODEID', SLOTVALUE(inCondition));\n-- End NODEID settings"
+                        "SLOTVALUE"
                     ]
                 }
             },
@@ -120,9 +125,14 @@
                 "supportedDataTypeRegex": "lua_snippet",
                 "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "DialogueChunk"
+                    "$type": "LuaSnippet"
                 },
-                "editableOnNode": false
+                "editableOnNode": false,
+                "settings": {
+                    "instructions": [
+                        "SLOTVALUE"
+                    ]
+                }
             },
             {
                 "name": "in_entryDelay",

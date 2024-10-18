@@ -16,14 +16,14 @@ namespace Conversation
     AZ_TYPE_INFO_WITH_NAME_IMPL(
         ConversationAsset,
         "ConversationAsset",
-        ConversationAssetTypeId); // NOLINT
-    AZ_RTTI_NO_TYPE_INFO_IMPL(ConversationAsset, AZ::Data::AssetData); // NOLINT
+        ConversationAssetTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(ConversationAsset, AZ::Data::AssetData);
     AZ_CLASS_ALLOCATOR_IMPL(
-        ConversationAsset, AZ::SystemAllocator, 0); // NOLINT
+        ConversationAsset, AZ::SystemAllocator, 0);
 
     void ConversationAsset::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* const serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<IConversationAsset>()->Version(0);
             serializeContext

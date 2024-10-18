@@ -35,6 +35,7 @@
 #include "ConversationCanvasTypeIds.h"
 #include "DataTypes.h"
 #include "Document/NodeRequestBus.h"
+#include "LuaSnippet.h"
 
 namespace ConversationCanvas
 {
@@ -46,6 +47,9 @@ namespace ConversationCanvas
         "ConversationGraphCompiler",
         ConversationGraphCompilerTypeId);
 
+    static constexpr auto LuaEmptyFunction =
+        AZStd::string_view("function() end");
+
     ConversationGraphCompiler::ConversationGraphCompiler(
         AZ::Crc32 const& toolId)
         : AtomToolsFramework::GraphCompiler(toolId)
@@ -54,6 +58,8 @@ namespace ConversationCanvas
 
     void ConversationGraphCompiler::Reflect(AZ::ReflectContext* context)
     {
+        LuaSnippet::Reflect(context);
+
         if (auto* serializeContext =
                 azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -74,31 +80,42 @@ namespace ConversationCanvas
             return true;
         }
 
-        QString const formatProgram{ AtomToolsFramework::GetSettingsObject(
-                                         Settings::LuaFormatter,
-                                         AZStd::string{})
-                                         .c_str() };
+        QString const luaFormatter = []() -> QString
+        {
+            AZ::IO::Path path{ AtomToolsFramework::GetSettingsObject(
+                                   Settings::LuaFormatter, AZStd::string{})
+                                   .c_str() };
+            path.MakePreferred();
+            return path.c_str();
+        }();
 
         auto const workingDir{
             []() -> QString
             {
-                AZ::IO::FixedMaxPath result{};
+                AZ::IO::FixedMaxPath path{};
                 // FIXME: Replacement does not work. I assume because whatever
                 // module sets @devassets@ isn't active
                 AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(
-                    result,
-                    AZ::IO::Path{ "@projectroot@/Assets/Conversations/" });
-                return result.c_str();
+                    path, AZ::IO::Path{ "@projectroot@/Assets/Conversations" });
+                path.MakePreferred();
+                return { path.c_str() };
             }()
         };
 
         AZLOG_INFO(
             "Running Lua formatter w/ using program '%s' on directory '%s'",
-            formatProgram.toStdString().c_str(),
+            luaFormatter.toStdString().c_str(),
             workingDir.toStdString().c_str());
 
-        return QProcess::startDetached(
-            QString{ formatProgram }, QStringList{ "./" }, workingDir);
+        auto const result{ QProcess::startDetached(
+            QString{ luaFormatter }, QStringList{ "." }, workingDir) };
+
+        AZ_Warning(
+            "ConversationGraphCompiler",
+            result,
+            "Failed to run Lua formatter.");
+
+        return result;
     }
 
     auto ConversationGraphCompiler::CompileGraph(
@@ -232,9 +249,9 @@ namespace ConversationCanvas
 
         RunLuaFormatter();
 
-        AZ_Info( // NOLINT(*-pro-type-vararg
+        AZ_Info(
             "ConversationGraphCompiler",
-            "Conversation graph compiled successfully.\n"); // NOLINT
+            "Conversation graph compiled successfully.\n");
 
         return true;
     }
@@ -606,12 +623,56 @@ namespace ConversationCanvas
         {
             return AZStd::string::format("DialogueData()");
         }
-        if (auto const& v =
-                AZStd::any_cast<Conversation::DialogueChunk const>(&slotValue))
+        if (IsSlotType(slot, GraphValueType::lua_snippet))
         {
-            return v->GetData();
+            if (!slot->GetValue().is<LuaSnippet>())
+            {
+                AZ_Error(
+                    "ConversationGraphCompiler",
+                    false,
+                    "Unexpected underlying type for lua_snippet. Expected "
+                    "LuaSnippet");
+                return {};
+            }
+            return slot->GetValue<LuaSnippet>().GetSourceCode();
         }
 
+        if (IsSlotType(slot, GraphValueType::lua_function))
+        {
+            if (!slot->GetValue().is<LuaSnippet>())
+            {
+                AZ_Error(
+                    "ConversationGraphCompiler",
+                    false,
+                    "Unexpected underlying type for lua_function. Expected "
+                    "LuaSnippet");
+                return LuaEmptyFunction;
+            }
+
+            static constexpr auto* formatStr{ "function()\n%s\nend" };
+            return AZStd::string::format(
+                formatStr, slot->GetValue<LuaSnippet>().GetSourceCode().data());
+        }
+
+        if (IsSlotType(slot, GraphValueType::lua_condition_function))
+        {
+            if (!slot->GetValue().is<LuaSnippet>())
+            {
+                AZ_Error(
+                    "ConversationGraphCompiler",
+                    false,
+                    "Unexpected underlying type for lua_condition. Expected "
+                    "LuaSnippet");
+                return {};
+            }
+
+            static constexpr auto* formatStr{
+                "function(s, owner, opt)\n%s\nend"
+            };
+
+            return AZStd::string::format(
+                formatStr, slot->GetValue<LuaSnippet>().GetSourceCode().data());
+        }
         return {};
     }
 
@@ -824,17 +885,11 @@ namespace ConversationCanvas
                         return lines;
                     });
 
-                if (currentNode->GetSlot(
-                        ToString(DialogueScriptSlots::out_chunk)) ||
-                    currentNode->GetSlot(
-                        ToString(ConditionNodeSlots::out_condition)))
-                {
-                    AZStd::scoped_lock lock{ m_functionDefinitionsMutex };
-                    AZStd::string luaFunc{};
-                    AZ::StringFunc::Join(
-                        luaFunc, templateFileData.GetLines(), "\n");
-                    m_functionDefinitions.emplace_back(luaFunc);
-                }
+                AZStd::scoped_lock lock{ m_functionDefinitionsMutex };
+                AZStd::string luaFunc{};
+                AZ::StringFunc::Join(
+                    luaFunc, templateFileData.GetLines(), "\n");
+                m_functionDefinitions.emplace_back(luaFunc);
             });
     }
 
@@ -904,8 +959,31 @@ namespace ConversationCanvas
             "BOP_GENERATED_FUNCTIONS_END",
             [&]([[maybe_unused]] AZStd::string const& blockHeader)
             {
+                // There's no work to do because we've already gathered all the
+                // function definitions.
                 return m_functionDefinitions;
             });
+        /*
+                m_scriptFileDataTemplate.ReplaceLinesInBlock(
+                    "BOP_GENERATED_INSTRUCTIONS_BEGIN",
+                    "BOP_GENERATED_INSTRUCTIONS_END",
+                    [&]([[maybe_unused]] AZStd::string const& blockHeader)
+                        -> AZStd::vector<AZStd::string>
+                    {
+                        auto lines{ AZStd::vector<AZStd::string>{} };
+                        AZStd::ranges::for_each(
+                            m_templateFileDataVecForCurrentNode,
+                            [&lines](auto const& templateFileData) -> void
+                            {
+                                lines.insert(
+                                    lines.end(),
+                                    templateFileData.GetLines().begin(),
+                                    templateFileData.GetLines().end());
+                            });
+
+                        return lines;
+                    });
+            */
 
         auto const templateOutputPath =
             GetOutputPathFromTemplatePath(m_scriptFileDataTemplate.GetPath());
@@ -1057,8 +1135,8 @@ namespace ConversationCanvas
             targetNodeDataDialogue.emplace(targetDialogueId);
         }
 
-        // Dialogue nodes that have a connection to inCondition will need to add
-        // the connected node's symbol as an availability Id.
+        // Dialogue nodes that have a connection to in_condition will need to
+        // add the connected node's symbol as an availability Id.
         if (auto const inConditionSlot = targetDialogueNode->GetSlot(
                 ToString(DialogueNodeSlots::in_condition));
             inConditionSlot && !inConditionSlot->GetConnections().empty())
@@ -1083,19 +1161,19 @@ namespace ConversationCanvas
 
             switch (slot->GetDataType()->GetTypeEnum())
             {
-            case ToTag(SlotTypes::actor_text):
+            case ToTag(GraphValueType::actor_text):
                 targetNodeDataDialogue->SetShortText(
                     AZStd::any_cast<AZStd::string>(value));
                 break;
-            case ToTag(SlotTypes::speaker_tag):
+            case ToTag(GraphValueType::speaker_tag):
                 targetNodeDataDialogue->SetSpeaker(
                     AZStd::any_cast<AZStd::string>(value));
                 break;
-            case ToTag(SlotTypes::dialogue_chunk):
+            case ToTag(GraphValueType::dialogue_chunk):
                 targetNodeDataDialogue->SetChunk(
                     AZStd::any_cast<DialogueChunk>(value));
                 break;
-            case ToTag(SlotTypes::audio_control):
+            case ToTag(GraphValueType::audio_control):
                 targetNodeDataDialogue->SetAudioControl(
                     value.is<DialogueAudioControl>()
                         ? AZStd::any_cast<DialogueAudioControl const&>(value)

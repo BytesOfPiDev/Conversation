@@ -18,6 +18,8 @@ set(FILES
     Source/ConversationGraphContext.cpp
     Source/ConversationGraphContext.h
     Source/DataTypes.h
+    Source/LuaSnippet.cpp
+    Source/LuaSnippet.h
     Source/NodeData.h
 
     Source/Document/ConversationGraphCompiler.cpp

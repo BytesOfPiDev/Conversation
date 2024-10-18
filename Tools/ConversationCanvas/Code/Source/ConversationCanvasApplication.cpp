@@ -34,6 +34,7 @@
 #include "Document/ConversationGraphCompiler.h"
 #include "Document/NodeRequestBus.h"
 #include "GraphModel/Integration/NodePalette/StandardNodePaletteItem.h"
+#include "LuaSnippet.h"
 #include "Window/ConversationCanvasMainWindow.h"
 #include "Window/Nodes/Link.h"
 
@@ -224,25 +225,25 @@ namespace ConversationCanvas
                 AZ_CRC_CE("string"), AZStd::string{}, "string"),
 
             AZStd::make_shared<GraphModel::DataType>(
-                ToTag(SlotTypes::actor_text),
+                ToTag(GraphValueType::actor_text),
                 AZStd::string{},
-                ToString(SlotTypes::actor_text)),
+                ToString(GraphValueType::actor_text)),
             AZStd::make_shared<GraphModel::DataType>(
-                ToTag(SlotTypes::speaker_tag),
+                ToTag(GraphValueType::speaker_tag),
                 AZStd::string{},
-                ToString(SlotTypes::speaker_tag)),
+                ToString(GraphValueType::speaker_tag)),
             AZStd::make_shared<GraphModel::DataType>(
-                ToTag(SlotTypes::lua_snippet),
+                ToTag(GraphValueType::lua_snippet),
+                LuaSnippet{},
+                ToString(GraphValueType::lua_snippet)),
+            AZStd::make_shared<GraphModel::DataType>(
+                ToTag(GraphValueType::dialogue_chunk),
                 Conversation::DialogueChunk{},
-                ToString(SlotTypes::lua_snippet)),
+                ToString(GraphValueType::dialogue_chunk)),
             AZStd::make_shared<GraphModel::DataType>(
-                ToTag(SlotTypes::dialogue_chunk),
-                Conversation::DialogueChunk{},
-                ToString(SlotTypes::dialogue_chunk)),
-            AZStd::make_shared<GraphModel::DataType>(
-                ToTag(SlotTypes::dialogue_id),
+                ToTag(GraphValueType::dialogue_id),
                 Conversation::UniqueId{},
-                ToString(SlotTypes::dialogue_id)),
+                ToString(GraphValueType::dialogue_id)),
 
             AZStd::make_shared<GraphModel::DataType>(
                 AZ_CRC_CE("unique_id"),
@@ -255,9 +256,30 @@ namespace ConversationCanvas
                 AZ_CRC_CE("crc32"), AZ::Crc32{}, "crc32"),
 
             AZStd::make_shared<GraphModel::DataType>(
-                ToTag(SlotTypes::audio_control),
+                ToTag(GraphValueType::audio_control),
                 Conversation::DialogueAudioControl{},
-                ToString(SlotTypes::audio_control)),
+                ToString(GraphValueType::audio_control)),
+            
+            
+            AZStd::make_shared<GraphModel::DataType>(
+                ToTag(GraphValueType::lua_function_name),
+                LuaSnippet{},
+                ToString(GraphValueType::lua_function_name)),
+
+            AZStd::make_shared<GraphModel::DataType>(
+                ToTag(GraphValueType::lua_function),
+                LuaSnippet{},
+                ToString(GraphValueType::lua_function)),
+
+            AZStd::make_shared<GraphModel::DataType>(
+                ToTag(GraphValueType::lua_condition_function),
+                LuaSnippet{},
+                ToString(GraphValueType::lua_condition_function)),
+
+            AZStd::make_shared<GraphModel::DataType>(
+                ToTag(GraphValueType::lua_condition_snippet),
+                LuaSnippet{},
+                ToString(GraphValueType::lua_condition_snippet)),
 
         });
 

@@ -14,27 +14,28 @@
         },
         "inputSlots": [
             {
-                "name": "in_chunk",
+                "name": "in_snippet",
                 "displayName": "Source",
                 "supportedDataTypeRegex": "lua_snippet",
                 "defaultDataType": "lua_snippet",
                 "defaultValue": {
-                    "$type": "DialogueChunk"
-                }
+                    "$type": "LuaSnippet"
+                },
+                "visibleOnNode": false
             }
         ],
         "outputSlots": [
             {
-                "name": "out_chunk",
-                "displayName": "Chunk",
-                "supportedDataTypeRegex": "lua_snippet",
-                "defaultDataType": "lua_snippet",
+                "name": "out_snippet",
+                "displayName": "Snippet",
+                "supportedDataTypeRegex": "lua_condition_function",
+                "defaultDataType": "lua_condition_function",
                 "defaultValue": {
-                    "$type": "DialogueChunk"
+                    "$type": "LuaSnippet"
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTVALUE(in_chunk)"
+                        "local SLOTNAME = SLOTVALUE"
                     ]
                 }
             }

@@ -33,7 +33,7 @@ namespace ConversationCanvas
 
         static void Reflect(AZ::ReflectContext* context);
 
-        bool RunLuaFormatter();
+        static bool RunLuaFormatter();
 
         auto CompileGraph(
             GraphModel::GraphPtr graph,

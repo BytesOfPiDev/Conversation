@@ -9,6 +9,12 @@ namespace AZ
 
 namespace Conversation
 {
+    struct FunctionName
+    {
+        AZ::Name m_functionName;
+    };
+
+
     /**
      * @brief Contains dialogue and also allows for scripting placeholders.
      *

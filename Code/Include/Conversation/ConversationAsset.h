@@ -16,10 +16,10 @@ namespace Conversation
         , public IConversationAsset
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(ConversationAsset); // NOLINT
-        AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
-        AZ_CLASS_ALLOCATOR_DECL; // NOLINT
-        AZ_DISABLE_COPY_MOVE(ConversationAsset); // NOLINT
+        AZ_TYPE_INFO_WITH_NAME_DECL(ConversationAsset);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_DISABLE_COPY_MOVE(ConversationAsset);
 
         using StartingIdContainer = AZStd::vector<UniqueId>;
 
@@ -127,6 +127,12 @@ namespace Conversation
         DialogueDataContainer m_dialogues{};
         AZStd::string m_comment{};
         AZ::Data::Asset<AZ::ScriptAsset> m_mainScript{};
+        /*
+         * A list of named ids used within the asset.
+         *
+         * @note Needed because at least one reference to a name must exist to
+         * allow string retrieval by hash.
+         */
         AZStd::unordered_set<AZ::Name> m_names{};
     };
 
