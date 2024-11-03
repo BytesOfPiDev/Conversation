@@ -11,6 +11,7 @@
 #include "LmbrCentral/Audio/AudioSystemComponentBus.h"
 #include "LmbrCentral/Scripting/TagComponentBus.h"
 
+#include "AzFramework/Components/CameraBus.h"
 #include "Conversation/AvailabilityBus.h"
 #include "Conversation/CinematicBus.h"
 #include "Conversation/Components/ConversationAssetRefComponentBus.h"
@@ -27,11 +28,17 @@ namespace Conversation
 {
     // An entity with this tag is an entity currently in the middle of a
     // conversation.
-    constexpr auto ActiveConversationTag{ AZ_CRC_CE("active_conversation") };
+    static constexpr auto ActiveConversationTag{ AZ_CRC_CE(
+        "active_conversation") };
     // The entity with this tag is the entity the player is in a conversation
     // with.
-    constexpr auto PlayerConversationTag{ AZ_CRC_CE("player_conversation") };
-    constexpr auto PlayerSpeakerTag{ "player" };
+    static constexpr auto PlayerConversationTag{ AZ_CRC_CE(
+        "player_conversation") };
+    static constexpr auto PlayerSpeakerTag{ AZ_CRC_CE("player") };
+    static constexpr auto CameraTargetTag{ AZ_CRC_CE(
+        "conversation_camera_target") };
+    static constexpr auto CameraEntityTag{ AZ_CRC_CE(
+        "conversation_camera_entity") };
 
     class BehaviorDialogueComponentNotificationBusHandler
         : public DialogueComponentNotificationBus::Handler
@@ -146,8 +153,8 @@ namespace Conversation
         ConversationAsset::Reflect(context);
         DialogueComponentConfig::Reflect(context);
 
-        auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto* const serializeContext =
+                azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DialogueComponent, AZ::Component>()
                 ->Version(2)
@@ -159,8 +166,8 @@ namespace Conversation
             serializeContext->RegisterGenericType<AZStd::vector<AZ::Crc32>>();
         }
 
-        auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
-        if (behaviorContext)
+        if (auto* const behaviorContext =
+                azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext
                 ->EBus<DialogueComponentRequestBus>(
@@ -237,6 +244,12 @@ namespace Conversation
             behaviorContext->Constant(
                 "PlayerConversationTag",
                 BehaviorConstant(PlayerConversationTag));
+            behaviorContext->Constant(
+                "ConversationCameraTargetTag",
+                BehaviorConstant(CameraTargetTag));
+            behaviorContext->Constant(
+                "ConversationCameraEntityTag",
+                BehaviorConstant(CameraEntityTag));
         }
     }
 
@@ -293,7 +306,7 @@ namespace Conversation
     auto DialogueComponent::ReadInConfig(AZ::ComponentConfig const* baseConfig)
         -> bool
     {
-        if (auto config =
+        if (auto const config =
                 azrtti_cast<DialogueComponentConfig const*>(baseConfig))
         {
             m_config = (*config);
@@ -472,6 +485,7 @@ namespace Conversation
                     GetEntityId());
 
                 SelectDialogue(startingDialogueOutcome.GetValue());
+
                 AZ_Info(
                     "DialogueComponent",
                     "A conversation was successfully started."); // NOLINT
@@ -532,13 +546,23 @@ namespace Conversation
             GetEntityId());
     }
 
-    void DialogueComponent::SelectDialogue(DialogueData dialogueToSelect)
+    auto DialogueComponent::CanSelectDialogue() const -> bool
     {
         // Selection should only be possible in 'Active' or 'Starting'.
         if (!(m_currentState == DialogueState::Active ||
               m_currentState == DialogueState::Starting))
         {
-            AZ_Error( // NOLINT
+            return false;
+        }
+
+        return true;
+    }
+
+    void DialogueComponent::SelectDialogue(DialogueData dialogueToSelect)
+    {
+        if (!CanSelectDialogue())
+        {
+            AZ_Error(
                 "DialogueComponent",
                 false,
                 "SelectDialogue should only be called while we're in the "
@@ -548,7 +572,7 @@ namespace Conversation
 
         if (!dialogueToSelect.IsValid())
         {
-            AZ_Error( // NOLINT
+            AZ_Error(
                 "DialogueComponent",
                 false,
                 "A valid dialogue is needed in order to make a selection.");
@@ -600,7 +624,7 @@ namespace Conversation
     void DialogueComponent::SelectAvailableResponse(int const responseNumber)
     {
         // responseNumber must begin with the chosen first number (0 or 1)
-        if (!(responseNumber >= FirstResponseNumber))
+        if (responseNumber < FirstResponseNumber)
         {
             return;
         }
@@ -632,7 +656,7 @@ namespace Conversation
 
         // This is why we care if the choice is 0-based or 1-based. We have to
         // adjust our index accordingly.
-        auto dialogueToSelect{
+        auto const dialogueToSelect{
             m_availableResponses[responseNumber - FirstResponseNumber]
         };
         SelectDialogue(dialogueToSelect);
@@ -665,12 +689,13 @@ namespace Conversation
         // FIXME: If the active dialogue's speaker is the player, we
         // automatically choose an NPC response. This is just a workaround until
         // proper NPC response handling is implemented.
-        if (m_activeDialogue->GetSpeaker() == PlayerSpeakerTag)
+        if (AZ::Crc32{ m_activeDialogue->GetSpeaker() } == PlayerSpeakerTag)
         {
             auto const firstAvailableResponseIter =
                 m_availableResponses.begin();
             if (firstAvailableResponseIter != m_availableResponses.end() &&
-                firstAvailableResponseIter->GetSpeaker() != PlayerSpeakerTag)
+                AZ::Crc32{ firstAvailableResponseIter->GetSpeaker() } !=
+                    PlayerSpeakerTag)
             {
                 SelectDialogue(*firstAvailableResponseIter);
             }
@@ -699,10 +724,10 @@ namespace Conversation
     }
 
     auto DialogueComponent::CheckAvailabilityById(
-        UniqueId const& dialogueId) const -> bool
+        UniqueId const& dialogueIdToCheck) const -> bool
     {
         auto const getDialogueOutcome =
-            m_conversationAssetRequests->GetDialogueById(dialogueId);
+            m_conversationAssetRequests->GetDialogueById(dialogueIdToCheck);
         return getDialogueOutcome.IsSuccess()
             ? CheckAvailability(getDialogueOutcome.GetValue())
             : false;
@@ -777,9 +802,9 @@ namespace Conversation
             return;
         }
 
-        CinematicRequestBus::Broadcast(
-            &CinematicRequests::StartCinematic,
-            m_activeDialogue->GetCinematicId());
+        CinematicRequestBus::Event(
+            m_activeDialogue->GetCinematicId(),
+            &CinematicRequests::StartCinematic);
     }
 
 } // namespace Conversation

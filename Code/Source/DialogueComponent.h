@@ -54,6 +54,8 @@ namespace Conversation
         static void GetDependentServices(
             AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
+        auto CanSelectDialogue() const -> bool;
+
         auto TryToStartConversation(AZ::EntityId initiatingEntityId)
             -> bool override;
         void AbortConversation() override;

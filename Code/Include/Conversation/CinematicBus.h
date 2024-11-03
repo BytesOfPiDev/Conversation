@@ -19,7 +19,7 @@ namespace Conversation
         CinematicRequests() = default;
         virtual ~CinematicRequests() = default;
 
-        virtual void StartCinematic(CinematicId cinematicTag) = 0;
+        virtual void StartCinematic() = 0;
     };
 
     struct CinematicRequestBusTraits : AZ::EBusTraits
@@ -28,7 +28,9 @@ namespace Conversation
             AZ::EBusHandlerPolicy::Single;
 
         static constexpr AZ::EBusAddressPolicy AddressPolicy =
-            AZ::EBusAddressPolicy::Single;
+            AZ::EBusAddressPolicy::ById;
+
+        using BusIdType = AZ::Crc32;
     };
 
     using CinematicRequestBus =

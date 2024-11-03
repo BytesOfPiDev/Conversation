@@ -67,8 +67,8 @@ namespace Conversation
         constexpr DialogueData() = default;
         explicit DialogueData(UniqueId const id);
         explicit DialogueData(bool generateRandomId)
-            : m_id(
-                  generateRandomId ? UniqueId::CreateRandomId() : UniqueId{}){};
+            : m_id(generateRandomId ? UniqueId::CreateRandomId() : UniqueId{}) {
+            };
         /**
          * @brief Setup a valid dialogue
          *
@@ -285,12 +285,12 @@ namespace Conversation
             return m_dialogueChunk;
         }
 
-        void SetCinematicId(AZ::Name const& cinematicId)
+        void SetCinematicId(AZ::Crc32 const& cinematicId)
         {
             m_cinematicId = cinematicId;
         }
 
-        [[nodiscard]] auto GetCinematicId() const -> AZ::Name
+        [[nodiscard]] auto GetCinematicId() const -> AZ::Crc32
         {
             return m_cinematicId;
         }
@@ -302,7 +302,7 @@ namespace Conversation
         AZStd::string m_speaker{};
         // The audio trigger to execute upon selection of this dialogue.
         DialogueAudioControl m_audioControl{};
-        AZ::Name m_cinematicId{};
+        AZ::Crc32 m_cinematicId{};
         // Any comments from the writers of this dialogue.
         AZStd::string m_comment{};
         UniqueId m_availabilityId{};

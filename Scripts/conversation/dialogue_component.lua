@@ -1,7 +1,6 @@
 -- dialogue_component_script.lua
 local ScriptDialogueComponent = {}
-
-ScriptDialogueComponent = {}
+local camera_target_tag = Crc32("camera_target")
 
 function ScriptDialogueComponent:New()
     local o = {
@@ -58,9 +57,12 @@ function ScriptDialogueComponent:DeactivateConversationScript()
         self.companionScriptRequestHandler:Disconnect()
         self.companionScriptRequestHandler = nil
     end
+
+    self.Participants = nil
 end
 
 function ScriptDialogueComponent:OnConversationStarted(initiatingEntityId)
+    self.Participants = { player = initiatingEntityId }
 end
 
 function ScriptDialogueComponent:OnConversationEnded()
@@ -74,6 +76,7 @@ function ScriptDialogueComponent:GetOwnerEntityId()
 end
 
 function ScriptDialogueComponent:OnDialogue(dialogue, availableResponses)
+    Debug.Log("DIALOGUE COMPONENT ON DIALOGUE")
 end
 
 -- @brief Executes the script attached to a dialogue.
@@ -84,6 +87,12 @@ end
 function ScriptDialogueComponent:RunDialogueScript(nodeId)
     Debug.Log("RunDialogueScript - Node: " .. Name.ToString(nodeId))
     local node = self[Name.ToString(nodeId)]
+
+    if type(node) ~= "table" then
+        self:LogError("RunDialogueScript", "Node '" .. Name.ToString(nodeId) .. "' not found")
+        return
+    end
+
     if type(node.Script) == "function" then
         if self:IsDebugEnabled() then
             self:LogInfo("Ran dialogue script", Name.ToString(nodeId))
@@ -93,7 +102,7 @@ function ScriptDialogueComponent:RunDialogueScript(nodeId)
             self:LogInfo("RunDialogueScript", "Running script for node '" .. Name.ToString(nodeId) .. "'")
         end
 
-        node.Script()
+        node.Script({ speakerEntity = GetEntityByTag(Crc32()) })
         return
     end
 
