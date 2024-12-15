@@ -48,7 +48,7 @@ namespace Conversation
             return m_dialogues.size();
         }
 
-        [[nodiscard]] auto CopyStartingIds() const
+        [[nodiscard]] auto GetCopyOfStartingIds() const
             -> AZStd::vector<UniqueId> override
         {
             return m_startingIds;

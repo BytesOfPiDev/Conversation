@@ -11,7 +11,6 @@
 #include "LmbrCentral/Audio/AudioSystemComponentBus.h"
 #include "LmbrCentral/Scripting/TagComponentBus.h"
 
-#include "AzFramework/Components/CameraBus.h"
 #include "Conversation/AvailabilityBus.h"
 #include "Conversation/CinematicBus.h"
 #include "Conversation/Components/ConversationAssetRefComponentBus.h"
@@ -373,8 +372,7 @@ namespace Conversation
             "[Entity: '%s'] Trying to start a conversation.\n",
             GetNamedEntityId().GetName().data());
 
-        // Check that we have what we need to start to successfully start a
-        // conversation.
+        // Check that we have what we need to successfully start a conversation.
 
         if (m_currentState != DialogueState::Inactive)
         {
@@ -420,7 +418,7 @@ namespace Conversation
         // We find the first available starting ID and use it to start the
         // conversation.
         for (UniqueId const& startingId :
-             m_conversationAssetRequests->CopyStartingIds())
+             m_conversationAssetRequests->GetCopyOfStartingIds())
         {
             // DialogueData and DialogueId are different types. We need to
             // search a list of DialogueData for one matching the current
@@ -806,5 +804,4 @@ namespace Conversation
             m_activeDialogue->GetCinematicId(),
             &CinematicRequests::StartCinematic);
     }
-
 } // namespace Conversation

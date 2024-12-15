@@ -99,7 +99,7 @@
                 "defaultValue": {
                     "$type": "LuaSnippet",
                     "Value": {
-                        "SourceCode": "return true"
+                        "SourceCode": "-- Available by default"
                     }
                 },
                 "settings": {

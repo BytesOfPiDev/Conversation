@@ -24,6 +24,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
             AZ::AzCore
+            3rdParty::SQLite
 )
 
 ly_add_target(
@@ -152,9 +153,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-# # ##############################################################################
+# # # #############################################################################
 # Tests
-# # ##############################################################################
+# # # #############################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
   # We globally support tests, see if we support tests on this platform for Conversation.Tests

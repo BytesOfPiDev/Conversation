@@ -3,6 +3,8 @@
         "GameEntityContextRequestBus",
         "Crc32",
         "Debug",
-        "EntityId"
+        "EntityId",
+        "Name",
+        "ConversationGraphName"
     ]
 }

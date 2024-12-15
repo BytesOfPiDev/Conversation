@@ -178,7 +178,7 @@ namespace ConversationTest
         asset.AddStartingId(UniqueId::CreateRandomId());
 
         EXPECT_EQ(asset.CountStartingIds(), 1);
-        EXPECT_TRUE(asset.CopyStartingIds().front().IsValid());
+        EXPECT_TRUE(asset.GetCopyOfStartingIds().front().IsValid());
     }
 
     TEST(ConversationAssetTests, Defaulted_AddInvalidDialogue_IsRejected)

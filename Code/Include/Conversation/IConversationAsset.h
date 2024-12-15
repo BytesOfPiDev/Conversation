@@ -54,7 +54,7 @@ namespace Conversation
          * @brief Returns a copy of the DialogueIds that can potentially be used
          * to start a conversation.
          */
-        [[nodiscard]] virtual auto CopyStartingIds() const
+        [[nodiscard]] virtual auto GetCopyOfStartingIds() const
             -> AZStd::vector<UniqueId> = 0;
 
         /*

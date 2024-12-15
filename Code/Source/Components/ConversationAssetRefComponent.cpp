@@ -135,10 +135,11 @@ namespace Conversation
         return m_asset ? m_asset->CountDialogues() : 0;
     }
 
-    auto ConversationAssetRefComponent::CopyStartingIds() const
+    auto ConversationAssetRefComponent::GetCopyOfStartingIds() const
         -> AZStd::vector<UniqueId>
     {
-        return m_asset ? m_asset->CopyStartingIds() : AZStd::vector<UniqueId>{};
+        return m_asset ? m_asset->GetCopyOfStartingIds()
+                       : AZStd::vector<UniqueId>{};
     }
 
     auto ConversationAssetRefComponent::CopyDialogues() const

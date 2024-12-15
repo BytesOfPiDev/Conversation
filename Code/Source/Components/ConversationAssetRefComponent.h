@@ -40,7 +40,7 @@ namespace Conversation
 
         [[nodiscard]] auto CountDialogues() const -> size_t override;
 
-        [[nodiscard]] auto CopyStartingIds() const
+        [[nodiscard]] auto GetCopyOfStartingIds() const
             -> AZStd::vector<UniqueId> override;
 
         [[nodiscard]] auto CopyDialogues() const
