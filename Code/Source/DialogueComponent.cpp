@@ -51,9 +51,7 @@ namespace Conversation
             GetDialogueComponentNotificationOrder,
             (),
             OnDialogue,
-            ({ "Dialogue", "The dialogue being that was selected/spoken." },
-             { "AvailableResponses",
-               "A container of dialogues you can choose as a response." }),
+            ({ "Dialogue", "The dialogue being that was selected/spoken." }),
             OnConversationStarted,
             ({ "Initiator",
                "The entity that started this conversation; typically the "
@@ -78,11 +76,9 @@ namespace Conversation
             return result;
         }
 
-        void OnDialogue(
-            DialogueData const& dialogue,
-            AZStd::vector<DialogueData> const& availableResponses) override
+        void OnDialogue(DialogueData const& dialogue) override
         {
-            Call(FN_OnDialogue, dialogue, availableResponses);
+            Call(FN_OnDialogue);
         }
 
         void OnConversationStarted(
@@ -179,17 +175,8 @@ namespace Conversation
                     AZ::Script::Attributes::Scope,
                     AZ::Script::Attributes::ScopeFlags::Common)
                 ->EventWithBus<DialogueComponentRequestBus>(
-                    "SelectAvailableResponseByNum",
-                    &DialogueComponentRequests::SelectAvailableResponse,
-                    { { { "Choice Number",
-                          "The number corresponding to the desired dialogue "
-                          "choice. Starts at '1'." } } })
-                ->EventWithBus<DialogueComponentRequestBus>(
                     "AbortConversation",
                     &DialogueComponentRequestBus::Events::AbortConversation)
-                ->EventWithBus<DialogueComponentRequestBus>(
-                    "ContinueConversation",
-                    &DialogueComponentRequestBus::Events::ContinueConversation)
                 ->EventWithBus<DialogueComponentRequestBus>(
                     "GetActiveDialogue",
                     &DialogueComponentRequestBus::Events::GetActiveDialogue)
@@ -241,14 +228,16 @@ namespace Conversation
                 "ActiveConversationTag",
                 BehaviorConstant(ActiveConversationTag));
             behaviorContext->Constant(
-                "PlayerConversationTag",
-                BehaviorConstant(PlayerConversationTag));
+                "ConversationCameraEntityTag",
+                BehaviorConstant(CameraEntityTag));
             behaviorContext->Constant(
                 "ConversationCameraTargetTag",
                 BehaviorConstant(CameraTargetTag));
             behaviorContext->Constant(
-                "ConversationCameraEntityTag",
-                BehaviorConstant(CameraEntityTag));
+                "PlayerConversationTag",
+                BehaviorConstant(PlayerConversationTag));
+            behaviorContext->Constant(
+                "PlayerSpeakerTag", BehaviorConstant(PlayerSpeakerTag));
         }
     }
 
@@ -256,7 +245,7 @@ namespace Conversation
     {
         if (!GetEntity()->FindComponent(AZ::TypeId{ TagComponentTypeId }))
         {
-            AZLOG_ERROR( // NOLINT
+            AZLOG_ERROR(
                 "Dialogue component [EntityName: %s | EntityId: %s] does not "
                 "have a TagComponent, which is required! The request bus for "
                 "this entity will be disconnected.\n",
@@ -578,22 +567,22 @@ namespace Conversation
             return;
         }
 
+        m_availableResponses.clear();
         m_activeDialogue.emplace(dialogueToSelect);
 
-        UpdateAvailableResponses();
-
-        // We send the dialogue out. It's considered spoken after this call.
+        // We send the dialogue out. In other words, the actor speakers the
+        // text.
         DialogueComponentNotificationBus::Event(
             GetEntityId(),
             &DialogueComponentNotificationBus::Events::OnDialogue,
-            *m_activeDialogue,
-            m_availableResponses);
+            *m_activeDialogue);
 
+        UpdateAvailableResponses();
         RunDialogueScript();
         PlayDialogueAudio();
         RunCinematic();
 
-        AZLOG( // NOLINT
+        AZLOG(
             LOG_FollowConversation,
             "[Dialogue: '%s'/%s] \"%s\"",
             GetNamedEntityId().GetName().data(),
@@ -617,87 +606,6 @@ namespace Conversation
 
         SelectDialogue(getDialogueOutcome.GetValue());
         return true;
-    }
-
-    void DialogueComponent::SelectAvailableResponse(int const responseNumber)
-    {
-        // responseNumber must begin with the chosen first number (0 or 1)
-        if (responseNumber < FirstResponseNumber)
-        {
-            return;
-        }
-        // Technically, FirstResponseNumber could be set to anything, such as
-        // 15, then choice 15 would be index 0 in our response container.
-        // That is obviously ridiculous, so we limit the choice to zero or one.
-        // We set the static assert here, instead of at the declaration, so
-        // that it is not instinctively changed when changing the constant.
-        static_assert(
-            FirstResponseNumber >= 0 && FirstResponseNumber <= 1,
-            "FirstResponseNumber *MUST* be zero or one.");
-
-        if constexpr (FirstResponseNumber == 0)
-        {
-            // Exit if 0-based choice is past the upperbound [0, size).
-            if (responseNumber >= m_availableResponses.size())
-            {
-                return;
-            }
-        }
-        else if constexpr (FirstResponseNumber == 1)
-        {
-            // Exit if 1-based choice is past the upper bounds [0, size].
-            if (responseNumber > m_availableResponses.size())
-            {
-                return;
-            }
-        }
-
-        // This is why we care if the choice is 0-based or 1-based. We have to
-        // adjust our index accordingly.
-        auto const dialogueToSelect{
-            m_availableResponses[responseNumber - FirstResponseNumber]
-        };
-        SelectDialogue(dialogueToSelect);
-    }
-
-    void DialogueComponent::ContinueConversation()
-    {
-        // Require active dialogue
-        if (!m_activeDialogue)
-        {
-            return;
-        }
-        // Calling continue with no available responses should end the
-        // conversation normally.
-        if (m_availableResponses.empty())
-        {
-            EndConversation();
-            return;
-        }
-        // Only if the first available response is the same speaker as the
-        // active dialogue, select it. m_availableResponses is guaranteed to
-        // have at least one element due to an earlier check.
-        if (m_activeDialogue->GetSpeaker() ==
-            m_availableResponses.front().GetSpeaker())
-        {
-            SelectDialogue(*m_availableResponses.begin());
-            return;
-        }
-
-        // FIXME: If the active dialogue's speaker is the player, we
-        // automatically choose an NPC response. This is just a workaround until
-        // proper NPC response handling is implemented.
-        if (AZ::Crc32{ m_activeDialogue->GetSpeaker() } == PlayerSpeakerTag)
-        {
-            auto const firstAvailableResponseIter =
-                m_availableResponses.begin();
-            if (firstAvailableResponseIter != m_availableResponses.end() &&
-                AZ::Crc32{ firstAvailableResponseIter->GetSpeaker() } !=
-                    PlayerSpeakerTag)
-            {
-                SelectDialogue(*firstAvailableResponseIter);
-            }
-        }
     }
 
     auto DialogueComponent::CheckAvailability(

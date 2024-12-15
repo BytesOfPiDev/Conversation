@@ -5,6 +5,12 @@
         "Debug",
         "EntityId",
         "Name",
-        "ConversationGraphName"
+        "ConversationGraphName",
+        "DialogueComponentBus",
+        "DialogueComponentNotificationBus",
+        "PlayerSpeakerTag",
+        "TagGlobalRequestBus",
+        "TagComponentRequestBus",
+        "UiTextBus"
     ]
 }

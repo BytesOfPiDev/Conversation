@@ -5,16 +5,10 @@
 
 namespace Conversation
 {
-    AZ_ENUM_CLASS( // NOLINT
-        DialogueState,
-        Invalid,
-        Inactive,
-        Starting,
-        Active,
-        Aborting,
-        Ending);
+    AZ_ENUM_CLASS(
+        DialogueState, Invalid, Inactive, Starting, Active, Aborting, Ending);
 
-    AZ_ENUM_CLASS( // NOLINT
+    AZ_ENUM_CLASS(
         ConversationActiveSubState,
         Invalid,
         CheckingConditions,
@@ -27,7 +21,7 @@ namespace Conversation
     class DialogueComponentRequests : public AZ::ComponentBus
     {
     public:
-        AZ_DISABLE_COPY_MOVE(DialogueComponentRequests); // NOLINT
+        AZ_DISABLE_COPY_MOVE(DialogueComponentRequests);
 
         DialogueComponentRequests() = default;
         ~DialogueComponentRequests() override = default;
@@ -40,18 +34,18 @@ namespace Conversation
          * @returns bool True if the conversation successfully started.
          *
          * Success requires that:
-         *    * The conversation is in the Inactive state.
-         *    * At minimum, one ConversationAssetRefComponent on this entity.
-         *    * At minimum, one valid DialogueData within any asset ref.
-         *    * At minimum, one valid starting UniqueId within any asset ref.
-         *    * At minimum, one valid starting UniqueId must match a
+         *    * The conversation state equals 'Inactive'.
+         *    * At least one ConversationAssetRefComponent on this entity.
+         *    * At least one valid DialogueData within any asset ref.
+         *    * At least one valid starting UniqueId within any asset ref.
+         *    * At least one valid starting UniqueId must match a
          *      DialogueData in the asset ref.
-         *    * At minimum, one DialogueData matching a starting UniqueId must
+         *    * At least one DialogueData matching a starting UniqueId must
          *      pass its availability check.
          *
          * While trying to start the conversation, the DialogueState may change.
          * Initially, it enters the DialogueState::Starting state. If all
-         * requirements are met, a starting dialogue is chosen and the
+         * requirements pass, a starting dialogue is chosen and the
          * dialogue state becomes Active. Otherwise, the conversation is reset
          * to Inactive.
          *
@@ -92,15 +86,6 @@ namespace Conversation
         virtual auto TryToSelectDialogue(UniqueId const id) -> bool = 0;
 
         /**
-         * @brief Selects one of the active dialogue's available responses.
-         *
-         * Responses numbers are based on the value of FirstResponseNumber
-         *
-         * @param responseNumber The choice number to select.
-         */
-
-        virtual void SelectAvailableResponse(int const responseNumber) = 0;
-        /**
          * @brief Forcibly ends the conversation.
          *
          * After ending the conversation, the abort scripts are called.
@@ -112,15 +97,6 @@ namespace Conversation
          * an ending dialogue in a conversation graph.
          */
         virtual void AbortConversation() = 0;
-
-        /**
-         * @brief Moves the conversation forward, if possible.
-         *
-         * Examples:
-         *  - There is only one available response *and* it is by the same
-         *    speaker as the active dialogue.
-         */
-        virtual void ContinueConversation() = 0;
 
         [[nodiscard]] virtual auto CheckAvailability(
             DialogueData const& dialogueToCheck) const -> bool = 0;
@@ -171,7 +147,7 @@ namespace Conversation
          * the system. If user's do set it, it should be set to zero or more.
          * Negative numbers are reserved for the Gem.
          *
-         * @returns A number indiciating position during noitification.
+         * @returns A number indicating position during notification.
          *
          * @note The function can't be const due to behavior handlers.
          */
@@ -182,15 +158,14 @@ namespace Conversation
          * Sent out when a dialogue is selected/spoken.
          *
          * @param dialogue The dialogue that was sent out and is now active.
-         * @param potentialResponses (Pending removal) A list of responses that
-         * may be sent out.
          */
-        virtual void OnDialogue(
-            [[maybe_unused]] DialogueData const& dialogue,
-            [[maybe_unused]] AZStd::vector<DialogueData> const&
-                potentialResponses)
+        virtual void OnDialogue([[maybe_unused]] DialogueData const& dialogue)
         {
         }
+
+        virtual void OnDialogueBegin() {};
+        virtual void OnDialogueEnd() {};
+
         virtual void OnConversationStarted(
             [[maybe_unused]] const AZ::EntityId initiatingEntityId)
         {
@@ -204,7 +179,7 @@ namespace Conversation
         /**
          * A dialogue choice that can be selected.
          *
-         * This notification may be sent zero or multiple times after a dialogue
+         * This notification may be sent zero or more times after a dialogue
          * has been sent out.
          *
          * @note A response can be for any entity in the game - both the player

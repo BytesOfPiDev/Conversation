@@ -61,8 +61,6 @@ namespace Conversation
         void AbortConversation() override;
         void SelectDialogue(DialogueData dialogueToSelect) override;
         auto TryToSelectDialogue(UniqueId const dialogueId) -> bool override;
-        void SelectAvailableResponse(int const responseNumber) override;
-        void ContinueConversation() override;
 
         [[nodiscard]] auto GetActiveDialogue() const
             -> AZ::Outcome<DialogueData> override

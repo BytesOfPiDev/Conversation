@@ -118,9 +118,9 @@ function ScriptDialogueComponent:IsAvailable(nodeId)
 	-- Process node will only return a table if the dialogue can be used.
 	local node = self:ProcessNode(nodeId)
 
-	-- nil implies true
+	-- nil implies false
 	if node == nil then
-		return true
+		return false
 	end
 
 	-- IMPORTANT: users should *only* be returning a table for available dialogues.
@@ -192,7 +192,7 @@ end
 -- @param nodeId The name of the node as defined in the conversation graph.
 -- @return A table of settings if the dialogue is available for use, otherwise undefined.
 function ScriptDialogueComponent:ProcessNode(nodeId)
-	if type(nodeId) ~= "function" then
+	if type(self[nodeId]) == "function" then
 		-- NOTE: The user's function could return anything. A table implies the dialogue is available for use.
 		-- Anything else is undefined and implies the dialogue is not available for use.
 		return self[nodeId]()
