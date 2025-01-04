@@ -78,7 +78,7 @@ namespace Conversation
 
         void OnDialogue(DialogueData const& dialogue) override
         {
-            Call(FN_OnDialogue);
+            Call(FN_OnDialogue, dialogue);
         }
 
         void OnConversationStarted(
@@ -346,7 +346,7 @@ namespace Conversation
     {
         if (!m_conversationAssetRequests)
         {
-            AZ_Error( // NOLINT
+            AZ_Error(
                 "DialogueComponent",
                 false,
                 "A conversation cannot be started because we did not find a "
@@ -356,7 +356,7 @@ namespace Conversation
             return false;
         }
 
-        AZ_Info( // NOLINT
+        AZ_Info(
             "DialogueComponent",
             "[Entity: '%s'] Trying to start a conversation.\n",
             GetNamedEntityId().GetName().data());
@@ -365,7 +365,7 @@ namespace Conversation
 
         if (m_currentState != DialogueState::Inactive)
         {
-            AZ_Warning( // NOLINT
+            AZ_Warning(
                 "DialogueComponent",
                 false,
                 "Failed to start conversation. Entity '%s' needs to be in the "
@@ -377,7 +377,7 @@ namespace Conversation
 
         if (m_conversationAssetRequests->CountDialogues() == 0)
         {
-            AZ_Warning( // NOLINT
+            AZ_Warning(
                 "DialogueComponent",
                 false,
                 "Failed to start conversation. Entity '%s' has no dialogues.\n",
@@ -387,7 +387,7 @@ namespace Conversation
 
         if (m_conversationAssetRequests->CountStartingIds() == 0)
         {
-            AZ_Warning( // NOLINT
+            AZ_Warning(
                 "DialogueComponent",
                 false,
                 "Failed to start conversation. Entity '%s' has no starting "
