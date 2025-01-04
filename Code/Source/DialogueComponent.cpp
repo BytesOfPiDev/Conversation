@@ -178,6 +178,9 @@ namespace Conversation
                     "AbortConversation",
                     &DialogueComponentRequestBus::Events::AbortConversation)
                 ->EventWithBus<DialogueComponentRequestBus>(
+                    "EndConversation",
+                    &DialogueComponentRequestBus::Events::EndConversation)
+                ->EventWithBus<DialogueComponentRequestBus>(
                     "GetActiveDialogue",
                     &DialogueComponentRequestBus::Events::GetActiveDialogue)
                 ->EventWithBus<DialogueComponentRequestBus>(
@@ -258,9 +261,8 @@ namespace Conversation
 
     void DialogueComponent::Activate()
     {
-        m_conversationAssetRequests =
-            ConversationAssetRefComponentRequestBus::FindFirstHandler(
-                GetEntityId());
+        ConversationAssetRefComponentRequestBus::FindFirstHandler(
+            GetEntityId());
 
         // The TagComponent is used to communicate with speakers, so we add our
         // tag to it upon activation. It will need to be removed upon
@@ -275,8 +277,6 @@ namespace Conversation
 
     void DialogueComponent::Deactivate()
     {
-        m_conversationAssetRequests = nullptr; // We don't own it.
-
         // Just in case there's a conversation, we abort on deactivation.
         AbortConversation();
 
@@ -344,20 +344,19 @@ namespace Conversation
     auto DialogueComponent::TryToStartConversation(
         AZ::EntityId initiatingEntityId) -> bool
     {
-        if (!m_conversationAssetRequests)
+        if (!ConversationAssetRefComponentRequestBus::HasHandlers())
         {
             AZ_Error(
-                "DialogueComponent",
+                TYPEINFO_Name(),
                 false,
-                "A conversation cannot be started because we did not find a "
-                "ConversationAssetRefComponent when this component was "
-                "activated.");
+                "Unable to start conversation - no conversation asset ref(s) "
+                "found");
 
             return false;
         }
 
         AZ_Info(
-            "DialogueComponent",
+            TYPEINFO_Name(),
             "[Entity: '%s'] Trying to start a conversation.\n",
             GetNamedEntityId().GetName().data());
 
@@ -375,7 +374,17 @@ namespace Conversation
             return false;
         }
 
-        if (m_conversationAssetRequests->CountDialogues() == 0)
+        size_t const numDialogues = [this]() -> decltype(numDialogues)
+        {
+            auto result{ decltype(numDialogues){} };
+            ConversationAssetRefComponentRequestBus::EventResult(
+                result,
+                GetEntityId(),
+                &ConversationAssetRefComponentRequests::CountDialogues);
+            return result;
+        }();
+
+        if (numDialogues == 0)
         {
             AZ_Warning(
                 "DialogueComponent",
@@ -385,7 +394,17 @@ namespace Conversation
             return false;
         }
 
-        if (m_conversationAssetRequests->CountStartingIds() == 0)
+        size_t const numStartingIds = [this]() -> decltype(numStartingIds)
+        {
+            auto result{ decltype(numStartingIds){} };
+            ConversationAssetRefComponentRequestBus::EventResult(
+                result,
+                GetEntityId(),
+                &ConversationAssetRefComponentRequests::CountStartingIds);
+            return result;
+        }();
+
+        if (numStartingIds == 0)
         {
             AZ_Warning(
                 "DialogueComponent",
@@ -398,16 +417,26 @@ namespace Conversation
 
         m_currentState = DialogueState::Starting;
 
-        AZLOG( // NOLINT
+        AZLOG(
             LOG_FollowConversation,
             "[Entity: '%s'] Entered starting state. Now checking for available "
             "starting dialogues.\n",
             GetNamedEntityId().GetName().data());
 
+        AZStd::vector<UniqueId> const startingIds =
+            [this]() -> decltype(startingIds)
+        {
+            auto result{ decltype(startingIds){} };
+            ConversationAssetRefComponentRequestBus::EventResult(
+                result,
+                GetEntityId(),
+                &ConversationAssetRefComponentRequests::GetCopyOfStartingIds);
+            return result;
+        }();
+
         // We find the first available starting ID and use it to start the
         // conversation.
-        for (UniqueId const& startingId :
-             m_conversationAssetRequests->GetCopyOfStartingIds())
+        for (auto const& startingId : startingIds)
         {
             // DialogueData and DialogueId are different types. We need to
             // search a list of DialogueData for one matching the current
@@ -415,8 +444,18 @@ namespace Conversation
             // based on the current DialogueId. DialogueData objects are always
             // equal only if they have matching IDs. This allows me to use
             // AZStd::find to search the container of dialogues.
-            auto const startingDialogueOutcome =
-                m_conversationAssetRequests->GetDialogueById(startingId);
+
+            AZ::Outcome<DialogueData> const startingDialogueOutcome =
+                [this, startingId]() -> decltype(startingDialogueOutcome)
+            {
+                auto result{ decltype(startingDialogueOutcome){} };
+                ConversationAssetRefComponentRequestBus::EventResult(
+                    result,
+                    GetEntityId(),
+                    &ConversationAssetRefComponentRequests::GetDialogueById,
+                    startingId);
+                return result;
+            }();
 
             // Verify we found one. This should never fail, but just in case.
             if (!startingDialogueOutcome.IsSuccess() ||
@@ -424,7 +463,7 @@ namespace Conversation
             {
                 m_currentState = DialogueState::Inactive;
 
-                AZ_Error( // NOLINT
+                AZ_Error(
                     "DialogueComponent",
                     false,
                     "[Entity: '%s'] Failed to find an expected dialogue.\n");
@@ -593,9 +632,13 @@ namespace Conversation
     auto DialogueComponent::TryToSelectDialogue(UniqueId const dialogueId)
         -> bool
     {
-        auto const getDialogueOutcome =
-            m_conversationAssetRequests->GetDialogueById(dialogueId);
-        if (!getDialogueOutcome.IsSuccess())
+        AZ::Outcome<DialogueData> dialogueOutcome{};
+        ConversationAssetRefComponentRequestBus::EventResult(
+            dialogueOutcome,
+            GetEntityId(),
+            &ConversationAssetRefComponentRequests::GetDialogueById,
+            dialogueId);
+        if (!dialogueOutcome.IsSuccess())
         {
             LOGTAG_EntityComponent(
                 "LOG_FollowConversation",
@@ -604,7 +647,7 @@ namespace Conversation
             return false;
         }
 
-        SelectDialogue(getDialogueOutcome.GetValue());
+        SelectDialogue(dialogueOutcome.GetValue());
         return true;
     }
 
@@ -632,10 +675,15 @@ namespace Conversation
     auto DialogueComponent::CheckAvailabilityById(
         UniqueId const& dialogueIdToCheck) const -> bool
     {
-        auto const getDialogueOutcome =
-            m_conversationAssetRequests->GetDialogueById(dialogueIdToCheck);
-        return getDialogueOutcome.IsSuccess()
-            ? CheckAvailability(getDialogueOutcome.GetValue())
+        AZ::Outcome<DialogueData> dialogueOutcome{};
+        ConversationAssetRefComponentRequestBus::EventResult(
+            dialogueOutcome,
+            GetEntityId(),
+            &ConversationAssetRefComponentRequests::GetDialogueById,
+            dialogueIdToCheck);
+
+        return dialogueOutcome.IsSuccess()
+            ? CheckAvailability(dialogueOutcome.GetValue())
             : false;
     }
 
@@ -646,8 +694,13 @@ namespace Conversation
         // Check all responses and determine which should be available for use.
         for (UniqueId const& responseId : m_activeDialogue->GetResponseIds())
         {
-            AZ::Outcome<DialogueData> const responseDialogueOutcome =
-                m_conversationAssetRequests->GetDialogueById(responseId);
+            AZ::Outcome<DialogueData> responseDialogueOutcome{};
+            ConversationAssetRefComponentRequestBus::EventResult(
+                responseDialogueOutcome,
+                GetEntityId(),
+                &ConversationAssetRefComponentRequests::GetDialogueById,
+                responseId);
+
             // An invalid ID means we didn't find a dialogue matching the
             // responseId. We can only check valid dialogues, so we skip ahead
             // if invalid.
@@ -659,6 +712,11 @@ namespace Conversation
             if (CheckAvailability(responseDialogueOutcome.GetValue()))
             {
                 m_availableResponses.push_back(
+                    responseDialogueOutcome.GetValue());
+
+                DialogueComponentNotificationBus::Event(
+                    GetEntityId(),
+                    &DialogueComponentNotifications::OnResponseAvailable,
                     responseDialogueOutcome.GetValue());
             }
         }

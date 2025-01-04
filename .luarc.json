@@ -11,6 +11,7 @@
         "PlayerSpeakerTag",
         "TagGlobalRequestBus",
         "TagComponentRequestBus",
-        "UiTextBus"
+        "UiTextBus",
+        "UiDynamicLayoutBus"
     ]
 }

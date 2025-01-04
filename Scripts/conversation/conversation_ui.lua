@@ -44,12 +44,18 @@ function Ui:OnActivate()
 		self:LogError(fn, "PlayerSpeakerTag value: " .. PlayerSpeakerTag)
 	else
 		self.player_entity = TagGlobalRequestBus.Broadcast.GetEntityByTag(PlayerSpeakerTag)
-		self.dialogue_component_notification_bus_handler = DialogueComponentNotificationBus.Connect(self, self.entityId)
+		self.dialogue_component_notification_bus_handler =
+			DialogueComponentNotificationBus.Connect(self, self.player_entity)
+
+		if not self.dialogue_component_notification_bus_handler then
+			self:LogError(fn, "Failed to connect to the dialogue component notification bus!")
+		elseif self.Properties.EnableDebug then
+			self:LogInfo(fn, "Successfully connected to dialogue component notification bus")
+		end
 	end
 
 	text_bus.SetText(self.Properties.PlayerTextEntity, "...")
 	text_bus.SetText(self.Properties.SpeakerTextEntity, "...")
-	dynamic_layout.SetNumChildElements(self.Properties.ResponseLayout, 8)
 end
 
 function Ui:OnDeactivate()
@@ -62,16 +68,36 @@ function Ui:OnDeactivate()
 	end
 end
 
+---------------------------------------------
+-- DialogueComponentNotificationBus overrides
+---------------------------------------------
+
 function Ui:OnDialogue(dialogue_data)
 	self.active_dialogue_data = nil
 	self.active_dialogue_data = dialogue_data
+
+	self:LogInfo("OnDialogue", "Received")
+	text_bus.SetText(self.Properties.SpeakerTextEntity, dialogue_data.Text)
 end
 
-function Ui:OnDialogueBegin() end
+function Ui:OnConversationStarted(initiatingEntityId)
+	self:LogInfo("OnConversationStarted", "Received signal")
+end
 
-function Ui:OnDialogueEnd() end
+function Ui:OnDialogueBegin()
+	self:LogInfo("OnDialogueBegin", "Received signal")
+end
+
+function Ui:OnDialogueEnd()
+	self:LogInfo("OnDialogueEnd", "Received signal")
+end
+
+function Ui:OnConversationAborted() end
+
+function Ui:OnConversationEnded() end
 
 function Ui:OnResponseAvailable(response)
+	self:LogInfo("OnResponseAvailable", "Received signal: " .. response.Text)
 	table.insert(self.available_responses, response)
 end
 

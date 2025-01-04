@@ -72,7 +72,7 @@ namespace Conversation
         virtual void SelectDialogue(DialogueData dialogueToSelect) = 0;
 
         /**
-         * @brief Attempts to find a select a dialogue with the given Uniqueid.
+         * @brief Try to find and select a dialogue with the given Uniqueid.
          *
          * Checks all assets available to the entity for a DialogueData that has
          * the given UniqueId. If it finds one, an availability check is
@@ -86,17 +86,22 @@ namespace Conversation
         virtual auto TryToSelectDialogue(UniqueId const id) -> bool = 0;
 
         /**
-         * @brief Forcibly ends the conversation.
+         * @brief Forcibly ends the conversation
          *
          * After ending the conversation, the abort scripts are called.
          *
-         * @note Used in situations such as a monster attacking the player
+         * Used in situations such as a monster attacking the player
          * during a conversation.
-         *
-         * @note Conversations that only end through this call or from selecting
-         * an ending dialogue in a conversation graph.
          */
         virtual void AbortConversation() = 0;
+
+        /**
+         * @brief End the conversation normally
+         *
+         * Used when a conversation ends naturally, such as the player saying
+         * goodbye.
+         */
+        virtual void EndConversation() = 0;
 
         [[nodiscard]] virtual auto CheckAvailability(
             DialogueData const& dialogueToCheck) const -> bool = 0;

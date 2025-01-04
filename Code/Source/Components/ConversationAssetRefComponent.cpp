@@ -62,10 +62,15 @@ namespace Conversation
 
     void ConversationAssetRefComponent::Activate()
     {
-        AZ_Assert( // NOLINT
+        AZ_Assert(
             GetEntity() != nullptr,
             "Activate should not be called if we're not connected to an "
             "entity!");
+
+        AZ_Info(
+            "ConversationAssetRefComponent",
+            "Dialogue count: %zu",
+            m_asset->CountDialogues());
     }
 
     void ConversationAssetRefComponent::Deactivate()

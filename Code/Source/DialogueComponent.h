@@ -101,10 +101,9 @@ namespace Conversation
         /**
          * Ends the conversation normally. Triggers end scripts.
          */
-        void EndConversation();
+        void EndConversation() override;
 
     private:
-        ConversationAssetRefComponentRequests* m_conversationAssetRequests{};
         DialogueComponentConfig m_config;
         ConversationAsset m_memoryConversationAsset;
         DialogueState m_currentState = DialogueState::Inactive;
