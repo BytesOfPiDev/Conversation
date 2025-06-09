@@ -125,10 +125,8 @@ namespace ConversationCanvas
     {
         if (IsCompileLoggingEnabled())
         {
-            AZLOG_INFO( // NOLINT(*-pro-type-vararg,
-                        // *-bounds-array-to-pointer-decay)
-                "Compiling conversation graph '%s'...",
-                graphName.c_str());
+            AZLOG_INFO(
+                "Compiling conversation graph '%s'...", graphName.c_str());
         }
 
         ClearData();
@@ -138,9 +136,33 @@ namespace ConversationCanvas
         {
             if (IsCompileLoggingEnabled())
             {
-                AZLOG_INFO("Base graph compilation failed."); // NOLINT
+                AZLOG_INFO("Base graph compilation failed.");
             }
             return false;
+        }
+
+        static constexpr auto compilationDbPath =
+            "@gemroot:Conversation@/Assets/experimental.db";
+
+        // We need to resolve the absolute path first. O3DE's database
+        // connection class doesn't handle aliases and the database connection
+        // needs the full path.
+        auto const dbPath = []() -> AZ::IO::FixedMaxPath
+        {
+            AZ::IO::FixedMaxPath result{};
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(
+                result, compilationDbPath);
+            return result;
+        }();
+
+        if (!dbPath.empty())
+        {
+            AZLOG_INFO("Trying to open database: '%s'", dbPath.c_str());
+            m_dbConn.Open(dbPath.String(), false);
+        }
+        else
+        {
+            AZLOG_ERROR("Failed to resolve database path");
         }
 
         BuildSlotValueTable();
@@ -495,8 +517,9 @@ namespace ConversationCanvas
             }
         }
 
-        return AtomToolsFramework::GetSymbolNameFromText(AZStd::string::format(
-            "node%u_%s", node->GetId(), node->GetTitle()));
+        return AtomToolsFramework::GetSymbolNameFromText(
+            AZStd::string::format(
+                "node%u_%s", node->GetId(), node->GetTitle()));
     }
 
     [[nodiscard]] auto ConversationGraphCompiler::GetSymbolNameFromSlot(
@@ -1281,9 +1304,9 @@ namespace ConversationCanvas
 
     void ConversationGraphCompiler::BuildSlotValueTable()
     {
-        // Build a table of all values for every slot in the graph.
         ModifySlotValueTable().clear();
 
+        // Build a table of all values for every slot in the graph.
         AZStd::ranges::for_each(
             GetAllNodesInExecutionOrder(),
             [this](auto const& currentNode) -> void
@@ -1456,8 +1479,9 @@ namespace ConversationCanvas
 
                     if (relativePathFound)
                     {
-                        includeStatements.push_back(AZStd::string::format(
-                            "require(\"%s\")", relativePath.c_str()));
+                        includeStatements.push_back(
+                            AZStd::string::format(
+                                "require(\"%s\")", relativePath.c_str()));
                     }
                 }
                 return includeStatements;

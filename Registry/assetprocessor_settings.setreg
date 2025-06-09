@@ -16,7 +16,11 @@
                     "watch": "@GEMROOT:Conversation@/Scripts",
                     "recursive": 1,
                     "order": 102
-                }
+                },
+                "RC db": {
+                    "glob": "*.db",
+                    "params": "copy"
+                },
             }
         }
     }

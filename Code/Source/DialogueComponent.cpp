@@ -44,7 +44,7 @@ namespace Conversation
         , public AZ::BehaviorEBusHandler
     {
     public:
-        AZ_EBUS_BEHAVIOR_BINDER_WITH_DOC( // NOLINT
+        AZ_EBUS_BEHAVIOR_BINDER_WITH_DOC(
             BehaviorDialogueComponentNotificationBusHandler,
             "{D9A79838-589F-4BE3-9D87-7CFE187A52D3}",
             AZ::SystemAllocator,
