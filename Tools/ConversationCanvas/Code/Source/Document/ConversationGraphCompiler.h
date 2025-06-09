@@ -4,6 +4,7 @@
 #include "AtomToolsFramework/Graph/GraphCompiler.h"
 #include "AtomToolsFramework/Graph/GraphTemplateFileData.h"
 #include "AzCore/RTTI/RTTIMacros.h"
+#include "AzToolsFramework/SQLite/SQLiteConnection.h"
 #include "Conversation/UniqueId.h"
 #include "GraphModel/Model/Common.h"
 
@@ -22,10 +23,10 @@ namespace ConversationCanvas
     class ConversationGraphCompiler : public AtomToolsFramework::GraphCompiler
     {
     public:
-        AZ_RTTI_NO_TYPE_INFO_DECL(); // NOLINT
-        AZ_TYPE_INFO_WITH_NAME_DECL(ConversationGraphCompiler); // NOLINT
-        AZ_CLASS_ALLOCATOR_DECL; // NOLINT
-        AZ_DISABLE_COPY_MOVE(ConversationGraphCompiler); // NOLINT
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_TYPE_INFO_WITH_NAME_DECL(ConversationGraphCompiler);
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_DISABLE_COPY_MOVE(ConversationGraphCompiler);
         ConversationGraphCompiler() = default;
 
         ConversationGraphCompiler(AZ::Crc32 const& toolId);
@@ -147,8 +148,9 @@ namespace ConversationCanvas
          * DialogueData.
          * @return true or CompilationError
          */
-        auto BuildDialogueNode(GraphModel::ConstNodePtr const&
-                                   dialogueGraphNode) -> CompilerOutcome;
+        auto BuildDialogueNode(
+            GraphModel::ConstNodePtr const& dialogueGraphNode)
+            -> CompilerOutcome;
 
         /**
          * @brief Gathers the data needed by the compiler to setup dialogue
@@ -240,5 +242,8 @@ namespace ConversationCanvas
         // This counter will be used as a suffix for graph name substitutions in
         // case multiple template nodes are included in the same graph
         [[maybe_unused]] int m_templateNodeCount = 0;
+
+        AzToolsFramework::SQLite::Connection m_dbConn{};
+        static constexpr auto m_dbPath{ "" };
     };
 } // namespace ConversationCanvas
