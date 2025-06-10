@@ -9,7 +9,7 @@
 #include "GraphModel/Model/Common.h"
 
 #include "Conversation/DialogueData.h"
-#include "NodeData.h"
+#include "Tools/ConversationCanvas/NodeData.h"
 
 namespace ConversationCanvas
 {

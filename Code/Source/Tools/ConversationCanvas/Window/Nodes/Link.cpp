@@ -1,4 +1,4 @@
-#include "Window/Nodes/Link.h"
+#include "Tools/ConversationCanvas/Window/Nodes/Link.h"
 
 #include "AtomToolsFramework/Graph/GraphCompiler.h"
 #include "AzCore/Console/ILogger.h"
@@ -13,9 +13,9 @@
 #include "GraphModel/Model/Slot.h"
 
 #include "Conversation/DialogueData.h"
-#include "ConversationCanvasTypeIds.h"
-#include "DataTypes.h"
-#include "Document/NodeRequestBus.h"
+#include "Tools/ConversationCanvas/ConversationCanvasTypeIds.h"
+#include "Tools/ConversationCanvas/DataTypes.h"
+#include "Tools/ConversationCanvas/Document/NodeRequestBus.h"
 
 namespace ConversationCanvas
 {

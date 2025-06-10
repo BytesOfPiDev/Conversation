@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AzCore/EBus/EBus.h"
-#include "NodeData.h"
+#include "Tools/ConversationCanvas/NodeData.h"
 
 namespace ConversationCanvas
 {

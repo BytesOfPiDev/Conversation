@@ -3,7 +3,7 @@
 #include "AzCore/RTTI/TypeInfoSimple.h"
 #include "GraphModel/Model/Node.h"
 
-#include "Document/NodeRequestBus.h"
+#include "Tools/ConversationCanvas/Document/NodeRequestBus.h"
 
 namespace ConversationCanvas
 {

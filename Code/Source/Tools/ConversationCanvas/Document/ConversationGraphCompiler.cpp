@@ -1,4 +1,4 @@
-#include "Document/ConversationGraphCompiler.h"
+#include "Tools/ConversationCanvas/Document/ConversationGraphCompiler.h"
 
 #include <QProcess>
 
@@ -29,16 +29,14 @@
 #include "GraphModel/Model/Node.h"
 #include "GraphModel/Model/Slot.h"
 
-#include "Common.h"
 #include "Conversation/ConversationAsset.h"
 #include "Conversation/DialogueChunk.h"
 #include "Conversation/DialogueData.h"
-#include "ConversationCanvasTypeIds.h"
-#include "DataTypes.h"
-#include "Document/NodeRequestBus.h"
-#include "LuaSnippet.h"
-#include "SQLite/SQLiteConnection.h"
-#include "SQLite/SQLiteQuery.h"
+#include "Tools/ConversationCanvas/Common.h"
+#include "Tools/ConversationCanvas/ConversationCanvasTypeIds.h"
+#include "Tools/ConversationCanvas/DataTypes.h"
+#include "Tools/ConversationCanvas/Document/NodeRequestBus.h"
+#include "Tools/ConversationCanvas/LuaSnippet.h"
 
 namespace ConversationCanvas
 {

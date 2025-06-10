@@ -1,4 +1,4 @@
-#include "Window/ConversationCanvasMainWindow.h"
+#include "Tools/ConversationCanvas/Window/ConversationCanvasMainWindow.h"
 
 #include "AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h"
 #include "AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h"
@@ -7,7 +7,7 @@
 #include "GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.h"
 #include "GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h"
 
-#include "Common.h"
+#include "Tools/ConversationCanvas/Common.h"
 
 namespace ConversationCanvas
 {
@@ -107,7 +107,8 @@ namespace ConversationCanvas
                     AtomToolsFramework::CreateSettingsPropertyValue(
                         "/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging",
                         "Enable Compiler Logging",
-                        "Toggle verbose logging for conversation graph generation.",
+                        "Toggle verbose logging for conversation graph "
+                        "generation.",
                         false),
                     AtomToolsFramework::CreateSettingsPropertyValue(
                         Settings::FormatLua,
@@ -178,4 +179,4 @@ namespace ConversationCanvas
 
 } // namespace ConversationCanvas
 
-#include <Window/moc_ConversationCanvasMainWindow.cpp>
+#include <moc_ConversationCanvasMainWindow.cpp>

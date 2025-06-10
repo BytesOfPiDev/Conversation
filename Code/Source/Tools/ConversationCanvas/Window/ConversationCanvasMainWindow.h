@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ConversationCanvasTypeIds.h"
+#include "Tools/ConversationCanvas/ConversationCanvasTypeIds.h"
 #if !defined(Q_MOC_RUN)
 #include "AtomToolsFramework/Document/AtomToolsDocumentInspector.h"
 #include "AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h"
