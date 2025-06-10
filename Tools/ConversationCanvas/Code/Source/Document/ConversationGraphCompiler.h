@@ -190,6 +190,10 @@ namespace ConversationCanvas
         void ReplaceBasicSymbols(
             AtomToolsFramework::GraphTemplateFileData& templateFileData);
 
+    protected:
+        bool ConnectToDatabase();
+        void ConfigureDatabase();
+
     private:
         AZStd::mutex m_instructionNodesForCurrentNodeMutex{};
         AZStd::mutex m_functionDefinitionsMutex{};
@@ -244,6 +248,5 @@ namespace ConversationCanvas
         [[maybe_unused]] int m_templateNodeCount = 0;
 
         AzToolsFramework::SQLite::Connection m_dbConn{};
-        static constexpr auto m_dbPath{ "" };
     };
 } // namespace ConversationCanvas

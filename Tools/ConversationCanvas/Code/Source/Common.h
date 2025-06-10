@@ -39,4 +39,6 @@ namespace ConversationCanvas
             "/O3DE/Atom/ConversationCanvas/Lua/Formatter";
 
     } // namespace Settings
+    static constexpr auto m_compilationDbPath =
+        "@gemroot:Conversation@/Assets/experimental.db";
 } // namespace ConversationCanvas

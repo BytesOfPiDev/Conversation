@@ -80,3 +80,64 @@ else()
   message(FATAL_ERROR "Cannot set LY_CMAKE_TARGET define to ConversationCanvas as the target doesn't exist anymore."
         " Perhaps it has been renamed")
 endif()
+
+################################################################################
+# Tests
+################################################################################
+# See if globally, tests are supported
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+  # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests
+  if(PAL_TRAIT_CONVERSATION_CANVAS_TEST_SUPPORTED)
+    # We support ${gem_name}.Tests on this platform, add dependency on the Private Object target
+    ly_add_target(
+            NAME ConversationCanvas.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                conversation_canvas_tests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+                    Source
+                    Include
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzTest
+                    AZ::AzFramework
+                    Gem::conversation_canvas.Private.Object
+        )
+
+    # Add ${gem_name}.Tests to googletest
+    ly_add_googletest(
+            NAME Gem::ConversationCanvas.Tests
+        )
+  endif()
+
+  # If we are a host platform we want to add tools test like editor tests here
+  if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    # We are a host platform, see if Editor tests are supported on this platform
+    if(PAL_TRAIT_CONVERSATION_CANVAS_EDITOR_TEST_SUPPORTED)
+      # We support ${gem_name}.Editor.Tests on this platform, add ${gem_name}.Editor.Tests target which depends on
+      # private ${gem_name}.Editor.Private.Object target
+      ly_add_target(
+                NAME ConversationCanvas.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+                NAMESPACE Gem
+                FILES_CMAKE
+                    conversation_canvas_editor_tests_files.cmake
+                INCLUDE_DIRECTORIES
+                    PRIVATE
+                        Tests
+                        Source
+                        Include
+                BUILD_DEPENDENCIES
+                    PRIVATE
+                        AZ::AzTest
+                        Gem::ConversationCanvas.Editor.Private.Object
+            )
+
+      # Add ${gem_name}.Editor.Tests to googletest
+      ly_add_googletest(
+                NAME Gem::ConversationCanvas.Editor.Tests
+            )
+    endif()
+  endif()
+endif()

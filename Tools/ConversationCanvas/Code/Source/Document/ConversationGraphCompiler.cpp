@@ -14,6 +14,7 @@
 #include "AzCore/Debug/Trace.h"
 #include "AzCore/IO/FileIO.h"
 #include "AzCore/IO/Path/Path_fwd.h"
+#include "AzCore/PlatformDef.h"
 #include "AzCore/RTTI/RTTIMacros.h"
 #include "AzCore/Script/ScriptAsset.h"
 #include "AzCore/Serialization/ObjectStream.h"
@@ -36,6 +37,8 @@
 #include "DataTypes.h"
 #include "Document/NodeRequestBus.h"
 #include "LuaSnippet.h"
+#include "SQLite/SQLiteConnection.h"
+#include "SQLite/SQLiteQuery.h"
 
 namespace ConversationCanvas
 {
@@ -49,6 +52,23 @@ namespace ConversationCanvas
 
     static constexpr auto LuaEmptyFunction =
         AZStd::string_view("function() end");
+
+    static auto constexpr COMPILER_LOG_NAME = "ConversationGraphCompiler";
+
+    static auto constexpr INSERT_GRAPH = "InsertGraph";
+    static auto constexpr INSERT_GRAPH_SQL = R"(
+          INSERT INTO graphs (name,path)
+          VALUES
+		        (:graphName,:graphPath);)";
+
+    using namespace AzToolsFramework::SQLite;
+
+    static auto const s_InsertGraph = MakeSqlQuery(
+        INSERT_GRAPH,
+        INSERT_GRAPH_SQL,
+        COMPILER_LOG_NAME,
+        SqlParam<char const*>(":graphName"),
+        SqlParam<char const*>(":graphPath"));
 
     ConversationGraphCompiler::ConversationGraphCompiler(
         AZ::Crc32 const& toolId)
@@ -141,29 +161,12 @@ namespace ConversationCanvas
             return false;
         }
 
-        static constexpr auto compilationDbPath =
-            "@gemroot:Conversation@/Assets/experimental.db";
+        if (!ConnectToDatabase())
+        {
+            return false;
+        };
 
-        // We need to resolve the absolute path first. O3DE's database
-        // connection class doesn't handle aliases and the database connection
-        // needs the full path.
-        auto const dbPath = []() -> AZ::IO::FixedMaxPath
-        {
-            AZ::IO::FixedMaxPath result{};
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath(
-                result, compilationDbPath);
-            return result;
-        }();
-
-        if (!dbPath.empty())
-        {
-            AZLOG_INFO("Trying to open database: '%s'", dbPath.c_str());
-            m_dbConn.Open(dbPath.String(), false);
-        }
-        else
-        {
-            AZLOG_ERROR("Failed to resolve database path");
-        }
+        ConfigureDatabase();
 
         BuildSlotValueTable();
         if (!BuildDependencyTables())
@@ -1587,6 +1590,72 @@ namespace ConversationCanvas
                 "ConversationGraphNodeName",
                 GetSymbolNameFromNode(m_currentNode));
         }
+    }
+
+    bool ConversationGraphCompiler::ConnectToDatabase()
+    {
+        // We need to resolve the absolute path first. O3DE's database
+        // connection class doesn't handle aliases and the database connection
+        // needs the full path.
+        auto const dbPath = []() -> AZ::IO::FixedMaxPath
+        {
+            AZ::IO::FixedMaxPath result{};
+            AZ_Error(
+                AZ_FUNCTION_SIGNATURE,
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(
+                    result, m_compilationDbPath),
+                "Failed to resolve database path");
+            return result;
+        }();
+
+        if (dbPath.empty())
+        {
+            AZLOG_ERROR("Database path is empty");
+            return false;
+        }
+
+        AZ_Info(
+            AZ_FUNCTION_SIGNATURE,
+            "Trying to open database: '%s'",
+            dbPath.c_str());
+
+        if (!m_dbConn.Open(dbPath.String(), false))
+        {
+            AZLOG_ERROR("Failed to open database: '%s'", dbPath.c_str());
+            return false;
+        }
+
+        AZ_Info(
+            AZ_FUNCTION_SIGNATURE,
+            "Successfully opened database: '%s'",
+            dbPath.c_str());
+
+        return true;
+    }
+
+    void ConversationGraphCompiler::ConfigureDatabase()
+    {
+        AddStatement(&m_dbConn, s_InsertGraph);
+
+        StatementAutoFinalizer autoFinalizer{};
+        auto const success{ s_InsertGraph.Bind(
+            m_dbConn, autoFinalizer, "name1", "path1") };
+
+        if (!success)
+        {
+            AZLOG_ERROR("Failed to bind '%s'", s_InsertGraph.m_statementName);
+            return;
+        }
+
+        auto* const stmt{ autoFinalizer.Get() };
+        if (stmt->Step() == Statement::SqlError)
+        {
+            AZLOG_ERROR("Failed to step");
+            return;
+        }
+
+        auto const rowId{ m_dbConn.GetLastRowID() };
+        AZLOG_INFO("RowId: %lld", rowId);
     }
 
 } // namespace ConversationCanvas
