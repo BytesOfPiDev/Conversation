@@ -25,6 +25,7 @@
 #include "AzCore/std/string/regex.h"
 #include "AzFramework/Asset/AssetSystemBus.h"
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
+#include "AzToolsFramework/SQLite/SQLiteQuery.h"
 #include "GraphModel/Model/Common.h"
 #include "GraphModel/Model/Node.h"
 #include "GraphModel/Model/Slot.h"
