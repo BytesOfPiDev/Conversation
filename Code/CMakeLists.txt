@@ -153,77 +153,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-# # # #############################################################################
-# Tests
-# # # #############################################################################
-# See if globally, tests are supported
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-  # We globally support tests, see if we support tests on this platform for Conversation.Tests
-  if(PAL_TRAIT_CONVERSATION_TEST_SUPPORTED)
-    # We support Conversation.Tests on this platform, add dependency on the Static Object target
-    ly_add_target(
-            NAME Conversation.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-            NAMESPACE Gem
-            FILES_CMAKE
-                conversation_tests_files.cmake
-            INCLUDE_DIRECTORIES
-                PRIVATE
-                    Tests
-                    Include
-                    Source
-            BUILD_DEPENDENCIES
-                PRIVATE
-                    AZ::AzTest
-                    AZ::AzFramework
-                    Gem::Conversation.Static
-        )
-
-    # Add Conversation.Tests to googletest
-    ly_add_googletest(
-            NAME Gem::Conversation.Tests
-        )
-
-    list(APPEND convTestTargets Conversation.Tests)
-
-  endif()
-
-  # If we are a host platform we want to add tools test like editor tests here
-  if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    # We are a host platform, see if Editor tests are supported on this platform
-    if(PAL_TRAIT_CONVERSATION_EDITOR_TEST_SUPPORTED)
-      # We support Conversation.Editor.Tests on this platform, add Conversation.Editor.Tests target which depends on
-      # private Conversation.Editor.Private.Object target
-      ly_add_target(
-                NAME Conversation.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-                NAMESPACE Gem
-                AUTOMOC
-                AUTORCC
-                FILES_CMAKE
-                    conversation_editor_tests_files.cmake
-                INCLUDE_DIRECTORIES
-                    PRIVATE
-                        Tests
-                        Source
-                BUILD_DEPENDENCIES
-                    PRIVATE
-                        AZ::AzTest
-                        Gem::Conversation.Static
-                        AZ::AzFramework
-                        AZ::AzToolsFramework
-                        Gem::AtomToolsFramework.Editor
-                        Gem::AtomToolsFramework.Static
-                        Gem::Conversation.Editor
-            )
-
-      # Add Conversation.Editor.Tests to googletest
-      ly_add_googletest(
-                NAME Gem::Conversation.Editor.Tests
-            )
-
-    endif()
-  endif()
-endif()
-
 
 if(NOT PAL_TRAIT_ATOM_CONVERSATION_CANVAS_APPLICATION_SUPPORTED)
   message(FATAL_ERROR "Conversation canvas not supported")
@@ -292,3 +221,103 @@ else()
   message(FATAL_ERROR "Cannot set LY_CMAKE_TARGET define to ConversationCanvas as the target doesn't exist anymore."
         " Perhaps it has been renamed")
 endif()
+
+################################################################################
+#Tests
+################################################################################
+# See if globally, tests are supported
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+  # We globally support tests, see if we support tests on this platform for Conversation.Tests
+  if(PAL_TRAIT_CONVERSATION_TEST_SUPPORTED)
+    # We support Conversation.Tests on this platform, add dependency on the Static Object target
+    ly_add_target(
+            NAME Conversation.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                conversation_tests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+                    Include
+                    Source
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzTest
+                    AZ::AzFramework
+                    Gem::Conversation.Static
+        )
+
+    # Add Conversation.Tests to googletest
+    ly_add_googletest(
+            NAME Gem::Conversation.Tests
+        )
+
+    list(APPEND convTestTargets Conversation.Tests)
+
+  endif()
+
+  # If we are a host platform we want to add tools test like editor tests here
+  if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    # We are a host platform, see if Editor tests are supported on this platform
+    if(PAL_TRAIT_CONVERSATION_EDITOR_TEST_SUPPORTED)
+      # We support Conversation.Editor.Tests on this platform, add Conversation.Editor.Tests target which depends on
+      # private Conversation.Editor.Private.Object target
+      ly_add_target(
+                NAME Conversation.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+                NAMESPACE Gem
+                AUTOMOC
+                AUTORCC
+                FILES_CMAKE
+                    conversation_editor_tests_files.cmake
+                INCLUDE_DIRECTORIES
+                    PRIVATE
+                        Tests
+                        Source
+                BUILD_DEPENDENCIES
+                    PRIVATE
+                        AZ::AzTest
+                        Gem::Conversation.Static
+                        AZ::AzFramework
+                        AZ::AzToolsFramework
+                        Gem::AtomToolsFramework.Editor
+                        Gem::AtomToolsFramework.Static
+                        Gem::Conversation.Editor
+            )
+
+      # Add Conversation.Editor.Tests to googletest
+      ly_add_googletest(
+                NAME Gem::Conversation.Editor.Tests
+            )
+
+    endif()
+  endif()
+
+  if(PAL_TRAIT_CONVERSATION_TEST_SUPPORTED)
+    ly_add_target(
+            NAME ConversationCanvas.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                conversationcanvas_tests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+                    Source
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzFramework
+                    AZ::AzTest
+                    AZ::AzToolsFramework
+                    Gem::AtomToolsFramework.Editor
+                    Gem::AtomToolsFramework.Static
+                    Gem::Conversation.Static
+        )
+
+    # Add Conversation.Tests to googletest
+    ly_add_googletest(
+            NAME Gem::ConversationCanvas.Editor.Tests
+        )
+  endif()
+
+endif()
+
+
