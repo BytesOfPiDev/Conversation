@@ -21,6 +21,7 @@ set(FILES
     Source/Tools/ConversationCanvas/LuaSnippet.cpp
     Source/Tools/ConversationCanvas/LuaSnippet.h
     Source/Tools/ConversationCanvas/NodeData.h
+    Source/Tools/ConversationCanvas/Sql.h
 
     Source/Tools/ConversationCanvas/Document/ConversationGraphCompiler.cpp
     Source/Tools/ConversationCanvas/Document/ConversationGraphCompiler.h

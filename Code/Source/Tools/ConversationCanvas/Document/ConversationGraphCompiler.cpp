@@ -38,6 +38,7 @@
 #include "Tools/ConversationCanvas/DataTypes.h"
 #include "Tools/ConversationCanvas/Document/NodeRequestBus.h"
 #include "Tools/ConversationCanvas/LuaSnippet.h"
+#include "Tools/ConversationCanvas/Sql.h"
 
 namespace ConversationCanvas
 {
@@ -52,7 +53,7 @@ namespace ConversationCanvas
     static constexpr auto LuaEmptyFunction =
         AZStd::string_view("function() end");
 
-    static auto constexpr COMPILER_LOG_NAME = "ConversationGraphCompiler";
+    //    static auto constexpr COMPILER_LOG_NAME = "ConversationGraphCompiler";
 
     static auto constexpr INSERT_GRAPH = "InsertGraph";
     static auto constexpr INSERT_GRAPH_SQL = R"(

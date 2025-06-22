@@ -141,6 +141,19 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::QtForPython.Editor
     )
 
+  ly_add_target(
+      NAME ConversationCanvas.Database.Static STATIC
+      NAMESPACE Gem
+      FILES_CMAKE
+            conversationcanvas_database_files.cmake
+      INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+      BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::AtomToolsFramework.Static
+  )
+
   # By default, we will specify that the above target Conversation would be used by
   # Tool and Builder type targets when this gem is enabled.  If you don't want it
   # active in Tools or Builders by default, delete one of both of the following lines:
@@ -310,6 +323,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::AtomToolsFramework.Editor
                     Gem::AtomToolsFramework.Static
                     Gem::Conversation.Static
+                    Gem::ConversationCanvas.Database.Static
         )
 
     # Add Conversation.Tests to googletest
