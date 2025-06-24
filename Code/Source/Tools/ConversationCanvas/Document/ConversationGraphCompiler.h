@@ -190,10 +190,6 @@ namespace ConversationCanvas
         void ReplaceBasicSymbols(
             AtomToolsFramework::GraphTemplateFileData& templateFileData);
 
-    protected:
-        bool ConnectToDatabase();
-        void ConfigureDatabase();
-
     private:
         AZStd::mutex m_instructionNodesForCurrentNodeMutex{};
         AZStd::mutex m_functionDefinitionsMutex{};

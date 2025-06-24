@@ -1,16 +1,15 @@
 #include "Tools/ConversationCanvas/CompilationDatabase.h"
+#include "SQLite/SQLiteConnection.h"
 #include "SQLite/SQLiteQuery.h"
 #include "Tools/ConversationCanvas/Sql.h"
-#include <cstdlib>
 
 namespace ConversationCanvas
 {
     CompilationDatabase::CompilationDatabase()
     {
         m_conn.Open(":memory:", false);
-        AddStatements();
-
-        Init();
+        AddStatements(m_conn);
+        ConfigureTables(m_conn);
     }
 
     CompilationDatabase::~CompilationDatabase()
@@ -18,15 +17,22 @@ namespace ConversationCanvas
         m_conn.Close();
     }
 
-    void CompilationDatabase::AddStatements()
+    void CompilationDatabase::AddStatements(
+        AzToolsFramework::SQLite::Connection& conn)
     {
-        AzToolsFramework::SQLite::AddStatement(&m_conn, s_CreateGraphsTable);
-        AzToolsFramework::SQLite::AddStatement(&m_conn, s_CreateNodesTable);
+        AzToolsFramework::SQLite::AddStatement(&conn, s_CreateGraphsTable);
+        AzToolsFramework::SQLite::AddStatement(&conn, s_CreateNodesTable);
+        AzToolsFramework::SQLite::AddStatement(
+            &conn, s_CreateNodeDataDialogueTable);
+        AzToolsFramework::SQLite::AddStatement(&conn, s_InsertNode);
+        AzToolsFramework::SQLite::AddStatement(&conn, s_InsertNodeDataDialogue);
     }
 
-    void CompilationDatabase::Init()
+    void CompilationDatabase::ConfigureTables(
+        AzToolsFramework::SQLite::Connection& conn)
     {
-        ConversationCanvas::s_CreateGraphsTable.BindAndStep(m_conn);
-        ConversationCanvas::s_CreateNodesTable.BindAndStep(m_conn);
+        ConversationCanvas::s_CreateGraphsTable.BindAndStep(conn);
+        ConversationCanvas::s_CreateNodesTable.BindAndStep(conn);
+        ConversationCanvas::s_CreateNodeDataDialogueTable.BindAndStep(conn);
     }
 } // namespace ConversationCanvas

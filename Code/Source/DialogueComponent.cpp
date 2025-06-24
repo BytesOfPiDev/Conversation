@@ -523,7 +523,7 @@ namespace Conversation
         // We failed to start the conversation.
         m_currentState = DialogueState::Inactive;
 
-        AZ_Warning( // NOLINT
+        AZ_Warning(
             "DialogueComponent",
             false,
             "A conversation failed to be started after checking for available "
