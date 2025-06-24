@@ -16,10 +16,7 @@ namespace Conversation
         AvailabilityRequests() = default;
         virtual ~AvailabilityRequests() = default;
 
-        virtual auto IsAvailable(AZStd::string_view const) -> bool
-        {
-            return false;
-        }
+        virtual auto IsAvailable(AZStd::string_view const) -> bool = 0;
     };
 
     using AvailabilityRequestBus = AZ::EBus<AvailabilityRequests>;
@@ -29,7 +26,7 @@ namespace Conversation
         , public AZ::BehaviorEBusHandler
     {
     public:
-        AZ_EBUS_BEHAVIOR_BINDER( // NOLINT
+        AZ_EBUS_BEHAVIOR_BINDER(
             BehaviorAvailabilityRequestBusHandler,
             "{D6037DA0-68CD-40F3-AB56-C91A6E7F4C3D}",
             AZ::SystemAllocator,
